@@ -13,17 +13,27 @@ export default function RootLayout() {
   });
 
   if (!loaded) {
-    // Async font loading only occurs in development.
     return null;
   }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="getstarted" />
+        <Stack.Screen name="getstarted2" />
+        <Stack.Screen name="signin.tsx" />
+        <Stack.Screen name="signup.tsx" />
+        <Stack.Screen name="signup2.tsx" />
+        <Stack.Screen name="forgetpass.tsx" />
+        <Stack.Screen name="otpvarification.tsx" />
+        <Stack.Screen name="createaccount.tsx" />
+        <Stack.Screen name="home.tsx" />   
+        <Stack.Screen name="scamProtectionScreen" />
+         
+
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
     </ThemeProvider>
   );
-}
+};
