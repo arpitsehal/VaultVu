@@ -60,7 +60,7 @@ export default function SignInPage() {
       // API call to the backend login endpoint
       try {
         // IMPORTANT: Replace 'YOUR_IP_ADDRESS' with your actual local network IP address (e.g., 192.168.1.100)
-        const response = await fetch('http://10.9.50.62:5000/api/auth/login', {
+        const response = await fetch('http://ADD_YOUR_API/api/auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
