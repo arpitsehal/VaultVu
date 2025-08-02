@@ -1,6 +1,6 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, StatusBar, Image } from 'react-native';
 import { useRouter } from 'expo-router';
+import React from 'react';
+import { Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'; // Ensure SafeAreaView is imported
 
 export default function LandingPage() {
@@ -10,7 +10,7 @@ export default function LandingPage() {
     <SafeAreaView style={styles.container}> {/* Use SafeAreaView */}
       <StatusBar barStyle="light-content" backgroundColor="#1A213B" />
 
-      {/* Corrected: Using vaultVuTextHighlight for "VaultVu" */}
+      {/* Corrected: Entire welcome text wrapped in a single Text component */}
       <Text style={styles.welcomeText}>
         Welcome to <Text style={styles.vaultVuTextHighlight}>VaultVu</Text>
       </Text>

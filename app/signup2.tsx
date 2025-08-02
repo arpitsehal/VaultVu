@@ -1,36 +1,78 @@
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'; // Import DateTimePickerEvent
+import { Picker } from '@react-native-picker/picker';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Alert,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
-  View,
-  TouchableOpacity,
-  StatusBar,
   TextInput,
-  ScrollView,         // <--- ADDED for responsiveness
-  KeyboardAvoidingView, // <--- ADDED for responsiveness
-  Platform,             // <--- ADDED for OS specific logic
-  Dimensions,           // <--- ADDED for responsiveness
-  Alert                 // <--- ADDED for user feedback
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; // <--- ADDED useSafeAreaInsets
-import { useRouter } from 'expo-router';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const { width: screenWidth } = Dimensions.get('window'); // For potential future responsive sizing, or minor adjustments
+const { width: screenWidth } = Dimensions.get('window');
+
+// Define common countries and genders
+const COUNTRY_OPTIONS = [
+  { label: 'Select Country', value: '' }, // Default placeholder
+  { label: 'United States', value: 'USA' },
+  { label: 'Canada', value: 'CAN' },
+  { label: 'United Kingdom', value: 'GBR' },
+  { label: 'India', value: 'IND' },
+  { label: 'Australia', value: 'AUS' },
+  { label: 'Germany', value: 'DEU' },
+  { label: 'France', value: 'FRA' },
+  { label: 'Japan', value: 'JPN' },
+  { label: 'Brazil', value: 'BRA' },
+  // Add more countries as needed
+];
+
+const GENDER_OPTIONS = [
+  { label: 'Select Gender', value: '' }, // Default placeholder
+  { label: 'Male', value: 'male' },
+  { label: 'Female', value: 'female' },
+  { label: 'Other', value: 'other' },
+  { label: 'Prefer not to say', value: 'prefer-not-to-say' },
+];
 
 export default function CreateAccountPage2() {
   const router = useRouter();
-  const insets = useSafeAreaInsets(); // Get safe area insets
+  const insets = useSafeAreaInsets();
 
   const [username, setUsername] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState(''); // Kept as string
-  const [country, setCountry] = useState('');         // Kept as string
-  const [gender, setGender] = useState('');           // Kept as string
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [country, setCountry] = useState('');
+  const [gender, setGender] = useState('');
 
   // State for validation errors
   const [usernameError, setUsernameError] = useState('');
   const [dobError, setDobError] = useState('');
   const [countryError, setCountryError] = useState('');
   const [genderError, setGenderError] = useState('');
+
+  const formatDate = (date: Date | null | undefined) => {
+    if (!date) return '';
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const onDateChange = (event: DateTimePickerEvent, date?: Date) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (date) {
+      setSelectedDate(date);
+      setDobError('');
+    }
+  };
 
   const handleSignUp = () => {
     // Reset errors
@@ -45,27 +87,29 @@ export default function CreateAccountPage2() {
       setUsernameError('Username is required');
       isValid = false;
     }
-    // Basic validation for text inputs
-    if (!dateOfBirth.trim()) {
+    // Check if a date has been selected and is not the initial default date
+    if (!selectedDate || formatDate(selectedDate) === formatDate(new Date())) {
       setDobError('Date of Birth is required');
       isValid = false;
     }
-    if (!country.trim()) {
+    if (!country) { // Check if a country has been selected (empty string is default)
       setCountryError('Country is required');
       isValid = false;
     }
-    if (!gender.trim()) {
+    if (!gender) { // Check if a gender has been selected (empty string is default)
       setGenderError('Gender is required');
       isValid = false;
     }
 
     if (isValid) {
-      console.log('Signing up with:', { username, dateOfBirth, country, gender });
-      Alert.alert('Success', 'Account created successfully!', [ // Using Alert for better UX
-        { text: 'OK', onPress: () => router.push('/home') } // Adjust '/home' to your actual next route
+      const formattedDateOfBirth = selectedDate.toISOString().split('T')[0];
+
+      console.log('Signing up with:', { username, dateOfBirth: formattedDateOfBirth, country, gender });
+      Alert.alert('Success', 'Account created successfully!', [
+        { text: 'OK', onPress: () => router.push('/signin') }
       ]);
     } else {
-      Alert.alert('Error', 'Please fill in all required fields.'); // Using Alert for better UX
+      Alert.alert('Error', 'Please fill in all required fields.');
     }
   };
 
@@ -73,32 +117,26 @@ export default function CreateAccountPage2() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* Back Arrow - Positioned dynamically using safe area insets */}
       <TouchableOpacity
-        style={[styles.backButton, { top: insets.top + 20 }]} // Use insets.top for accurate positioning
+        style={[styles.backButton, { top: insets.top + 20 }]}
         onPress={() => router.back()}
       >
         <Text style={styles.backButtonText}>←</Text>
       </TouchableOpacity>
 
-      {/* KeyboardAvoidingView to handle keyboard overlap */}
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior for iOS/Android
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* ScrollView for content that might exceed screen height */}
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          {/* Progress Bar */}
           <View style={styles.progressBarContainer}>
             <View style={styles.progressBarFill} />
           </View>
 
-          {/* Header */}
           <Text style={styles.headerText}>
             Create an <Text style={styles.highlightText}>account</Text>
           </Text>
 
-          {/* Description Text */}
           <Text style={styles.descriptionText}>
             Please enter your username, date of birth, country, and gender.
           </Text>
@@ -114,54 +152,78 @@ export default function CreateAccountPage2() {
               onChangeText={setUsername}
             />
             {usernameError ? <Text style={styles.errorText}>{usernameError}</Text> : null}
-            {/* Checkmark icon placeholder */}
             <Text style={styles.inputIcon}>✓</Text>
           </View>
 
           {/* Date of Birth Input Field */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Date of Birth</Text>
-            <TextInput
-              style={[styles.input, dobError ? styles.inputError : null]}
-              placeholder="DD/MM/YYYY" // Changed placeholder to guide format
-              placeholderTextColor="#A8C3D1"
-              keyboardType="numeric"
-              value={dateOfBirth}
-              onChangeText={setDateOfBirth}
-            />
-            {dobError ? <Text style={styles.errorText}>{dobError}</Text> : null}
-            {/* Calendar icon placeholder */}
-            <Text style={styles.inputIcon}>🗓️</Text>
+            <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateInputTouchable}>
+              <TextInput
+                style={[styles.input, dobError ? styles.inputError : null]}
+                placeholder="DD/MM/YYYY"
+                placeholderTextColor="#A8C3D1"
+                value={formatDate(selectedDate)}
+                editable={false}
+              />
+              {dobError ? <Text style={styles.errorText}>{dobError}</Text> : null}
+              <Text style={styles.inputIcon}>🗓️</Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Country Input Field */}
+          {showDatePicker && (
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={selectedDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={onDateChange}
+              maximumDate={new Date()}
+            />
+          )}
+
+          {/* Country Picker Field */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Country</Text>
-            <TextInput
-              style={[styles.input, countryError ? styles.inputError : null]}
-              placeholder="United States"
-              placeholderTextColor="#A8C3D1"
-              value={country}
-              onChangeText={setCountry}
-            />
+            <View style={[styles.pickerContainer, countryError ? styles.inputError : null]}>
+              <Picker
+                selectedValue={country}
+                onValueChange={(itemValue) => {
+                  setCountry(itemValue);
+                  setCountryError(''); // Clear error on selection
+                }}
+                style={styles.picker}
+                itemStyle={styles.pickerItem}
+              >
+                {COUNTRY_OPTIONS.map((option) => (
+                  <Picker.Item key={option.value} label={option.label} value={option.value} />
+                ))}
+              </Picker>
+              <Text style={styles.inputIcon}>▼</Text>
+            </View>
             {countryError ? <Text style={styles.errorText}>{countryError}</Text> : null}
-            {/* Dropdown arrow icon placeholder */}
-            <Text style={styles.inputIcon}>▼</Text>
           </View>
 
-          {/* Gender Input Field */}
+          {/* Gender Picker Field */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Gender</Text>
-            <TextInput
-              style={[styles.input, genderError ? styles.inputError : null]}
-              placeholder="Male"
-              placeholderTextColor="#A8C3D1"
-              value={gender}
-              onChangeText={setGender}
-            />
+            <View style={[styles.pickerContainer, genderError ? styles.inputError : null]}>
+              <Picker
+                selectedValue={gender}
+                onValueChange={(itemValue) => {
+                  setGender(itemValue);
+                  setGenderError(''); // Clear error on selection
+                }}
+                style={styles.picker}
+                itemStyle={styles.pickerItem}
+              >
+                {GENDER_OPTIONS.map((option) => (
+                  <Picker.Item key={option.value} label={option.label} value={option.value} />
+                ))}
+              </Picker>
+              <Text style={styles.inputIcon}>▼</Text>
+            </View>
             {genderError ? <Text style={styles.errorText}>{genderError}</Text> : null}
-            {/* Dropdown arrow icon placeholder */}
-            <Text style={styles.inputIcon}>▼</Text>
           </View>
 
           {/* SIGN UP Button */}
@@ -184,12 +246,12 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   scrollViewContent: {
-    flexGrow: 1, // Allows content to grow and push elements
+    flexGrow: 1,
     alignItems: 'center',
     paddingTop: 20,
     paddingHorizontal: 20,
-    paddingBottom: 40, // Ensure space at bottom for buttons
-    justifyContent: 'center', // Center content vertically when it fits
+    paddingBottom: 40,
+    justifyContent: 'center',
   },
   backButton: {
     position: 'absolute',
@@ -207,10 +269,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     borderRadius: 4,
     marginBottom: 30,
-    marginTop: Platform.OS === 'ios' ? 0 : 40, // Adjust for top spacing after back button
+    marginTop: Platform.OS === 'ios' ? 0 : 40,
   },
   progressBarFill: {
-    width: '75%', // Example progress for step 2
+    width: '75%',
     height: '100%',
     backgroundColor: '#1A213B',
     borderRadius: 4,
@@ -254,6 +316,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1A213B',
   },
+  dateInputTouchable: {
+    width: '100%',
+  },
   inputError: {
     borderColor: 'red',
     borderWidth: 2,
@@ -268,9 +333,28 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 15,
     top: '50%',
-    transform: [{ translateY: -12 }], // Adjusted to roughly center in 50px height input
+    transform: [{ translateY: -12 }],
     fontSize: 20,
     color: '#A8C3D1',
+  },
+  // New styles for Picker
+  pickerContainer: {
+    width: '100%',
+    height: 50,
+    borderColor: '#1A213B',
+    borderWidth: 1,
+    borderRadius: 10,
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  picker: {
+    width: '100%',
+    height: 50,
+    color: '#1A213B',
+  },
+  pickerItem: {
+    fontSize: 16,
+    color: '#1A213B',
   },
   signUpButton: {
     backgroundColor: '#1A213B',

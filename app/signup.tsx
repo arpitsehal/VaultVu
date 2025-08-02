@@ -7,29 +7,28 @@ import {
   StatusBar,
   Image,
   TextInput,
-  ScrollView,         // <--- ADDED for responsiveness
-  KeyboardAvoidingView, // <--- ADDED for responsiveness
-  Platform,             // <--- ADDED for OS specific logic
-  Dimensions,           // <--- ADDED for responsive sizing
-  Alert                 // <--- ADDED for user feedback
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Dimensions,
+  Alert,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; // <--- ADDED useSafeAreaInsets
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
-const { width: screenWidth } = Dimensions.get('window'); // Get screen width for responsive sizing
+const { width: screenWidth } = Dimensions.get('window');
 
 export default function CreateAccountPage() {
   const router = useRouter();
-  const insets = useSafeAreaInsets(); // Call the hook to get safe area insets
+  const insets = useSafeAreaInsets();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
+  const [showPassword, setShowPassword] = useState(false);
 
-  // State for validation errors
   const [firstNameError, setFirstNameError] = useState('');
   const [lastNameError, setLastNameError] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -58,11 +57,11 @@ export default function CreateAccountPage() {
 
   // Basic email validation
   const validateEmail = (emailAddress: string) => {
-    const re = /\S+@\S+\.\S+/; // Simple regex for email validation
+    const re = /\S+@\S+\.\S+/;
     return re.test(emailAddress);
   };
 
-  const handleCreateAccount = () => {
+  const handleCreateAccount = async () => {
     // Reset errors
     setFirstNameError('');
     setLastNameError('');
@@ -91,23 +90,47 @@ export default function CreateAccountPage() {
     }
 
     if (isValid) {
-      console.log('Creating account with:', { firstName, lastName, email, password, rememberMe });
-      // Navigate to the next step (signup2.tsx)
-      Alert.alert('Success', 'Account created successfully! Proceeding to next step.', [
-        { text: 'OK', onPress: () => router.push('/signup2') }
-      ]);
+      // API call to the backend registration endpoint
+      try {
+        const response = await fetch('http://ADD_YOUR_API/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Registration successful, log the response and navigate to the next screen
+          console.log('Registration successful:', data);
+          Alert.alert('Success', data.message, [
+            { text: 'OK', onPress: () => router.push('/signup2') }
+          ]);
+        } else {
+          // Registration failed, show the error message from the backend
+          console.error('Registration failed:', data);
+          Alert.alert('Error', data.message || 'Registration failed. Please try again.');
+        }
+      } catch (error) {
+        // Handle network errors
+        console.error('Network error during registration:', error);
+        Alert.alert('Error', 'Could not connect to the server. Please try again.');
+      }
     } else {
+      // If client-side validation fails
       Alert.alert('Error', 'Please fix the errors to create an account.');
     }
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}> {/* Use safeArea for overall container */}
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" /> {/* Dark content on light background */}
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* Back Arrow - Positioned dynamically using safe area insets */}
       <TouchableOpacity
-        style={[styles.backButton, { top: insets.top + 20 }]} // Use insets.top for accurate positioning
+        style={[styles.backButton, { top: insets.top + 20 }]}
         onPress={() => router.back()}
       >
         <Text style={styles.backButtonText}>←</Text>
@@ -116,7 +139,7 @@ export default function CreateAccountPage() {
       {/* KeyboardAvoidingView to handle keyboard overlap */}
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior for iOS/Android
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* ScrollView for content that might exceed screen height */}
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -141,7 +164,7 @@ export default function CreateAccountPage() {
               <Text style={styles.inputLabel}>First Name</Text>
               <TextInput
                 style={[styles.input, firstNameError ? styles.inputError : null]}
-                placeholder="Andrew" // Changed placeholder for clarity
+                placeholder="Andrew"
                 placeholderTextColor="#A8C3D1"
                 value={firstName}
                 onChangeText={setFirstName}
@@ -152,7 +175,7 @@ export default function CreateAccountPage() {
               <Text style={styles.inputLabel}>Last Name</Text>
               <TextInput
                 style={[styles.input, lastNameError ? styles.inputError : null]}
-                placeholder="Ainsley" // Changed placeholder for clarity
+                placeholder="Ainsley"
                 placeholderTextColor="#A8C3D1"
                 value={lastName}
                 onChangeText={setLastName}
@@ -183,7 +206,7 @@ export default function CreateAccountPage() {
               style={[styles.input, passwordError ? styles.inputError : null]}
               placeholder="••••••••••••"
               placeholderTextColor="#A8C3D1"
-              secureTextEntry={!showPassword} // Toggle based on state
+              secureTextEntry={!showPassword}
               value={password}
               onChangeText={setPassword}
             />
@@ -233,21 +256,21 @@ export default function CreateAccountPage() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { // New style for SafeAreaView
+  safeArea: {
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  keyboardAvoidingView: { // New style to make KeyboardAvoidingView take full space
+  keyboardAvoidingView: {
     flex: 1,
     width: '100%',
   },
-  scrollViewContent: { // New style for ScrollView content container
-    flexGrow: 1, // Allows content to grow and push elements
+  scrollViewContent: {
+    flexGrow: 1,
     alignItems: 'center',
-    paddingTop: 20, // Adjusted padding for content inside scroll view
+    paddingTop: 20,
     paddingHorizontal: 20,
-    paddingBottom: 40, // Ensure space at bottom for buttons
-    justifyContent: 'center', // Center content vertically when it fits
+    paddingBottom: 40,
+    justifyContent: 'center',
   },
   backButton: {
     position: 'absolute',
@@ -265,10 +288,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     borderRadius: 4,
     marginBottom: 30,
-    marginTop: Platform.OS === 'ios' ? 0 : 40, // Added small margin top for Android consistency
+    marginTop: Platform.OS === 'ios' ? 0 : 40,
   },
   progressBarFill: {
-    width: '50%', // Example progress, adjust as needed (e.g., based on form completion)
+    width: '50%',
     height: '100%',
     backgroundColor: '#1A213B',
     borderRadius: 4,
@@ -299,7 +322,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   nameInputGroup: {
-    flex: 1, // Each input group takes half width
+    flex: 1,
   },
   inputGroupFullWidth: {
     width: '100%',
@@ -335,7 +358,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 10,
     top: '50%',
-    transform: [{ translateY: -12 }], // Adjust to center vertically relative to input
+    transform: [{ translateY: -12 }],
     padding: 5,
   },
   eyeIcon: {

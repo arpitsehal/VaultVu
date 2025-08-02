@@ -7,20 +7,20 @@ import {
   StatusBar,
   Image,
   TextInput,
-  ScrollView,         // <--- ADDED for responsiveness
-  KeyboardAvoidingView, // <--- ADDED for responsiveness
-  Platform,             // <--- ADDED for OS specific logic
-  Dimensions,           // <--- ADDED for responsive sizing
-  Alert                 // <--- ADDED for user feedback
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Dimensions,
+  Alert,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; // <--- ADDED useSafeAreaInsets
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
-const { width: screenWidth } = Dimensions.get('window'); // Get screen width for responsive image sizing
+const { width: screenWidth } = Dimensions.get('window');
 
 export default function SignInPage() {
   const router = useRouter();
-  const insets = useSafeAreaInsets(); // Call the hook to get safe area insets
+  const insets = useSafeAreaInsets();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,8 +36,8 @@ export default function SignInPage() {
     return emailRegex.test(emailAddress);
   };
 
-  // Placeholder for sign-in logic
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
+    // Reset errors
     setEmailError('');
     setPasswordError('');
 
@@ -55,17 +55,40 @@ export default function SignInPage() {
       setPasswordError('Password is required');
       isValid = false;
     }
-    // You might want more sophisticated password validation here too
 
     if (isValid) {
-      console.log('Signing in with:', { email, password, rememberMe });
-      // Implement your actual authentication logic here (e.g., API call)
+      // API call to the backend login endpoint
+      try {
+        // IMPORTANT: Replace 'YOUR_IP_ADDRESS' with your actual local network IP address (e.g., 192.168.1.100)
+        const response = await fetch('http://ADD_YOUR_API/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          // The backend expects emailOrUsername and password
+          body: JSON.stringify({ emailOrUsername: email, password }),
+        });
 
-      // Assuming authentication is successful:
-      Alert.alert('Success', 'Signed in successfully!', [
-        { text: 'OK', onPress: () => router.push('/home') } // <--- This line links to /home (your DashboardScreen)
-      ]);
+        const data = await response.json();
+
+        if (response.ok) {
+          // Sign-in successful, log the response and navigate to the next screen
+          console.log('Sign-in successful:', data);
+          Alert.alert('Success', 'Signed in successfully!', [
+            { text: 'OK', onPress: () => router.push('/home') }
+          ]);
+        } else {
+          // Sign-in failed, show the error message from the backend
+          console.error('Sign-in failed:', data);
+          Alert.alert('Error', data.message || 'Sign-in failed. Please try again.');
+        }
+      } catch (error) {
+        // Handle network errors
+        console.error('Network error during sign-in:', error);
+        Alert.alert('Error', 'Could not connect to the server. Please check the network connection and the server IP address.');
+      }
     } else {
+      // If client-side validation fails
       Alert.alert('Error', 'Please correct the highlighted errors.');
     }
   };
@@ -78,12 +101,12 @@ export default function SignInPage() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}> {/* Use safeArea for overall container */}
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" /> {/* Dark content on light background */}
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* Back Arrow - Positioned dynamically using safe area insets */}
       <TouchableOpacity
-        style={[styles.backButton, { top: insets.top + 20 }]} // Use insets.top for accurate positioning
+        style={[styles.backButton, { top: insets.top + 20 }]}
         onPress={() => router.back()}
       >
         <Text style={styles.backButtonText}>←</Text>
@@ -92,14 +115,14 @@ export default function SignInPage() {
       {/* KeyboardAvoidingView to handle keyboard overlap */}
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior for iOS/Android
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* ScrollView for content that might exceed screen height */}
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           {/* Robot Image */}
           <View style={styles.robotImageContainer}>
             <Image
-              source={require('../assets/images/vaultvu-logo.jpg')} // Ensure this path is correct
+              source={require('../assets/images/vaultvu-logo.jpg')}
               style={styles.robotImage}
               resizeMode="contain"
             />
@@ -114,7 +137,7 @@ export default function SignInPage() {
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Email</Text>
             <TextInput
-              style={[styles.input, emailError ? styles.inputError : null]} // Apply error style
+              style={[styles.input, emailError ? styles.inputError : null]}
               placeholder="john@beyondlogic.ai"
               placeholderTextColor="#A8C3D1"
               keyboardType="email-address"
@@ -122,20 +145,20 @@ export default function SignInPage() {
               value={email}
               onChangeText={setEmail}
             />
-            {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null} {/* Display error */}
+            {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Password</Text>
             <TextInput
-              style={[styles.input, passwordError ? styles.inputError : null]} // Apply error style
+              style={[styles.input, passwordError ? styles.inputError : null]}
               placeholder="••••••••••••"
               placeholderTextColor="#A8C3D1"
               secureTextEntry
               value={password}
               onChangeText={setPassword}
             />
-            {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null} {/* Display error */}
+            {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
           </View>
 
           {/* Remember Me & Forgot Password */}
@@ -157,7 +180,7 @@ export default function SignInPage() {
           {/* Google Sign-in Button */}
           <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
             <Image
-              source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png' }} // Google logo
+              source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png' }}
               style={styles.googleLogo}
               resizeMode="contain"
             />
@@ -165,7 +188,7 @@ export default function SignInPage() {
           </TouchableOpacity>
 
           {/* SIGN IN Button */}
-          <TouchableOpacity style={styles.signInMainButton} onPress={() => router.push('/home')}>
+          <TouchableOpacity style={styles.signInMainButton} onPress={handleSignIn}>
             <Text style={styles.signInMainButtonText}>SIGN IN</Text>
           </TouchableOpacity>
         </ScrollView>
@@ -175,21 +198,21 @@ export default function SignInPage() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { // New style for SafeAreaView
+  safeArea: {
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  keyboardAvoidingView: { // New style to make KeyboardAvoidingView take full space
+  keyboardAvoidingView: {
     flex: 1,
     width: '100%',
   },
-  scrollViewContent: { // New style for ScrollView content container
-    flexGrow: 1, // Allows content to grow and push elements
+  scrollViewContent: {
+    flexGrow: 1,
     alignItems: 'center',
-    paddingTop: 20, // Adjusted padding for content inside scroll view
+    paddingTop: 20,
     paddingHorizontal: 20,
-    paddingBottom: 40, // Ensure space at bottom for buttons
-    justifyContent: 'center', // Center content vertically when it fits
+    paddingBottom: 40,
+    justifyContent: 'center',
   },
   backButton: {
     position: 'absolute',
@@ -206,9 +229,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   robotImage: {
-    width: screenWidth * 0.4, // Responsive width (40% of screen width)
-    height: screenWidth * 0.4, // Keep aspect ratio
-    maxWidth: 150, // Max size to prevent it from getting too large on tablets
+    width: screenWidth * 0.4,
+    height: screenWidth * 0.4,
+    maxWidth: 150,
     maxHeight: 150,
   },
   signInHeader: {
