@@ -1,5 +1,5 @@
 // main dashboard
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -12,9 +12,28 @@ import {
   Image
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router'; // Assuming expo-router for navigation
+import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { width: screenWidth } = Dimensions.get('window');
+
+// Define a list of daily tips
+const dailyTips = [
+  "Always use a strong, unique password for your banking apps and email.",
+  "Never share your OTP or PIN with anyone, not even bank employees.",
+  "Be cautious of unsolicited calls asking for personal financial information.",
+  "Check your bank statements regularly for any unauthorized transactions.",
+  "Use two-factor authentication (2FA) wherever possible for added security.",
+  "Don't click on suspicious links in emails or text messages.",
+  "Only download apps from official app stores like Google Play or the App Store.",
+  "Use a separate email address for online banking and sensitive accounts.",
+  "When shopping online, use secure connections (HTTPS) and reputable sites.",
+  "Be skeptical of urgent requests for money, especially from family or friends online.",
+  "Review your privacy settings on social media to limit public information.",
+  "Shred documents with personal information before discarding them.",
+  "Protect your Wi-Fi network with a strong password to prevent unauthorized access.",
+  "Never use public Wi-Fi for sensitive activities like banking or shopping.",
+];
 
 // Define your essential modules/features
 const essentialModules = [
@@ -23,18 +42,18 @@ const essentialModules = [
     title: 'Scam Protection',
     icon: '🚨',
     description: 'Identify and avoid common scams and phishing attempts.',
-    route: '/ScamProtectionScreen', // Adjusted route to match the new screen
+    route: 'ScamProtectionScreen',
   },
   {
     id: 'fraudProtection',
     title: 'Fraud Protection',
     icon: '💳',
     description: 'Safeguard your bank accounts and financial transactions.',
-    route: '/fraud-protection',
+    route: 'FraudProtectionScreen',
   },
   {
     id: 'passwordManagement',
-    title: 'Password Management',
+    title: 'Password Manager',
     icon: '🔑',
     description: 'Create, store, and manage strong, unique passwords securely.',
     route: '/password-management',
@@ -49,7 +68,7 @@ const essentialModules = [
   {
     id: 'creditMonitoring',
     title: 'Credit Monitoring',
-    icon: '�',
+    icon: '📊',
     description: 'Monitor your credit score and reports for suspicious activity.',
     route: '/credit-monitoring',
   },
@@ -69,25 +88,25 @@ const featuredSections = [
     title: 'Financial Literacy Quiz',
     icon: '🧠',
     description: 'Test your knowledge and improve your financial IQ!',
-    route: '/quiz', // Placeholder route for the quiz
-    cardColor: '#A8C3D1', // Light accent color for the card
-    textColor: '#1A213B', // Dark text for contrast
+    route: 'Quiz',
+    cardColor: '#A8C3D1',
+    textColor: '#1A213B',
   },
   {
     id: 'leaderboard',
     title: 'Leaderboard',
     icon: '🏆',
     description: 'See how you rank among other security champions!',
-    route: '/leaderboard', // Placeholder route for the leaderboard
-    cardColor: '#1A213B', // Dark background for the card
-    textColor: '#A8C3D1', // Light text for contrast
+    route: '/leaderboard',
+    cardColor: '#1A213B',
+    textColor: '#A8C3D1',
   },
   {
     id: 'securityTips',
     title: 'Daily Security Tips',
     icon: '💡',
     description: 'Get quick, actionable tips to boost your digital safety.',
-    route: '/tips', // Placeholder route
+    route: '/tips',
     cardColor: '#A8C3D1',
     textColor: '#1A213B',
   },
@@ -96,44 +115,67 @@ const featuredSections = [
     title: 'Report an Issue',
     icon: '⚠️',
     description: 'Quickly report any suspicious activity or security concerns.',
-    route: '/report', // Placeholder route
+    route: '/report',
     cardColor: '#1A213B',
     textColor: '#A8C3D1',
   },
 ];
 
-
 export default function DashboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [dailyTip, setDailyTip] = useState('');
+
+  // Function to get the current day of the year (1-366)
+  const getDayOfYear = () => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const diff = now.getTime() - start.getTime();
+    const oneDay = 1000 * 60 * 60 * 24;
+    const day = Math.floor(diff / oneDay);
+    return day;
+  };
+
+  // Use useFocusEffect to update the tip every time the screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      const randomIndex = Math.floor(Math.random() * dailyTips.length);
+      setDailyTip(dailyTips[randomIndex]);
+    }, [])
+  );
 
   const handlePress = (route: string) => {
     console.log(`Navigating to: ${route}`);
-    router.push(route); // Ensure these routes exist in your expo-router setup
+    router.push(route);
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#1A213B" /> {/* Dark status bar for dark background */}
+      <StatusBar barStyle="light-content" backgroundColor="#1A213B" />
 
       {/* Header Section */}
       <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
-        {/* Combined Text and Image for VaultVu Logo */}
         <View style={styles.headerTitleContainer}>
           <Text style={styles.appName}>VaultVu</Text>
           <Image
-            source={require('../assets/images/vaultvu-logo.jpg')} // Path to your VaultVu logo
+            source={require('../assets/images/vaultvu-logo.jpg')}
             style={styles.headerLogo}
             resizeMode="contain"
           />
         </View>
-        <TouchableOpacity style={styles.profileIconContainer} onPress={() => handlePress('/Setting')}> {/* <<== Changed route to '/SettingsScreen' */}
-          <Text style={styles.profileIcon}>⚙️</Text> {/* Settings icon */}
+        <TouchableOpacity style={styles.profileIconContainer} onPress={() => handlePress('Settings')}>
+          <Text style={styles.profileIcon}>⚙️</Text>
         </TouchableOpacity>
       </View>
 
       {/* Welcome Message / Tagline */}
       <Text style={styles.welcomeText}>Your Shield in the Digital World</Text>
+
+      {/* Daily Tip Card */}
+      <View style={styles.dailyTipCard}>
+        <Text style={styles.dailyTipHeading}>Tip of the Day</Text>
+        <Text style={styles.dailyTipText}>{dailyTip}</Text>
+      </View>
 
       <ScrollView
         style={styles.mainScrollView}
@@ -149,7 +191,7 @@ export default function DashboardScreen() {
               style={[
                 styles.featuredCard,
                 { backgroundColor: item.cardColor },
-                (item.id === 'leaderboard' || item.id === 'reportIssue') && styles.featuredCardBorder // Apply border to leaderboard and reportIssue
+                (item.id === 'leaderboard' || item.id === 'reportIssue') && styles.featuredCardBorder
               ]}
               onPress={() => handlePress(item.route)}
             >
@@ -176,19 +218,6 @@ export default function DashboardScreen() {
           ))}
         </View>
       </ScrollView>
-
-      {/* Optional: Bottom Navigation Tabs (if you decide to use them later) */}
-      {/* <View style={[styles.bottomNavBar, { paddingBottom: insets.bottom }]}>
-        <TouchableOpacity style={styles.navTab}>
-          <Text style={styles.navTabText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navTab}>
-          <Text style={styles.navTabText}>Alerts</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navTab}>
-          <Text style={styles.navTabText}>Settings</mText>
-        </TouchableOpacity>
-      </View> */}
     </SafeAreaView>
   );
 }
@@ -196,7 +225,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#1A213B', // Dark background for the whole screen
+    backgroundColor: '#1A213B',
   },
   headerContainer: {
     flexDirection: 'row',
@@ -205,37 +234,61 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#1A213B', // Match screen background
+    backgroundColor: '#1A213B',
   },
-  headerTitleContainer: { // New container for text and logo
+  headerTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   appName: {
     fontSize: 26,
-    fontWeight: '900', // Extra bold for "VaultVu"
-    color: 'white', // White text for app name
-    marginRight: 8, // Space between text and logo
+    fontWeight: '900',
+    color: 'white',
+    marginRight: 8,
   },
-  headerLogo: { // Style for the logo in the header
-    width: 30, // Small width for the logo
-    height: 30, // Small height for the logo
+  headerLogo: {
+    width: 30,
+    height: 30,
   },
   profileIconContainer: {
     padding: 5,
   },
   profileIcon: {
     fontSize: 24,
-    color: '#A8C3D1', // Light accent color for icon
+    color: '#A8C3D1',
   },
   welcomeText: {
     fontSize: 18,
-    color: '#A8C3D1', // Light accent color
+    color: '#A8C3D1',
     textAlign: 'center',
     marginTop: 15,
     marginBottom: 25,
     paddingHorizontal: 20,
     fontWeight: '500',
+  },
+  // New Styles for the Daily Tip Card
+  dailyTipCard: {
+    backgroundColor: '#1C2434', // Darker background for more contrast
+    borderRadius: 15,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 6,
+  },
+  dailyTipHeading: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#A8C3D1',
+    marginBottom: 8,
+  },
+  dailyTipText: {
+    fontSize: 14,
+    color: 'white',
+    lineHeight: 20,
   },
   mainScrollView: {
     flex: 1,
@@ -243,46 +296,49 @@ const styles = StyleSheet.create({
   },
   mainContentContainer: {
     alignItems: 'center',
-    paddingBottom: 20, // Space at the bottom of the scroll view
+    paddingBottom: 20,
   },
   sectionTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: 'white', // White title for sections
+    color: 'white',
     marginBottom: 20,
-    marginTop: 30, // More space above new sections
+    marginTop: 30,
     alignSelf: 'flex-start',
     marginLeft: 20,
   },
   // --- Featured Sections Styles ---
   featuredCardsContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap', // Allow cards to wrap to the next line
+    flexWrap: 'wrap',
     justifyContent: 'space-around',
     width: '100%',
     paddingHorizontal: 10,
     marginBottom: 20,
   },
   featuredCard: {
-    borderRadius: 20, // More rounded for featured cards
+    borderRadius: 20,
     padding: 20,
-    width: screenWidth * 0.45, // Two cards per row (kept as 2 for prominence)
-    aspectRatio: 1, // Make them square
+    width: screenWidth * 0.45,
+    aspectRatio: 1,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 }, // More prominent shadow
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 8,
-    marginBottom: 15, // Add margin bottom for wrapping cards
+    marginBottom: 15,
+    // Added a subtle radial gradient effect using a background color and a layered view
+    position: 'relative',
+    overflow: 'hidden', // to contain the gradient
   },
-  featuredCardBorder: { // New style for border
+  featuredCardBorder: {
     borderWidth: 2,
     borderColor: '#A8C3D1',
   },
   featuredIcon: {
-    fontSize: 40, // Smaller icons for featured sections (from 50)
+    fontSize: 40,
     marginBottom: 10,
   },
   featuredTitle: {
@@ -299,17 +355,17 @@ const styles = StyleSheet.create({
   cardsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between', // Distribute cards evenly with space between
+    justifyContent: 'space-between',
     width: '100%',
-    paddingHorizontal: 15, // Adjusted padding for 3 columns
+    paddingHorizontal: 15,
   },
   moduleCard: {
-    backgroundColor: '#333A4B', // Slightly lighter dark background for cards
+    backgroundColor: '#333A4B',
     borderRadius: 15,
-    padding: 10, // Slightly reduced padding for smaller cards
+    padding: 10,
     marginBottom: 15,
-    width: (screenWidth - 45) / 3, // Calculated for 3 cards per row with 15px total horizontal padding
-    aspectRatio: 1, // Make cards square
+    width: (screenWidth - 45) / 3,
+    aspectRatio: 1,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -317,23 +373,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 4,
-    // Removed marginHorizontal as justifyContent:'space-between' and paddingHorizontal handle spacing
   },
   moduleIcon: {
-    fontSize: 30, // Smaller icons for modules (from 40)
-    marginBottom: 8, // Adjusted margin
-    color: '#A8C3D1', // Light accent color for icons
+    fontSize: 30,
+    marginBottom: 8,
+    color: '#A8C3D1',
   },
   moduleTitle: {
-    fontSize: 14, // Slightly smaller title font for 3-column layout
+    fontSize: 14,
     fontWeight: 'bold',
-    color: 'white', // White text for module titles
+    color: 'white',
     textAlign: 'center',
     marginBottom: 3,
   },
   moduleDescription: {
-    fontSize: 10, // Smaller description font
-    color: 'rgba(168, 195, 209, 0.8)', // Faded light accent color for descriptions
+    fontSize: 10,
+    color: 'rgba(168, 195, 209, 0.8)',
     textAlign: 'center',
   },
 });

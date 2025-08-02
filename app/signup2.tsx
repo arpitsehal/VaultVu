@@ -227,7 +227,7 @@ export default function CreateAccountPage2() {
           </View>
 
           {/* SIGN UP Button */}
-          <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
+          <TouchableOpacity style={styles.signUpButton} onPress={() => router.push('/signin')}>
             <Text style={styles.signUpButtonText}>SIGN UP</Text>
           </TouchableOpacity>
         </ScrollView>

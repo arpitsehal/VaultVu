@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config(); // Add this line at the very top
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -16,7 +16,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect('mongodb+srv://VaultVu:VaultVu123@cluster0.9nbpoby.mongodb.net/VaultVu?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })

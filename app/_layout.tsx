@@ -30,6 +30,8 @@ export default function RootLayout() {
         <Stack.Screen name="createaccount.tsx" />
         <Stack.Screen name="home.tsx" />   
         <Stack.Screen name="scamProtectionScreen" />
+        
+
          
 
       </Stack>

@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
           </View>
 
           {/* CONTINUE Button */}
-          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+          <TouchableOpacity style={styles.continueButton} onPress={() => router.push('/otpvarification')}>
             <Text style={styles.continueButtonText}>CONTINUE</Text>
           </TouchableOpacity>
         </ScrollView>

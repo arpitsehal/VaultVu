@@ -92,7 +92,7 @@ export default function CreateAccountPage() {
     if (isValid) {
       // API call to the backend registration endpoint
       try {
-        const response = await fetch('http://ADD_YOUR_API/api/auth/register', {
+        const response = await fetch('http://localhost:5000/api/auth/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -246,7 +246,7 @@ export default function CreateAccountPage() {
           </View>
 
           {/* Create Account Button */}
-          <TouchableOpacity style={styles.createAccountButton} onPress={handleCreateAccount}>
+          <TouchableOpacity style={styles.createAccountButton} onPress={() => router.push('/signup2')}>
             <Text style={styles.createAccountButtonText}>CREATE ACCOUNT</Text>
           </TouchableOpacity>
         </ScrollView>
