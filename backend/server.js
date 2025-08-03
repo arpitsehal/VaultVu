@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/userRoutes');
+const urlCheckRoutes = require('./routes/urlCheck'); // Add this line
 // const fraudDetectionRoutes = require('./routes/fraudDetection'); // Comment out or remove this line
 const connectDB = require('./config/db'); // Add this line to import connectDB
 
@@ -23,6 +24,7 @@ app.get('/', (req, res) => {
 // Use Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/url-check', urlCheckRoutes); // Add this line
 // Remove the hardcoded mongoose.connect block
 // mongoose.connect('mongodb+srv://VaultVu:VaultVu123@cluster0.9nbpoby.mongodb.net/VaultVu?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true })
 //   .then(() => {

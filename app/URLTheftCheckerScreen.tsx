@@ -1,6 +1,6 @@
 // URLTheftCheckerScreen.js
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, StatusBar, TextInput, Platform, Alert, Linking } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, StatusBar, TextInput, Platform, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
@@ -8,27 +8,78 @@ export default function URLTheftCheckerScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const [url, setUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
 
-  const handleCheckUrl = () => {
+  const handleCheckUrl = async () => {
     if (!url) {
       Alert.alert('Error', 'Please enter a website URL to check.');
       return;
     }
 
     // A simple regex to check for valid URL format
-    const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+    const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/?\w \.-]*)*\/?$/;
     if (!urlRegex.test(url)) {
       Alert.alert('Invalid URL', 'Please enter a valid website URL.');
       return;
     }
 
-    // Use a website security checker, like Google Transparency Report's Safe Browsing
-    const checkUrl = `https://transparencyreport.google.com/safe-browsing/search?url=${url}`;
+    setLoading(true);
+    setResult(null);
 
-    Linking.openURL(checkUrl).catch((err) => {
-      console.error('Failed to open URL:', err);
-      Alert.alert('Error', 'Could not open the website checker. Please try again.');
-    });
+    try {
+      // Call our backend API instead of redirecting to external site
+      const apiUrl = 'http://192.168.35.74:5000/api/url-check';
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      const data = await response.json();
+      setResult(data);
+    } catch (error) {
+      console.error('Error checking URL:', error);
+      Alert.alert('Error', 'Could not check the URL. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderResult = () => {
+    if (!result) return null;
+
+    const { isSafe, riskScore, reasons } = result;
+    const resultColor = isSafe ? '#4CAF50' : '#F44336';
+    
+    return (
+      <View style={styles.resultContainer}>
+        <Text style={[styles.resultTitle, { color: resultColor }]}>
+          {isSafe ? 'URL appears safe' : 'Potential risk detected'}
+        </Text>
+        
+        <Text style={styles.resultScore}>
+          Risk score: <Text style={{ color: resultColor }}>{riskScore}/10</Text>
+        </Text>
+        
+        {reasons && reasons.length > 0 && (
+          <View style={styles.reasonsContainer}>
+            <Text style={styles.reasonsTitle}>Reasons:</Text>
+            {reasons.map((reason, index) => (
+              <Text key={index} style={styles.reasonText}>• {reason}</Text>
+            ))}
+          </View>
+        )}
+        
+        {!isSafe && (
+          <Text style={styles.warningText}>
+            Be cautious! This URL shows signs of potential phishing or fraud.
+          </Text>
+        )}
+      </View>
+    );
   };
 
   return (
@@ -59,13 +110,19 @@ export default function URLTheftCheckerScreen() {
           autoCapitalize="none"
         />
 
-        <TouchableOpacity style={styles.checkButton} onPress={handleCheckUrl}>
-          <Text style={styles.checkButtonText}>Check Website</Text>
+        <TouchableOpacity 
+          style={styles.checkButton} 
+          onPress={handleCheckUrl}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#1A213B" size="small" />
+          ) : (
+            <Text style={styles.checkButtonText}>Check Website</Text>
+          )}
         </TouchableOpacity>
         
-        <Text style={styles.disclaimerText}>
-          This will open Google's Safe Browsing tool in your browser for verification.
-        </Text>
+        {renderResult()}
       </View>
     </SafeAreaView>
   );
@@ -138,10 +195,44 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  disclaimerText: {
-    marginTop: 20,
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.6)',
+  resultContainer: {
+    marginTop: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 10,
+    padding: 20,
+    width: '100%',
+  },
+  resultTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  resultScore: {
+    fontSize: 16,
+    color: 'white',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  reasonsContainer: {
+    marginTop: 10,
+  },
+  reasonsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 5,
+  },
+  reasonText: {
+    fontSize: 14,
+    color: 'white',
+    marginBottom: 5,
+    lineHeight: 20,
+  },
+  warningText: {
+    marginTop: 15,
+    color: '#F44336',
+    fontWeight: 'bold',
     textAlign: 'center',
   },
 });
