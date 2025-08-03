@@ -4,15 +4,15 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/userRoutes');
-const urlCheckRoutes = require('./routes/urlCheck'); // Add this line
-// const fraudDetectionRoutes = require('./routes/fraudDetection'); // Comment out or remove this line
-const connectDB = require('./config/db'); // Add this line to import connectDB
+const urlCheckRoutes = require('./routes/urlCheck');
+const phoneCheckRoutes = require('./routes/phoneCheck'); // Add this line
+const connectDB = require('./config/db');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB
-connectDB(); // Call the connectDB function here
+connectDB();
 
 app.use(cors());
 app.use(express.json());
@@ -24,18 +24,8 @@ app.get('/', (req, res) => {
 // Use Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/url-check', urlCheckRoutes); // Add this line
-// Remove the hardcoded mongoose.connect block
-// mongoose.connect('mongodb+srv://VaultVu:VaultVu123@cluster0.9nbpoby.mongodb.net/VaultVu?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true })
-//   .then(() => {
-//     // Listen on all available network interfaces
-//     app.listen(PORT, '0.0.0.0', () => {
-//       console.log(`Server running on port ${PORT}. Accessible via localhost or your network IP.`);
-//     });
-//   })
-//   .catch((err) => {
-//     console.error('MongoDB connection error:', err);
-//   });
+app.use('/api/url-check', urlCheckRoutes);
+app.use('/api/phone-check', phoneCheckRoutes); // Add this line
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}. Accessible via localhost or your network IP.`);

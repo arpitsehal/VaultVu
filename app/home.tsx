@@ -74,10 +74,10 @@ const essentialModules = [
   },
   {
     id: 'digitalPrivacy',
-    title: 'Digital Privacy',
+    title: 'Fraud Message Checker',
     icon: '🕵️',
-    description: 'Control your online footprint and manage your data privacy settings.',
-    route: '/digital-privacy',
+    description: 'Check if the message is Fraudulent or not.',
+    route: '/FraudMessageCheckerScreen',
   },
 ];
 
