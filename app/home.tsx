@@ -1,5 +1,5 @@
 // main dashboard
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -14,6 +14,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import { IoSettingsOutline } from 'react-icons/io5'; // <-- ADDED: Correct import for settings icon
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -126,16 +127,6 @@ export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const [dailyTip, setDailyTip] = useState('');
 
-  // Function to get the current day of the year (1-366)
-  const getDayOfYear = () => {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 0);
-    const diff = now.getTime() - start.getTime();
-    const oneDay = 1000 * 60 * 60 * 24;
-    const day = Math.floor(diff / oneDay);
-    return day;
-  };
-
   // Use useFocusEffect to update the tip every time the screen is focused
   useFocusEffect(
     useCallback(() => {
@@ -143,11 +134,6 @@ export default function DashboardScreen() {
       setDailyTip(dailyTips[randomIndex]);
     }, [])
   );
-
-  const handlePress = (route: string) => {
-    console.log(`Navigating to: ${route}`);
-    router.push(route);
-  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -163,8 +149,13 @@ export default function DashboardScreen() {
             resizeMode="contain"
           />
         </View>
-        <TouchableOpacity style={styles.profileIconContainer} onPress={() => handlePress('Settings')}>
-          <Text style={styles.profileIcon}>⚙️</Text>
+
+        {/* Unified Settings/Profile Button with Ionicons */}
+        <TouchableOpacity
+          style={styles.settingsButton}
+          onPress={() => router.push('/settings')}
+        >
+          <IoSettingsOutline size={24} color="white" />
         </TouchableOpacity>
       </View>
 
@@ -193,7 +184,7 @@ export default function DashboardScreen() {
                 { backgroundColor: item.cardColor },
                 (item.id === 'leaderboard' || item.id === 'reportIssue') && styles.featuredCardBorder
               ]}
-              onPress={() => handlePress(item.route)}
+              onPress={() => router.push(item.route)}
             >
               <Text style={[styles.featuredIcon, { color: item.textColor }]}>{item.icon}</Text>
               <Text style={[styles.featuredTitle, { color: item.textColor }]}>{item.title}</Text>
@@ -209,7 +200,7 @@ export default function DashboardScreen() {
             <TouchableOpacity
               key={module.id}
               style={styles.moduleCard}
-              onPress={() => handlePress(module.route)}
+              onPress={() => router.push(module.route)}
             >
               <Text style={styles.moduleIcon}>{module.icon}</Text>
               <Text style={styles.moduleTitle}>{module.title}</Text>
@@ -250,12 +241,9 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
   },
-  profileIconContainer: {
+  // Replaced profileIconContainer with a more specific settingsButton
+  settingsButton: {
     padding: 5,
-  },
-  profileIcon: {
-    fontSize: 24,
-    color: '#A8C3D1',
   },
   welcomeText: {
     fontSize: 18,

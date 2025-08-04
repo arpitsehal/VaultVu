@@ -28,12 +28,12 @@ export default function RootLayout() {
         <Stack.Screen name="forgetpass.tsx" />
         <Stack.Screen name="otpvarification.tsx" />
         <Stack.Screen name="createaccount.tsx" />
-        <Stack.Screen name="home.tsx" />   
-        <Stack.Screen name="scamProtectionScreen" />
-        
-
-         
-
+        <Stack.Screen name="home" options={{ headerShown: false }} />
+        <Stack.Screen name="scamProtectionScreen" options={{ headerShown: false }} />
+        <Stack.Screen name="settings" options={{ headerShown: false }} />
+        <Stack.Screen name="userProfile" options={{ headerShown: false }} />
+        <Stack.Screen name="languageSettings" options={{ headerShown: false }} />
+        <Stack.Screen name="aboutUs" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="light" />
     </ThemeProvider>
