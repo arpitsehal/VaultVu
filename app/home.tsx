@@ -69,7 +69,7 @@ const essentialModules = [
     id: 'URL Fraud Checker',
     title: 'URL Fraud Checker',
     icon: '📊',
-    description: 'Help you to identify if given URL is Genuine or not.',
+    description: 'Help you to identify if given URL is genuine or not.',
     route: '/URLTheftCheckerScreen',
   },
   {

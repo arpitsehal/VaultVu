@@ -5,7 +5,8 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/userRoutes');
 const urlCheckRoutes = require('./routes/urlCheck');
-const phoneCheckRoutes = require('./routes/phoneCheck'); // Add this line
+const phoneCheckRoutes = require('./routes/phoneCheck');
+const messageCheckRoutes = require('./routes/messageCheck'); // Add this line
 const connectDB = require('./config/db');
 
 const app = express();
@@ -25,7 +26,8 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/url-check', urlCheckRoutes);
-app.use('/api/phone-check', phoneCheckRoutes); // Add this line
+app.use('/api/phone-check', phoneCheckRoutes);
+app.use('/api/message-check', messageCheckRoutes); // Add this line
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}. Accessible via localhost or your network IP.`);
