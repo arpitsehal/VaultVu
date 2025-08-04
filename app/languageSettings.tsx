@@ -12,11 +12,12 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function LanguageSettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [selectedLanguage, setSelectedLanguage] = useState('english');
+  const { currentLanguage, translations, changeLanguage } = useLanguage();
 
   // Available languages
   const languages = [
@@ -25,36 +26,23 @@ export default function LanguageSettingsScreen() {
     { id: 'punjabi', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ' },
   ];
 
-  useEffect(() => {
-    // Load saved language preference
-    const loadLanguage = async () => {
-      try {
-        const savedLanguage = await AsyncStorage.getItem('language');
-        if (savedLanguage) {
-          setSelectedLanguage(savedLanguage);
-        }
-      } catch (error) {
-        console.error('Error loading language preference:', error);
-      }
-    };
-
-    loadLanguage();
-  }, []);
-
   const handleLanguageChange = async (languageId) => {
     try {
-      // Save language preference
-      await AsyncStorage.setItem('language', languageId);
-      setSelectedLanguage(languageId);
+      // Use the context's changeLanguage function
+      const success = await changeLanguage(languageId);
       
-      // Show confirmation
-      Alert.alert(
-        'Language Changed',
-        'The app language has been changed. Some changes may require restarting the app.',
-        [{ text: 'OK' }]
-      );
+      if (success) {
+        // Show confirmation
+        Alert.alert(
+          translations.languageChanged,
+          translations.languageChangeMessage,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Error', 'Failed to change language. Please try again.');
+      }
     } catch (error) {
-      console.error('Error saving language preference:', error);
+      console.error('Error changing language:', error);
       Alert.alert('Error', 'Failed to change language. Please try again.');
     }
   };
@@ -65,13 +53,13 @@ export default function LanguageSettingsScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Language</Text>
+        <Text style={styles.headerTitle}>{translations.language}</Text>
         <View style={styles.backButton} />
       </View>
 
       <ScrollView style={styles.scrollView}>
         <Text style={styles.description}>
-          Select your preferred language for the app interface.
+          {translations.selectLanguage}
         </Text>
         
         {languages.map((language) => (
@@ -84,7 +72,7 @@ export default function LanguageSettingsScreen() {
               <Text style={styles.languageName}>{language.name}</Text>
               <Text style={styles.languageNativeName}>{language.nativeName}</Text>
             </View>
-            {selectedLanguage === language.id && (
+            {currentLanguage === language.id && (
               <Ionicons name="checkmark-circle" size={24} color="#A8C3D1" />
             )}
           </TouchableOpacity>
@@ -94,6 +82,7 @@ export default function LanguageSettingsScreen() {
   );
 }
 
+// Styles remain the same
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,

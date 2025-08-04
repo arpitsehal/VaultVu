@@ -16,12 +16,14 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function UserProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { translations } = useLanguage();
   
   // User profile state
   const [email, setEmail] = useState('');
@@ -36,7 +38,7 @@ export default function UserProfileScreen() {
   
   // Gender options
   const GENDER_OPTIONS = [
-    { label: 'Select Gender', value: '' },
+    { label: `${translations.gender}`, value: '' },
     { label: 'Male', value: 'male' },
     { label: 'Female', value: 'female' },
     { label: 'Other', value: 'other' },
@@ -44,21 +46,67 @@ export default function UserProfileScreen() {
   ];
 
   useEffect(() => {
-    // Load user data from AsyncStorage
+    // Load user data from backend and AsyncStorage
     const loadUserData = async () => {
       try {
-        const userData = await AsyncStorage.getItem('user');
-        if (userData) {
-          const user = JSON.parse(userData);
-          setEmail(user.email || '');
-          setUsername(user.username || '');
-          setDateOfBirth(user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '');
-          setCountry(user.country || '');
-          setGender(user.gender || '');
+        setLoading(true);
+        // Get token from AsyncStorage
+        const token = await AsyncStorage.getItem('token');
+        if (!token) {
+          router.replace('/signin');
+          return;
         }
+
+        // Fetch user data from backend
+        const response = await fetch('http://localhost:5000/api/auth/profile', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        let userData;
+        if (response.ok) {
+          const data = await response.json();
+          userData = data.user;
+          // Save updated user data to AsyncStorage
+          await AsyncStorage.setItem('user', JSON.stringify(userData));
+        } else {
+          // If backend request fails, try to get data from AsyncStorage
+          const cachedUserData = await AsyncStorage.getItem('user');
+          if (cachedUserData) {
+            userData = JSON.parse(cachedUserData);
+          } else {
+            throw new Error('No user data available');
+          }
+        }
+
+        // Set user data to state
+        setEmail(userData.email || '');
+        setUsername(userData.username || '');
+        setDateOfBirth(userData.dateOfBirth ? new Date(userData.dateOfBirth).toISOString().split('T')[0] : '');
+        setCountry(userData.country || '');
+        setGender(userData.gender || '');
+        
         setLoading(false);
       } catch (error) {
         console.error('Error loading user data:', error);
+        // Try to get data from AsyncStorage as fallback
+        try {
+          const cachedUserData = await AsyncStorage.getItem('user');
+          if (cachedUserData) {
+            const userData = JSON.parse(cachedUserData);
+            setEmail(userData.email || '');
+            setUsername(userData.username || '');
+            setDateOfBirth(userData.dateOfBirth ? new Date(userData.dateOfBirth).toISOString().split('T')[0] : '');
+            setCountry(userData.country || '');
+            setGender(userData.gender || '');
+          }
+        } catch (e) {
+          console.error('Error loading cached user data:', e);
+          Alert.alert('Error', 'Failed to load user data. Please try again.');
+        }
         setLoading(false);
       }
     };
@@ -99,33 +147,13 @@ export default function UserProfileScreen() {
     setSaving(true);
     
     try {
-      // Get the current user data
-      const userData = await AsyncStorage.getItem('user');
-      if (!userData) {
-        throw new Error('User data not found');
-      }
-      
-      const user = JSON.parse(userData);
-      
-      // Update user profile
-      const updatedUser = {
-        ...user,
-        username,
-        dateOfBirth: dateOfBirth ? new Date(dateOfBirth).toISOString() : null,
-        country,
-        gender,
-        profileComplete: true
-      };
-      
-      // Save to AsyncStorage
-      await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-      
-      // Call API to update profile on server
+      // Get the token
       const token = await AsyncStorage.getItem('token');
       if (!token) {
         throw new Error('Authentication token not found');
       }
       
+      // Call API to update profile on server
       const response = await fetch('http://localhost:5000/api/auth/complete-profile', {
         method: 'POST',
         headers: {
@@ -133,7 +161,7 @@ export default function UserProfileScreen() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          email: user.email,
+          email,
           username,
           dateOfBirth: dateOfBirth ? new Date(dateOfBirth).toISOString() : null,
           country,
@@ -144,6 +172,17 @@ export default function UserProfileScreen() {
       const result = await response.json();
       
       if (result.success) {
+        // Update stored user data with profile info
+        const updatedUser = {
+          email,
+          username,
+          dateOfBirth: dateOfBirth ? new Date(dateOfBirth).toISOString() : null,
+          country,
+          gender,
+          profileComplete: true
+        };
+        
+        await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
         Alert.alert('Success', 'Profile updated successfully');
         router.back();
       } else {
@@ -175,7 +214,7 @@ export default function UserProfileScreen() {
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>User Profile</Text>
+          <Text style={styles.headerTitle}>{translations.userProfile}</Text>
           <View style={styles.backButton} />
         </View>
 
@@ -188,7 +227,7 @@ export default function UserProfileScreen() {
           
           {/* Email (non-editable) */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Email</Text>
+            <Text style={styles.inputLabel}>{translations.email}</Text>
             <TextInput
               style={[styles.input, styles.disabledInput]}
               value={email}
@@ -198,7 +237,7 @@ export default function UserProfileScreen() {
           
           {/* Username */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Username</Text>
+            <Text style={styles.inputLabel}>{translations.username}</Text>
             <TextInput
               style={[styles.input, usernameError ? styles.inputError : null]}
               value={username}
@@ -211,7 +250,7 @@ export default function UserProfileScreen() {
           
           {/* Date of Birth */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Date of Birth (YYYY-MM-DD)</Text>
+            <Text style={styles.inputLabel}>{translations.dateOfBirth} (YYYY-MM-DD)</Text>
             <TextInput
               style={[styles.input, dateOfBirthError ? styles.inputError : null]}
               value={dateOfBirth}
@@ -224,7 +263,7 @@ export default function UserProfileScreen() {
           
           {/* Country */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Country</Text>
+            <Text style={styles.inputLabel}>{translations.country}</Text>
             <TextInput
               style={styles.input}
               value={country}
@@ -236,7 +275,7 @@ export default function UserProfileScreen() {
           
           {/* Gender */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Gender</Text>
+            <Text style={styles.inputLabel}>{translations.gender}</Text>
             <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={gender}
@@ -265,7 +304,7 @@ export default function UserProfileScreen() {
             {saving ? (
               <ActivityIndicator size="small" color="#1A213B" />
             ) : (
-              <Text style={styles.saveButtonText}>Save Profile</Text>
+              <Text style={styles.saveButtonText}>{translations.saveProfile}</Text>
             )}
           </TouchableOpacity>
         </ScrollView>
@@ -274,6 +313,7 @@ export default function UserProfileScreen() {
   );
 }
 
+// Styles remain the same
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,

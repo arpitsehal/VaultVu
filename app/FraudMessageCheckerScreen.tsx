@@ -22,7 +22,7 @@ export default function FraudMessageCheckerScreen() {
 
     try {
       // Call our backend API
-      const apiUrl = 'http://192.168.35.74:5000/api/message-check';
+      const apiUrl = 'http://192.168.1.7:5000/api/message-check';
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {

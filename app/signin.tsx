@@ -15,6 +15,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { login } from '../services/authService';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -57,32 +59,21 @@ export default function SignInPage() {
     }
 
     if (isValid) {
-      // API call to the backend login endpoint
       try {
-        // IMPORTANT: Replace 'YOUR_IP_ADDRESS' with your actual local network IP address (e.g., 192.168.1.100)
-        const response = await fetch('http://192.168.35.74:5000/api/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          // The backend expects emailOrUsername and password
-          body: JSON.stringify({ emailOrUsername: email, password }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          // Sign-in successful, log the response and navigate to the next screen
-          console.log('Sign-in successful:', data);
-           router.push('/home')
-          Alert.alert('Success',
-            'Signed in successfully!', [
-            { text: 'OK', onPress: () => {}} // Ensure this is '/home'
+        // Use the login function from authService.js
+        const result = await login(email, password);
+        
+        if (result.success) {
+          // Sign-in successful
+          console.log('Sign-in successful:', result.user);
+          router.push('/home');
+          Alert.alert('Success', 'Signed in successfully!', [
+            { text: 'OK', onPress: () => {} }
           ]);
         } else {
-          // Sign-in failed, show the error message from the backend
-          console.error('Sign-in failed:', data);
-          Alert.alert('Error', data.message || 'Sign-in failed. Please try again.');
+          // Sign-in failed
+          console.error('Sign-in failed:', result.message);
+          Alert.alert('Error', result.message || 'Sign-in failed. Please try again.');
         }
       } catch (error) {
         // Handle network errors

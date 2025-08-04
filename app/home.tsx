@@ -15,6 +15,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { IoSettingsOutline } from 'react-icons/io5'; // <-- ADDED: Correct import for settings icon
+import { useLanguage } from '../contexts/LanguageContext';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -126,6 +127,9 @@ export default function DashboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [dailyTip, setDailyTip] = useState('');
+  
+  // FIX: Destructure the 'translations' object from the useLanguage hook
+  const { translations } = useLanguage();
 
   // Use useFocusEffect to update the tip every time the screen is focused
   useFocusEffect(
@@ -160,11 +164,11 @@ export default function DashboardScreen() {
       </View>
 
       {/* Welcome Message / Tagline */}
-      <Text style={styles.welcomeText}>Your Shield in the Digital World</Text>
+      <Text style={styles.welcomeText}>{translations.yourShieldInDigitalWorld || "Your Shield in the Digital World"}</Text>
 
       {/* Daily Tip Card */}
       <View style={styles.dailyTipCard}>
-        <Text style={styles.dailyTipHeading}>Tip of the Day</Text>
+        <Text style={styles.dailyTipHeading}>{translations.tipOfTheDay || "Tip of the Day"}</Text>
         <Text style={styles.dailyTipText}>{dailyTip}</Text>
       </View>
 

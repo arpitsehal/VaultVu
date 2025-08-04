@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Define translations
-const translations = {
+const translationsData = {
   english: {
     // Common
     settings: 'Settings',
@@ -116,7 +116,7 @@ const LanguageContext = createContext();
 // Create provider component
 export const LanguageProvider = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState('english');
-  const [translations, setTranslations] = useState(translations.english);
+  const [translations, setTranslations] = useState(translationsData.english);
 
   useEffect(() => {
     // Load saved language preference
@@ -125,7 +125,7 @@ export const LanguageProvider = ({ children }) => {
         const savedLanguage = await AsyncStorage.getItem('language');
         if (savedLanguage) {
           setCurrentLanguage(savedLanguage);
-          setTranslations(translations[savedLanguage]);
+          setTranslations(translationsData[savedLanguage]);
         }
       } catch (error) {
         console.error('Error loading language preference:', error);
@@ -140,7 +140,7 @@ export const LanguageProvider = ({ children }) => {
     try {
       await AsyncStorage.setItem('language', languageId);
       setCurrentLanguage(languageId);
-      setTranslations(translations[languageId]);
+      setTranslations(translationsData[languageId]);
       return true;
     } catch (error) {
       console.error('Error saving language preference:', error);

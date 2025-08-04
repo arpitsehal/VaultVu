@@ -15,30 +15,67 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [language, setLanguage] = useState('english');
+  const { currentLanguage, translations, changeLanguage } = useLanguage();
 
   useEffect(() => {
-    // Load user data from AsyncStorage
+    // Load user data from AsyncStorage and backend
     const loadUserData = async () => {
       try {
-        const userData = await AsyncStorage.getItem('user');
-        if (userData) {
-          setUser(JSON.parse(userData));
+        setLoading(true);
+        // Get token from AsyncStorage
+        const token = await AsyncStorage.getItem('token');
+        if (!token) {
+          router.replace('/signin');
+          return;
         }
+
+        // Fetch user data from backend
+        const response = await fetch('http://192.168.1.7:5000/api/auth/profile', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData.user);
+          // Save updated user data to AsyncStorage
+          await AsyncStorage.setItem('user', JSON.stringify(userData.user));
+        } else {
+          // If backend request fails, try to get data from AsyncStorage
+          const cachedUserData = await AsyncStorage.getItem('user');
+          if (cachedUserData) {
+            setUser(JSON.parse(cachedUserData));
+          }
+        }
+
         // Load saved language preference
         const savedLanguage = await AsyncStorage.getItem('language');
-        if (savedLanguage) {
-          setLanguage(savedLanguage);
+        if (savedLanguage && savedLanguage !== currentLanguage) {
+          changeLanguage(savedLanguage);
         }
+        
         setLoading(false);
       } catch (error) {
         console.error('Error loading user data:', error);
+        // Try to get data from AsyncStorage as fallback
+        try {
+          const cachedUserData = await AsyncStorage.getItem('user');
+          if (cachedUserData) {
+            setUser(JSON.parse(cachedUserData));
+          }
+        } catch (e) {
+          console.error('Error loading cached user data:', e);
+        }
         setLoading(false);
       }
     };
@@ -48,15 +85,15 @@ export default function SettingsScreen() {
 
   const handleLogout = async () => {
     Alert.alert(
-      'Logout',
+      translations.logout,
       'Are you sure you want to logout?',
       [
         {
-          text: 'Cancel',
+          text: translations.cancel,
           style: 'cancel',
         },
         {
-          text: 'Logout',
+          text: translations.logout,
           onPress: async () => {
             try {
               // Clear user data and token
@@ -89,7 +126,7 @@ export default function SettingsScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={styles.headerTitle}>{translations.settings}</Text>
         <View style={styles.backButton} />
       </View>
 
@@ -113,7 +150,7 @@ export default function SettingsScreen() {
 
         {/* Settings Options */}
         <View style={styles.settingsSection}>
-          <Text style={styles.sectionTitle}>Preferences</Text>
+          <Text style={styles.sectionTitle}>{translations.preferences}</Text>
           
           {/* Language Option */}
           <TouchableOpacity 
@@ -124,11 +161,11 @@ export default function SettingsScreen() {
               <Ionicons name="language" size={24} color="#A8C3D1" />
             </View>
             <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Language</Text>
+              <Text style={styles.settingTitle}>{translations.language}</Text>
               <Text style={styles.settingValue}>
-                {language === 'english' ? 'English' : 
-                 language === 'hindi' ? 'हिंदी' : 
-                 language === 'punjabi' ? 'ਪੰਜਾਬੀ' : 'English'}
+                {currentLanguage === 'english' ? 'English' : 
+                 currentLanguage === 'hindi' ? 'हिंदी' : 
+                 currentLanguage === 'punjabi' ? 'ਪੰਜਾਬੀ' : 'English'}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={24} color="#A8C3D1" />
@@ -143,8 +180,8 @@ export default function SettingsScreen() {
               <Ionicons name="information-circle" size={24} color="#A8C3D1" />
             </View>
             <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>About Us</Text>
-              <Text style={styles.settingSubtitle}>Learn about the team behind VaultVu</Text>
+              <Text style={styles.settingTitle}>{translations.aboutUs}</Text>
+              <Text style={styles.settingSubtitle}>{translations.aboutTeam}</Text>
             </View>
             <Ionicons name="chevron-forward" size={24} color="#A8C3D1" />
           </TouchableOpacity>
@@ -158,7 +195,7 @@ export default function SettingsScreen() {
               <Ionicons name="log-out" size={24} color="#FF6B6B" />
             </View>
             <View style={styles.settingInfo}>
-              <Text style={[styles.settingTitle, styles.logoutText]}>Logout</Text>
+              <Text style={[styles.settingTitle, styles.logoutText]}>{translations.logout}</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -167,6 +204,7 @@ export default function SettingsScreen() {
   );
 }
 
+// Styles remain the same
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,

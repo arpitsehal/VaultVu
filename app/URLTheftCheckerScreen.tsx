@@ -29,7 +29,7 @@ export default function URLTheftCheckerScreen() {
 
     try {
       // Call our backend API instead of redirecting to external site
-      const apiUrl = 'http://192.168.35.74:5000/api/url-check';
+      const apiUrl = 'http://192.168.1.7:5000/api/url-check';
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {

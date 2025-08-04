@@ -92,7 +92,7 @@ export default function CreateAccountPage() {
     if (isValid) {
       // API call to the backend registration endpoint
       try {
-        const response = await fetch('http://192.168.35.74:5000/api/auth/register', {
+        const response = await fetch('http://192.168.1.7:5000/api/auth/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
