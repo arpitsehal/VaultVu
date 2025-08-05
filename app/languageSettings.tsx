@@ -26,7 +26,7 @@ export default function LanguageSettingsScreen() {
     { id: 'punjabi', name: 'Punjabi', nativeName: 'ਪੰਜਾਬੀ' },
   ];
 
-  const handleLanguageChange = async (languageId) => {
+  const handleLanguageChange = async (languageId: string) => {
     try {
       // Use the context's changeLanguage function
       const success = await changeLanguage(languageId);

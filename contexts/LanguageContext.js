@@ -37,6 +37,29 @@ const translationsData = {
     contactUs: 'Contact Us',
     appDescription: 'VaultVu is a comprehensive security application designed to protect users from various types of financial frauds and scams. Our mission is to empower users with knowledge and tools to stay safe in the digital world.',
     allRightsReserved: 'All rights reserved.',
+    
+    // Home Screen
+    yourShieldInDigitalWorld: 'Your Shield in the Digital World',
+    tipOfTheDay: 'Tip of the Day',
+    quickAccess: 'Quick Access',
+    essentialModules: 'Essential Modules',
+    
+    // Sign In Screen
+    signIn: 'Sign in',
+    signInTo: 'Sign in to',
+    password: 'Password',
+    rememberMe: 'Remember me',
+    forgotPassword: 'Forgot Password?',
+    dontHaveAccount: "Don't have an account?",
+    signUp: 'Sign up',
+    orContinueWith: 'Or continue with',
+    emailRequired: 'Email is required',
+    invalidEmail: 'Please enter a valid email address',
+    passwordRequired: 'Password is required',
+    signInSuccess: 'Signed in successfully!',
+    signInFailed: 'Sign-in failed. Please try again.',
+    networkError: 'Could not connect to the server. Please check the network connection and the server IP address.',
+    validationError: 'Please correct the highlighted errors.',
   },
   hindi: {
     // Common
@@ -72,6 +95,29 @@ const translationsData = {
     contactUs: 'संपर्क करें',
     appDescription: 'VaultVu एक व्यापक सुरक्षा एप्लिकेशन है जो उपयोगकर्ताओं को विभिन्न प्रकार के वित्तीय धोखाधड़ी और घोटालों से बचाने के लिए डिज़ाइन किया गया है। हमारा मिशन उपयोगकर्ताओं को डिजिटल दुनिया में सुरक्षित रहने के लिए ज्ञान और उपकरणों से सशक्त बनाना है।',
     allRightsReserved: 'सर्वाधिकार सुरक्षित।',
+    
+    // Home Screen
+    yourShieldInDigitalWorld: 'डिजिटल दुनिया में आपकी सुरक्षा',
+    tipOfTheDay: 'आज का टिप',
+    quickAccess: 'त्वरित पहुंच',
+    essentialModules: 'आवश्यक मॉड्यूल',
+    
+    // Sign In Screen
+    signIn: 'साइन इन',
+    signInTo: 'साइन इन करें',
+    password: 'पासवर्ड',
+    rememberMe: 'मुझे याद रखें',
+    forgotPassword: 'पासवर्ड भूल गए?',
+    dontHaveAccount: "खाता नहीं है?",
+    signUp: 'साइन अप',
+    orContinueWith: 'या जारी रखें',
+    emailRequired: 'ईमेल आवश्यक है',
+    invalidEmail: 'कृपया एक वैध ईमेल पता दर्ज करें',
+    passwordRequired: 'पासवर्ड आवश्यक है',
+    signInSuccess: 'सफलतापूਰ्वक साइन इन किया गया!',
+    signInFailed: 'साइन इन विफल। कृपया पुन: प्रयास करें।',
+    networkError: 'सर्वर से कनेक्ट नहीं हो सका। कृपया नेटवर्क कनेक्शन और सर्वर आईपी पते की जांच करें।',
+    validationError: 'कृपया हाइलाइट कीतੀਆਂ गलतੀਆਂ ਨੂੰ ठीक कਰें।',
   },
   punjabi: {
     // Common

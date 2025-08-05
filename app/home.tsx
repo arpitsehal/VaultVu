@@ -14,8 +14,9 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { IoSettingsOutline } from 'react-icons/io5'; // <-- ADDED: Correct import for settings icon
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../contexts/LanguageContext';
+
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -159,7 +160,7 @@ export default function DashboardScreen() {
           style={styles.settingsButton}
           onPress={() => router.push('/settings')}
         >
-          <IoSettingsOutline size={24} color="white" />
+          <Ionicons name="settings-outline" size={24} color="white" />
         </TouchableOpacity>
       </View>
 

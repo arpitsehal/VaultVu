@@ -21,30 +21,37 @@ export default function AboutUsScreen() {
   const teamMembers = [
     {
       id: 1,
-      name: 'Developer Name',
+      name: 'Arpit Kumar',
       role: 'Lead Developer',
-      bio: 'Experienced developer with expertise in React Native and mobile security.',
+      bio: 'Experienced developer with expertise in MERN stack.',
       // Use a placeholder image or add actual team member images to your assets folder
       image: require('../assets/images/vaultvu-logo.jpg'),
     },
     {
       id: 2,
-      name: 'Designer Name',
-      role: 'UI/UX Designer',
-      bio: 'Creative designer focused on creating intuitive and secure user interfaces.',
+      name: 'Mehakpreet Kaur Cheema',
+      role: 'UI/UX Designer and Frontend Developer',
+      bio: 'Creative designer focused on creating intuitive and secure user interfaces. Proficient in React Native and JavaScript.',
       image: require('../assets/images/vaultvu-logo.jpg'),
     },
     {
       id: 3,
-      name: 'Security Expert',
-      role: 'Security Consultant',
-      bio: 'Cybersecurity specialist with experience in financial fraud prevention.',
+      name: 'Bisman Kaur',
+      role: 'Backend Developer',
+      bio: 'Experienced backend developer with expertise in Node.js, Express.js, and MongoDB.',
+      image: require('../assets/images/vaultvu-logo.jpg'),
+    },
+    {
+      id: 4,
+      name: 'Ananya Sawhney',
+      role: 'Frontend Developer',
+      bio: 'Experienced frontend developer with expertise in React Native and JavaScript.',
       image: require('../assets/images/vaultvu-logo.jpg'),
     },
   ];
 
   const handleContactUs = () => {
-    Linking.openURL('mailto:contact@vaultvu.com');
+    Linking.openURL('2005sehalarpit@gmail.com');
   };
 
   return (
@@ -70,7 +77,7 @@ export default function AboutUsScreen() {
         <Text style={styles.appVersion}>Version 1.0.0</Text>
         
         <Text style={styles.description}>
-          VaultVu is a comprehensive security application designed to protect users from various types of financial frauds and scams. Our mission is to empower users with knowledge and tools to stay safe in the digital world.
+          VaultVu is a comprehensive security application designed to protect users from various types of financial frauds and scams. Our mission is to empower users with knowledge and tools to stay safe in the digital world. This is the official project of Punjab and Sindh Bank in collaboration with IK Gujral Punjab Technical University.
         </Text>
         
         <Text style={styles.sectionTitle}>Our Team</Text>
