@@ -6,7 +6,8 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/userRoutes');
 const urlCheckRoutes = require('./routes/urlCheck');
 const phoneCheckRoutes = require('./routes/phoneCheck');
-const messageCheckRoutes = require('./routes/messageCheck'); // Add this line
+const messageCheckRoutes = require('./routes/messageCheck');
+const voiceCheckRoutes = require('./routes/voiceCheck'); // Add this line
 const connectDB = require('./config/db');
 
 const app = express();
@@ -16,7 +17,7 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
 app.get('/', (req, res) => {
   res.json({ success: true, message: 'VaultVu backend running' });
@@ -27,7 +28,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/url-check', urlCheckRoutes);
 app.use('/api/phone-check', phoneCheckRoutes);
-app.use('/api/message-check', messageCheckRoutes); // Add this line
+app.use('/api/message-check', messageCheckRoutes);
+app.use('/api/voice-check', voiceCheckRoutes); // Add this line
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}. Accessible via localhost or your network IP.`);

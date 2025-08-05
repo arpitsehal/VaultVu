@@ -56,10 +56,10 @@ const essentialModules = [
   },
   {
     id: 'passwordManagement',
-    title: 'Password Manager',
-    icon: '🔑',
-    description: 'Create, store, and manage strong, unique passwords securely.',
-    route: '/password-management',
+    title: 'Voice Fraud Checker',
+    icon: '🔊',
+    description: 'Check if the voice is Fraudulent or not.',
+    route: '/VoiceTheftCheckerScreen',
   },
   {
     id: 'identityTheft',

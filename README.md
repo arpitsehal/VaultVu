@@ -58,6 +58,7 @@ JWT_SECRET=your_jwt_secret
 NUMVERIFY_API_KEY=your_numverify_api_key
 SPAM_CHECK_API_KEY=your_spam_check_api_key
 GOOGLE_SAFE_BROWSING_API_KEY=your_google_safe_browsing_api_key
+VOICE_ANALYSIS_API_KEY=your_voice_analysis_api_key
 ```
 
 > **Note**: Replace the placeholder values with your actual API keys and MongoDB connection string.
@@ -71,6 +72,7 @@ To run the app on your mobile device, update the API URL to match your computer'
 - `app/FraudMessageCheckerScreen.tsx`
 - `app/URLTheftCheckerScreen.tsx`
 - `app/CheckSpamScreen.tsx`
+- `app/VoiceTheftCheckerScreen.tsx`
 
 Replace `YOUR_IP_ADDRESS` with your computer's local IP address (e.g., `192.168.1.7`).
 
@@ -83,10 +85,14 @@ Replace `YOUR_IP_ADDRESS` with your computer's local IP address (e.g., `192.168.
 ### 1. Start the Backend Server
 
 Open a terminal window and run:
+```bash
+cd backend
+npm install uuid
+```
 
 ```bash
 cd backend
-npm run dev
+npm start
 ```
 
 The server will start on port 5000 (or the port specified in your `.env` file).
@@ -110,6 +116,10 @@ This will start the Expo development server and display a QR code.
 ## Date Picker Setup
 
 The app uses `@react-native-community/datetimepicker` for date selection during the signup process.
+
+## Document Picker Setup
+
+The app uses `npx expo install expo-document-picker` & `npm install expo-file-system` for document selection during the Voice Fraud Checker Module process.
 
 ### Installation
 
