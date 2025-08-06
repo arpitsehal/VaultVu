@@ -47,14 +47,20 @@ export default function SettingsScreen() {
 
         if (response.ok) {
           const userData = await response.json();
-          setUser(userData.user);
-          // Save updated user data to AsyncStorage
-          await AsyncStorage.setItem('user', JSON.stringify(userData.user));
+          if (userData.success && userData.user) {
+            setUser(userData.user);
+            // Save updated user data to AsyncStorage
+            await AsyncStorage.setItem('user', JSON.stringify(userData.user));
+          } else {
+            throw new Error(userData.message || 'Failed to fetch user data');
+          }
         } else {
           // If backend request fails, try to get data from AsyncStorage
           const cachedUserData = await AsyncStorage.getItem('user');
           if (cachedUserData) {
             setUser(JSON.parse(cachedUserData));
+          } else {
+            throw new Error('No user data available');
           }
         }
 

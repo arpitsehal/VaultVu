@@ -73,6 +73,9 @@ To run the app on your mobile device, update the API URL to match your computer'
 - `app/URLTheftCheckerScreen.tsx`
 - `app/CheckSpamScreen.tsx`
 - `app/VoiceTheftCheckerScreen.tsx`
+- `app/userProfile.tsx`
+
+
 
 Replace `YOUR_IP_ADDRESS` with your computer's local IP address (e.g., `192.168.1.7`).
 
@@ -164,12 +167,4 @@ expo r -c
 
 ## License
 
-[Include your license information here]
-
-## Contributing
-
-[Include contribution guidelines here]
-
-## Support
-
-[Include support contact information here]
+MIT License

@@ -31,7 +31,8 @@ export default function BlackmailScamScreen() {
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{scamDetails.title}</Text>
-        <View style={{ width: 40 }} /> {/* Spacer to balance header title */}
+        {/* Spacer to balance header title */}
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView style={styles.scrollView}>

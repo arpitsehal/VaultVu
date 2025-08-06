@@ -32,7 +32,7 @@ export default function NewOnboardingPage() {
       {/* GET STARTED Button */}
       <TouchableOpacity
         style={styles.getStartedButton}
-        onPress={() => router.push('/signup')} // Link to create-account.tsx
+        onPress={() => router.push('/signup')} // Link to signup page
       >
         <Text style={styles.getStartedButtonText}>GET STARTED</Text>
       </TouchableOpacity>

@@ -58,7 +58,8 @@ export default function UserProfileScreen() {
         }
 
         // Fetch user data from backend
-        const response = await fetch('http://localhost:5000/api/auth/profile', {
+        const response = await fetch('http://192.168.1.7:5000/api/auth/profile', {
+
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -154,14 +155,13 @@ export default function UserProfileScreen() {
       }
       
       // Call API to update profile on server
-      const response = await fetch('http://localhost:5000/api/auth/complete-profile', {
-        method: 'POST',
+      const response = await fetch('http://192.168.1.7:5000/api/auth/profile', {
+        method: 'PUT',  // Changed from POST to PUT
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          email,
           username,
           dateOfBirth: dateOfBirth ? new Date(dateOfBirth).toISOString() : null,
           country,
@@ -173,16 +173,7 @@ export default function UserProfileScreen() {
       
       if (result.success) {
         // Update stored user data with profile info
-        const updatedUser = {
-          email,
-          username,
-          dateOfBirth: dateOfBirth ? new Date(dateOfBirth).toISOString() : null,
-          country,
-          gender,
-          profileComplete: true
-        };
-        
-        await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+        await AsyncStorage.setItem('user', JSON.stringify(result.user));
         Alert.alert('Success', 'Profile updated successfully');
         router.back();
       } else {

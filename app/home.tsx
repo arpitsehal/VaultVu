@@ -1,4 +1,3 @@
-// main dashboard
 import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
@@ -17,10 +16,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../contexts/LanguageContext';
 
-
 const { width: screenWidth } = Dimensions.get('window');
 
-// Define a list of daily tips
 const dailyTips = [
   "Always use a strong, unique password for your banking apps and email.",
   "Never share your OTP or PIN with anyone, not even bank employees.",
@@ -38,8 +35,46 @@ const dailyTips = [
   "Never use public Wi-Fi for sensitive activities like banking or shopping.",
 ];
 
-// Define your essential modules/features
-const essentialModules = [
+const quickAccessModules = [
+  {
+    id: 'voiceFraudChecker',
+    title: 'Voice Fraud Checker',
+    icon: '🔊',
+    description: 'Check if the voice is Fraudulent or not.',
+    route: '/VoiceTheftCheckerScreen',
+    cardColor: '#1A213B',
+    textColor: '#A8C3D1',
+  },
+  {
+    id: 'checkSpam',
+    title: 'Check Spam',
+    icon: '👤',
+    description: 'Protect you from spam and phishing attempts.',
+    route: '/CheckSpamScreen',
+    cardColor: '#A8C3D1',
+    textColor: '#1A213B',
+  },
+  {
+    id: 'urlFraudChecker',
+    title: 'URL Fraud Checker',
+    icon: '📊',
+    description: 'Help you to identify if a given URL is genuine or not.',
+    route: '/URLTheftCheckerScreen',
+    cardColor: '#A8C3D1',
+    textColor: '#1A213B',
+  },
+  {
+    id: 'fraudMessageChecker',
+    title: 'Fraud Message Checker',
+    icon: '🕵️',
+    description: 'Check if the message is Fraudulent or not.',
+    route: '/FraudMessageCheckerScreen',
+    cardColor: '#1A213B',
+    textColor: '#A8C3D1',
+  },
+];
+
+const learningModules = [
   {
     id: 'scamProtection',
     title: 'Scam Protection',
@@ -54,38 +89,9 @@ const essentialModules = [
     description: 'Safeguard your bank accounts and financial transactions.',
     route: 'FraudProtectionScreen',
   },
-  {
-    id: 'passwordManagement',
-    title: 'Voice Fraud Checker',
-    icon: '🔊',
-    description: 'Check if the voice is Fraudulent or not.',
-    route: '/VoiceTheftCheckerScreen',
-  },
-  {
-    id: 'identityTheft',
-    title: 'Check Spam',
-    icon: '👤',
-    description: 'Protect you from spam and phishing attempts.',
-    route: '/CheckSpamScreen',
-  },
-  {
-    id: 'URL Fraud Checker',
-    title: 'URL Fraud Checker',
-    icon: '📊',
-    description: 'Help you to identify if given URL is genuine or not.',
-    route: '/URLTheftCheckerScreen',
-  },
-  {
-    id: 'digitalPrivacy',
-    title: 'Fraud Message Checker',
-    icon: '🕵️',
-    description: 'Check if the message is Fraudulent or not.',
-    route: '/FraudMessageCheckerScreen',
-  },
 ];
 
-// Define featured sections/quick access items
-const featuredSections = [
+const gamificationModules = [
   {
     id: 'financialLiteracyQuiz',
     title: 'Financial Literacy Quiz',
@@ -104,23 +110,17 @@ const featuredSections = [
     cardColor: '#1A213B',
     textColor: '#A8C3D1',
   },
-  {
-    id: 'securityTips',
-    title: 'Daily Security Tips',
-    icon: '💡',
-    description: 'Get quick, actionable tips to boost your digital safety.',
-    route: '/tips',
-    cardColor: '#A8C3D1',
-    textColor: '#1A213B',
-  },
+];
+
+const reportModules = [
   {
     id: 'reportIssue',
     title: 'Report an Issue',
     icon: '⚠️',
     description: 'Quickly report any suspicious activity or security concerns.',
     route: '/report',
-    cardColor: '#1A213B',
-    textColor: '#A8C3D1',
+    cardColor: '#A8C3D1',
+    textColor: '#1A213B',
   },
 ];
 
@@ -128,11 +128,9 @@ export default function DashboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [dailyTip, setDailyTip] = useState('');
-  
-  // FIX: Destructure the 'translations' object from the useLanguage hook
+
   const { translations } = useLanguage();
 
-  // Use useFocusEffect to update the tip every time the screen is focused
   useFocusEffect(
     useCallback(() => {
       const randomIndex = Math.floor(Math.random() * dailyTips.length);
@@ -144,7 +142,6 @@ export default function DashboardScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#1A213B" />
 
-      {/* Header Section */}
       <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
         <View style={styles.headerTitleContainer}>
           <Text style={styles.appName}>VaultVu</Text>
@@ -154,8 +151,6 @@ export default function DashboardScreen() {
             resizeMode="contain"
           />
         </View>
-
-        {/* Unified Settings/Profile Button with Ionicons */}
         <TouchableOpacity
           style={styles.settingsButton}
           onPress={() => router.push('/settings')}
@@ -164,10 +159,8 @@ export default function DashboardScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Welcome Message / Tagline */}
       <Text style={styles.welcomeText}>{translations.yourShieldInDigitalWorld || "Your Shield in the Digital World"}</Text>
 
-      {/* Daily Tip Card */}
       <View style={styles.dailyTipCard}>
         <Text style={styles.dailyTipHeading}>{translations.tipOfTheDay || "Tip of the Day"}</Text>
         <Text style={styles.dailyTipText}>{dailyTip}</Text>
@@ -178,16 +171,16 @@ export default function DashboardScreen() {
         contentContainerStyle={styles.mainContentContainer}
         showsVerticalScrollIndicator={false}
       >
-        {/* Featured Sections / Quick Access */}
+        {/* Quick Access Section */}
         <Text style={styles.sectionTitle}>Quick Access</Text>
         <View style={styles.featuredCardsContainer}>
-          {featuredSections.map((item) => (
+          {quickAccessModules.map((item) => (
             <TouchableOpacity
               key={item.id}
               style={[
                 styles.featuredCard,
                 { backgroundColor: item.cardColor },
-                (item.id === 'leaderboard' || item.id === 'reportIssue') && styles.featuredCardBorder
+                (item.id === 'voiceFraudChecker' || item.id === 'fraudMessageChecker') && styles.featuredCardBorder
               ]}
               onPress={() => router.push(item.route)}
             >
@@ -198,18 +191,62 @@ export default function DashboardScreen() {
           ))}
         </View>
 
-        {/* Essential Modules Section */}
-        <Text style={styles.sectionTitle}>Essential Modules</Text>
-        <View style={styles.cardsGrid}>
-          {essentialModules.map((module) => (
+        {/* Learning Modules Section */}
+        <Text style={styles.sectionTitle}>Learning Modules</Text>
+        <View style={styles.learningModulesContainer}>
+          {learningModules.map((module) => (
             <TouchableOpacity
               key={module.id}
-              style={styles.moduleCard}
+              style={styles.learningCard}
               onPress={() => router.push(module.route)}
             >
-              <Text style={styles.moduleIcon}>{module.icon}</Text>
-              <Text style={styles.moduleTitle}>{module.title}</Text>
-              <Text style={styles.moduleDescription}>{module.description}</Text>
+              <Text style={styles.learningIcon}>{module.icon}</Text>
+              <View style={styles.learningTextContainer}>
+                <Text style={styles.learningTitle}>{module.title}</Text>
+                <Text style={styles.learningDescription}>{module.description}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={24} color="#A8C3D1" />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Gamification Section */}
+        <Text style={styles.sectionTitle}>Test Your Knowledge</Text>
+        <View style={styles.gamificationCardsContainer}>
+          {gamificationModules.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={[
+                styles.featuredCard,
+                { backgroundColor: item.cardColor },
+                (item.id === 'leaderboard') && styles.featuredCardBorder
+              ]}
+              onPress={() => router.push(item.route)}
+            >
+              <Text style={[styles.featuredIcon, { color: item.textColor }]}>{item.icon}</Text>
+              <Text style={[styles.featuredTitle, { color: item.textColor }]}>{item.title}</Text>
+              <Text style={[styles.featuredDescription, { color: item.textColor }]}>{item.description}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Report Section - Enhanced UI */}
+        <Text style={styles.sectionTitle}>Report</Text>
+        <View style={styles.reportModulesContainer}>
+          {reportModules.map((module) => (
+            <TouchableOpacity
+              key={module.id}
+              style={styles.reportCard}
+              onPress={() => router.push(module.route)}
+            >
+              <View style={styles.reportIconContainer}>
+                <Text style={styles.reportIcon}>{module.icon}</Text>
+              </View>
+              <View style={styles.reportTextContainer}>
+                <Text style={styles.reportTitle}>{module.title}</Text>
+                <Text style={styles.reportDescription}>{module.description}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={24} color="#1A213B" />
             </TouchableOpacity>
           ))}
         </View>
@@ -246,7 +283,6 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
   },
-  // Replaced profileIconContainer with a more specific settingsButton
   settingsButton: {
     padding: 5,
   },
@@ -259,9 +295,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     fontWeight: '500',
   },
-  // New Styles for the Daily Tip Card
   dailyTipCard: {
-    backgroundColor: '#1C2434', // Darker background for more contrast
+    backgroundColor: '#1C2434',
     borderRadius: 15,
     padding: 20,
     marginHorizontal: 20,
@@ -300,7 +335,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginLeft: 20,
   },
-  // --- Featured Sections Styles ---
   featuredCardsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -322,9 +356,8 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 8,
     marginBottom: 15,
-    // Added a subtle radial gradient effect using a background color and a layered view
     position: 'relative',
-    overflow: 'hidden', // to contain the gradient
+    overflow: 'hidden',
   },
   featuredCardBorder: {
     borderWidth: 2,
@@ -344,7 +377,92 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
   },
-  // --- Essential Modules Grid Styles (adjusted for new theme and 3-column grid) ---
+  learningModulesContainer: {
+    width: '100%',
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  learningCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#333A4B',
+    borderRadius: 15,
+    padding: 15,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  learningIcon: {
+    fontSize: 30,
+    marginRight: 15,
+    color: '#A8C3D1',
+  },
+  learningTextContainer: {
+    flex: 1,
+  },
+  learningTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  learningDescription: {
+    fontSize: 12,
+    color: 'rgba(168, 195, 209, 0.8)',
+    marginTop: 2,
+  },
+  gamificationCardsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    width: '100%',
+    paddingHorizontal: 10,
+    marginBottom: 20,
+  },
+  // New Report UI styles
+  reportModulesContainer: {
+    width: '100%',
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  reportCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#A8C3D1',
+    borderRadius: 15,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  reportIconContainer: {
+    backgroundColor: '#1A213B',
+    borderRadius: 12,
+    padding: 10,
+    marginRight: 15,
+  },
+  reportIcon: {
+    fontSize: 30,
+    color: '#A8C3D1',
+  },
+  reportTextContainer: {
+    flex: 1,
+  },
+  reportTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1A213B',
+  },
+  reportDescription: {
+    fontSize: 12,
+    color: '#1A213B',
+    marginTop: 2,
+  },
+  // The old styles for cardsGrid are no longer in use, but are kept for reference if needed
   cardsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

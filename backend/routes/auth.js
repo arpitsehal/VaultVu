@@ -123,4 +123,104 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Get user profile
+router.get('/profile', async (req, res) => {
+  try {
+    // Extract token from Authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Find user by id from token
+    const user = await User.findById(decoded.id).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    // Return user data
+    res.json({
+      success: true,
+      user: {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+        dateOfBirth: user.dateOfBirth,
+        country: user.country,
+        gender: user.gender,
+        profileComplete: user.profileComplete
+      }
+    });
+  } catch (err) {
+    console.error('Profile fetch error:', err);
+    if (err.name === 'JsonWebTokenError') {
+      return res.status(401).json({ success: false, message: 'Invalid token' });
+    }
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Update user profile
+router.put('/profile', async (req, res) => {
+  try {
+    // Extract token from Authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Get update data
+    const { username, dateOfBirth, country, gender } = req.body;
+    
+    // Find user by id and update
+    const user = await User.findByIdAndUpdate(
+      decoded.id,
+      { 
+        username, 
+        dateOfBirth, 
+        country, 
+        gender,
+        profileComplete: true 
+      },
+      { new: true, runValidators: true }
+    ).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    // Return updated user data
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+        dateOfBirth: user.dateOfBirth,
+        country: user.country,
+        gender: user.gender,
+        profileComplete: user.profileComplete
+      }
+    });
+  } catch (err) {
+    console.error('Profile update error:', err);
+    if (err.name === 'JsonWebTokenError') {
+      return res.status(401).json({ success: false, message: 'Invalid token' });
+    }
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 module.exports = router;
