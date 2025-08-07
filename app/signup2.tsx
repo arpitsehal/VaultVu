@@ -1,4 +1,4 @@
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'; // Import DateTimePickerEvent
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -16,35 +16,15 @@ import {
   View
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AntDesign } from '@expo/vector-icons';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const { width: screenWidth } = Dimensions.get('window');
-
-// Define common countries and genders
-const COUNTRY_OPTIONS = [
-  { label: 'Select Country', value: '' }, // Default placeholder
-  { label: 'United States', value: 'USA' },
-  { label: 'Canada', value: 'CAN' },
-  { label: 'United Kingdom', value: 'GBR' },
-  { label: 'India', value: 'IND' },
-  { label: 'Australia', value: 'AUS' },
-  { label: 'Germany', value: 'DEU' },
-  { label: 'France', value: 'FRA' },
-  { label: 'Japan', value: 'JPN' },
-  { label: 'Brazil', value: 'BRA' },
-  // Add more countries as needed
-];
-
-const GENDER_OPTIONS = [
-  { label: 'Select Gender', value: '' }, // Default placeholder
-  { label: 'Male', value: 'male' },
-  { label: 'Female', value: 'female' },
-  { label: 'Other', value: 'other' },
-  { label: 'Prefer not to say', value: 'prefer-not-to-say' },
-];
 
 export default function CreateAccountPage2() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { translations } = useLanguage();
 
   const [username, setUsername] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -52,16 +32,36 @@ export default function CreateAccountPage2() {
   const [country, setCountry] = useState('');
   const [gender, setGender] = useState('');
 
-  // State for validation errors
   const [usernameError, setUsernameError] = useState('');
   const [dobError, setDobError] = useState('');
   const [countryError, setCountryError] = useState('');
   const [genderError, setGenderError] = useState('');
 
+  const COUNTRY_OPTIONS = [
+    { label: translations.selectCountry || 'Select Country', value: '' },
+    { label: 'United States', value: 'USA' },
+    { label: 'Canada', value: 'CAN' },
+    { label: 'United Kingdom', value: 'GBR' },
+    { label: 'India', value: 'IND' },
+    { label: 'Australia', value: 'AUS' },
+    { label: 'Germany', value: 'DEU' },
+    { label: 'France', value: 'FRA' },
+    { label: 'Japan', value: 'JPN' },
+    { label: 'Brazil', value: 'BRA' },
+  ];
+
+  const GENDER_OPTIONS = [
+    { label: translations.selectGender || 'Select Gender', value: '' },
+    { label: translations.male || 'Male', value: 'male' },
+    { label: translations.female || 'Female', value: 'female' },
+    { label: translations.other || 'Other', value: 'other' },
+    { label: translations.preferNotToSay || 'Prefer not to say', value: 'prefer-not-to-say' },
+  ];
+
   const formatDate = (date: Date | null | undefined) => {
     if (!date) return '';
     const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
@@ -75,7 +75,6 @@ export default function CreateAccountPage2() {
   };
 
   const handleSignUp = () => {
-    // Reset errors
     setUsernameError('');
     setDobError('');
     setCountryError('');
@@ -84,20 +83,19 @@ export default function CreateAccountPage2() {
     let isValid = true;
 
     if (!username.trim()) {
-      setUsernameError('Username is required');
+      setUsernameError(translations.usernameRequired || 'Username is required');
       isValid = false;
     }
-    // Check if a date has been selected and is not the initial default date
-    if (!selectedDate || formatDate(selectedDate) === formatDate(new Date())) {
-      setDobError('Date of Birth is required');
+    if (formatDate(selectedDate) === formatDate(new Date())) {
+      setDobError(translations.dobRequired || 'Date of Birth is required');
       isValid = false;
     }
-    if (!country) { // Check if a country has been selected (empty string is default)
-      setCountryError('Country is required');
+    if (!country) {
+      setCountryError(translations.countryRequired || 'Country is required');
       isValid = false;
     }
-    if (!gender) { // Check if a gender has been selected (empty string is default)
-      setGenderError('Gender is required');
+    if (!gender) {
+      setGenderError(translations.genderRequired || 'Gender is required');
       isValid = false;
     }
 
@@ -105,11 +103,11 @@ export default function CreateAccountPage2() {
       const formattedDateOfBirth = selectedDate.toISOString().split('T')[0];
 
       console.log('Signing up with:', { username, dateOfBirth: formattedDateOfBirth, country, gender });
-      Alert.alert('Success', 'Account created successfully!', [
-        { text: 'OK', onPress: () => router.push('/signin') }
+      Alert.alert('Success', translations.accountCreatedSuccess || 'Account created successfully!', [
+        { text: translations.ok || 'OK', onPress: () => router.push('/signin') }
       ]);
     } else {
-      Alert.alert('Error', 'Please fill in all required fields.');
+      Alert.alert('Error', translations.allFieldsRequiredAlert || 'Please fill in all required fields.');
     }
   };
 
@@ -121,7 +119,7 @@ export default function CreateAccountPage2() {
         style={[styles.backButton, { top: insets.top + 20 }]}
         onPress={() => router.back()}
       >
-        <Text style={styles.backButtonText}>←</Text>
+        <AntDesign name="arrowleft" size={24} color="#1A213B" />
       </TouchableOpacity>
 
       <KeyboardAvoidingView
@@ -134,16 +132,16 @@ export default function CreateAccountPage2() {
           </View>
 
           <Text style={styles.headerText}>
-            Create an <Text style={styles.highlightText}>account</Text>
+            {translations.signup2Header || 'Create an'} <Text style={styles.highlightText}>{translations.accountHighlight || 'account'}</Text>
           </Text>
 
           <Text style={styles.descriptionText}>
-            Please enter your username, date of birth, country, and gender.
+            {translations.signup2Description || 'Please enter your username, date of birth, country, and gender.'}
           </Text>
 
           {/* Username Input Field */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Username</Text>
+            <Text style={styles.inputLabel}>{translations.usernameLabel || 'Username'}</Text>
             <TextInput
               style={[styles.input, usernameError ? styles.inputError : null]}
               placeholder="andrew_ainsley"
@@ -157,7 +155,7 @@ export default function CreateAccountPage2() {
 
           {/* Date of Birth Input Field */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Date of Birth</Text>
+            <Text style={styles.inputLabel}>{translations.dateOfBirthLabel || 'Date of Birth'}</Text>
             <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateInputTouchable}>
               <TextInput
                 style={[styles.input, dobError ? styles.inputError : null]}
@@ -184,13 +182,13 @@ export default function CreateAccountPage2() {
 
           {/* Country Picker Field */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Country</Text>
+            <Text style={styles.inputLabel}>{translations.countryLabel || 'Country'}</Text>
             <View style={[styles.pickerContainer, countryError ? styles.inputError : null]}>
               <Picker
                 selectedValue={country}
                 onValueChange={(itemValue) => {
                   setCountry(itemValue);
-                  setCountryError(''); // Clear error on selection
+                  setCountryError('');
                 }}
                 style={styles.picker}
                 itemStyle={styles.pickerItem}
@@ -206,13 +204,13 @@ export default function CreateAccountPage2() {
 
           {/* Gender Picker Field */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Gender</Text>
+            <Text style={styles.inputLabel}>{translations.genderLabel || 'Gender'}</Text>
             <View style={[styles.pickerContainer, genderError ? styles.inputError : null]}>
               <Picker
                 selectedValue={gender}
                 onValueChange={(itemValue) => {
                   setGender(itemValue);
-                  setGenderError(''); // Clear error on selection
+                  setGenderError('');
                 }}
                 style={styles.picker}
                 itemStyle={styles.pickerItem}
@@ -227,8 +225,8 @@ export default function CreateAccountPage2() {
           </View>
 
           {/* SIGN UP Button */}
-          <TouchableOpacity style={styles.signUpButton} onPress={() => router.push('/signin')}>
-            <Text style={styles.signUpButtonText}>SIGN UP</Text>
+          <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
+            <Text style={styles.signUpButtonText}>{translations.signUpButton || 'SIGN UP'}</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -318,6 +316,7 @@ const styles = StyleSheet.create({
   },
   dateInputTouchable: {
     width: '100%',
+    position: 'relative',
   },
   inputError: {
     borderColor: 'red',
@@ -337,7 +336,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#A8C3D1',
   },
-  // New styles for Picker
   pickerContainer: {
     width: '100%',
     height: 50,

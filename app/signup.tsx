@@ -15,12 +15,15 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useLanguage } from '../contexts/LanguageContext';
+import { AntDesign } from '@expo/vector-icons';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function CreateAccountPage() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { translations } = useLanguage();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -34,35 +37,32 @@ export default function CreateAccountPage() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  // Password validation function (reused from CreateNewPasswordPage)
-  const validatePassword = (pass: string) => {
+  const validatePassword = (pass) => {
     let errors = [];
     if (pass.length < 8) {
-      errors.push('at least 8 characters');
+      errors.push(translations.passwordRule_8char || 'at least 8 characters');
     }
     if (!/[A-Z]/.test(pass)) {
-      errors.push('at least one uppercase letter');
+      errors.push(translations.passwordRule_uppercase || 'at least one uppercase letter');
     }
     if (!/[a-z]/.test(pass)) {
-      errors.push('at least one lowercase letter');
+      errors.push(translations.passwordRule_lowercase || 'at least one lowercase letter');
     }
     if (!/[0-9]/.test(pass)) {
-      errors.push('at least one number');
+      errors.push(translations.passwordRule_number || 'at least one number');
     }
     if (!/[!@#$%^&*]/.test(pass)) {
-      errors.push('at least one special character (!@#$%^&*)');
+      errors.push(translations.passwordRule_specialChar || 'at least one special character (!@#$%^&*)');
     }
     return errors;
   };
 
-  // Basic email validation
-  const validateEmail = (emailAddress: string) => {
+  const validateEmail = (emailAddress) => {
     const re = /\S+@\S+\.\S+/;
     return re.test(emailAddress);
   };
 
   const handleCreateAccount = async () => {
-    // Reset errors
     setFirstNameError('');
     setLastNameError('');
     setEmailError('');
@@ -71,26 +71,25 @@ export default function CreateAccountPage() {
     let isValid = true;
 
     if (!firstName.trim()) {
-      setFirstNameError('First Name is required');
+      setFirstNameError(translations.firstNameRequired || 'First Name is required');
       isValid = false;
     }
     if (!lastName.trim()) {
-      setLastNameError('Last Name is required');
+      setLastNameError(translations.lastNameRequired || 'Last Name is required');
       isValid = false;
     }
     if (!email.trim() || !validateEmail(email)) {
-      setEmailError('Please enter a valid email');
+      setEmailError(translations.invalidEmail_signup || 'Please enter a valid email');
       isValid = false;
     }
 
     const passValidationErrors = validatePassword(password);
     if (passValidationErrors.length > 0) {
-      setPasswordError('Password must contain: ' + passValidationErrors.join(', '));
+      setPasswordError(`${translations.passwordValidationError || 'Password must contain: '}${passValidationErrors.join(', ')}`);
       isValid = false;
     }
 
     if (isValid) {
-      // API call to the backend registration endpoint
       try {
         const response = await fetch('http://192.168.1.7:5000/api/auth/register', {
           method: 'POST',
@@ -103,24 +102,20 @@ export default function CreateAccountPage() {
         const data = await response.json();
 
         if (response.ok) {
-          // Registration successful, log the response and navigate to the next screen
           console.log('Registration successful:', data);
-          Alert.alert('Success', data.message, [
-            { text: 'OK', onPress: () => router.push('/signup2') }
+          Alert.alert(translations.signupSuccessAlertTitle || 'Success', data.message || translations.signupSuccessAlertMessage, [
+            { text: translations.ok || 'OK', onPress: () => router.push('/signup2') }
           ]);
         } else {
-          // Registration failed, show the error message from the backend
           console.error('Registration failed:', data);
-          Alert.alert('Error', data.message || 'Registration failed. Please try again.');
+          Alert.alert(translations.errorAlertTitle_signup || 'Error', data.message || translations.signupFailedAlertMessage || 'Registration failed. Please try again.');
         }
       } catch (error) {
-        // Handle network errors
         console.error('Network error during registration:', error);
-        Alert.alert('Error', 'Could not connect to the server. Please try again.');
+        Alert.alert(translations.errorAlertTitle_signup || 'Error', translations.serverConnectionError_signup || 'Could not connect to the server. Please try again.');
       }
     } else {
-      // If client-side validation fails
-      Alert.alert('Error', 'Please fix the errors to create an account.');
+      Alert.alert(translations.errorAlertTitle_signup || 'Error', translations.formValidationError_signup || 'Please fix the errors to create an account.');
     }
   };
 
@@ -128,40 +123,33 @@ export default function CreateAccountPage() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* Back Arrow - Positioned dynamically using safe area insets */}
       <TouchableOpacity
         style={[styles.backButton, { top: insets.top + 20 }]}
         onPress={() => router.back()}
       >
-        <Text style={styles.backButtonText}>←</Text>
+        <AntDesign name="arrowleft" size={24} color="#1A213B" />
       </TouchableOpacity>
 
-      {/* KeyboardAvoidingView to handle keyboard overlap */}
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* ScrollView for content that might exceed screen height */}
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          {/* Progress Bar (Placeholder) */}
           <View style={styles.progressBarContainer}>
             <View style={styles.progressBarFill} />
           </View>
 
-          {/* Header */}
           <Text style={styles.headerText}>
-            Create an <Text style={styles.highlightText}>account</Text>
+            {translations.createAccountHeader || 'Create an'} <Text style={styles.highlightText}>{translations.accountHighlight || 'account'}</Text>
           </Text>
 
-          {/* Description Text */}
           <Text style={styles.descriptionText}>
-            Please complete your profile. Don't worry, your data will remain private and only you can see it.
+            {translations.signupDescription || "Please complete your profile. Don't worry, your data will remain private and only you can see it."}
           </Text>
 
-          {/* Name Input Fields */}
           <View style={styles.nameInputContainer}>
             <View style={[styles.nameInputGroup, { marginRight: 10 }]}>
-              <Text style={styles.inputLabel}>First Name</Text>
+              <Text style={styles.inputLabel}>{translations.firstNameLabel || 'First Name'}</Text>
               <TextInput
                 style={[styles.input, firstNameError ? styles.inputError : null]}
                 placeholder="Andrew"
@@ -172,7 +160,7 @@ export default function CreateAccountPage() {
               {firstNameError ? <Text style={styles.errorText}>{firstNameError}</Text> : null}
             </View>
             <View style={styles.nameInputGroup}>
-              <Text style={styles.inputLabel}>Last Name</Text>
+              <Text style={styles.inputLabel}>{translations.lastNameLabel || 'Last Name'}</Text>
               <TextInput
                 style={[styles.input, lastNameError ? styles.inputError : null]}
                 placeholder="Ainsley"
@@ -184,9 +172,8 @@ export default function CreateAccountPage() {
             </View>
           </View>
 
-          {/* Email Input Field */}
           <View style={styles.inputGroupFullWidth}>
-            <Text style={styles.inputLabel}>Email</Text>
+            <Text style={styles.inputLabel}>{translations.emailLabel_signup || 'Email'}</Text>
             <TextInput
               style={[styles.input, emailError ? styles.inputError : null]}
               placeholder="andrew.ainsley@yourdomain.com"
@@ -199,9 +186,8 @@ export default function CreateAccountPage() {
             {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
           </View>
 
-          {/* Password Input Field */}
           <View style={styles.inputGroupFullWidth}>
-            <Text style={styles.inputLabel}>Password</Text>
+            <Text style={styles.inputLabel}>{translations.passwordLabel_signup || 'Password'}</Text>
             <TextInput
               style={[styles.input, passwordError ? styles.inputError : null]}
               placeholder="••••••••••••"
@@ -211,29 +197,25 @@ export default function CreateAccountPage() {
               onChangeText={setPassword}
             />
             {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
-            {/* Eye icon button */}
             <TouchableOpacity
               style={styles.eyeButton}
               onPress={() => setShowPassword(!showPassword)}
             >
-              <Text style={styles.eyeIcon}>{showPassword ? '👁️' : '🔒'}</Text>
+              <AntDesign name={showPassword ? "eyeo" : "eye"} size={20} color="#A8C3D1" />
             </TouchableOpacity>
           </View>
 
-          {/* Remember Me Checkbox */}
           <View style={styles.optionsContainer}>
             <TouchableOpacity style={styles.checkboxContainer} onPress={() => setRememberMe(!rememberMe)}>
               <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                {rememberMe && <Text style={styles.checkboxCheck}>✓</Text>}
+                {rememberMe && <AntDesign name="check" size={14} color="#FFFFFF" />}
               </View>
-              <Text style={styles.checkboxText}>Remember me</Text>
+              <Text style={styles.checkboxText}>{translations.rememberMe_signup || 'Remember me'}</Text>
             </TouchableOpacity>
           </View>
 
-          {/* OR Separator */}
-          <Text style={styles.orText}>or</Text>
+          <Text style={styles.orText}>{translations.or_signup || 'or'}</Text>
 
-          {/* Social Login Buttons - ONLY GOOGLE REMAINS */}
           <View style={styles.socialButtonsContainer}>
             <TouchableOpacity style={styles.socialButton}>
               <Image
@@ -242,12 +224,10 @@ export default function CreateAccountPage() {
                 resizeMode="contain"
               />
             </TouchableOpacity>
-            {/* Apple and Facebook buttons removed */}
           </View>
 
-          {/* Create Account Button */}
-          <TouchableOpacity style={styles.createAccountButton} onPress={() => router.push('/signup2')}>
-            <Text style={styles.createAccountButtonText}>CREATE ACCOUNT</Text>
+          <TouchableOpacity style={styles.createAccountButton} onPress={handleCreateAccount}>
+            <Text style={styles.createAccountButtonText}>{translations.createAccountButton || 'CREATE ACCOUNT'}</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>

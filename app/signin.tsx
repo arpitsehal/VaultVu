@@ -17,12 +17,15 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { login } from '../services/authService';
+import { useLanguage } from '../contexts/LanguageContext';
+import { AntDesign } from '@expo/vector-icons'; // Import AntDesign for the back button
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function SignInPage() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { translations } = useLanguage();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -46,73 +49,62 @@ export default function SignInPage() {
     let isValid = true;
 
     if (!email.trim()) {
-      setEmailError('Email is required');
+      setEmailError(translations.emailRequired || 'Email is required');
       isValid = false;
     } else if (!validateEmail(email)) {
-      setEmailError('Please enter a valid email address');
+      setEmailError(translations.invalidEmail || 'Please enter a valid email address');
       isValid = false;
     }
 
     if (!password.trim()) {
-      setPasswordError('Password is required');
+      setPasswordError(translations.passwordRequired || 'Password is required');
       isValid = false;
     }
 
     if (isValid) {
       try {
-        // Use the login function from authService.js
         const result = await login(email, password);
         
         if (result.success) {
-          // Sign-in successful
           console.log('Sign-in successful:', result.user);
           router.push('/home');
-          Alert.alert('Success', 'Signed in successfully!', [
-            { text: 'OK', onPress: () => {} }
+          Alert.alert(translations.successAlertTitle || 'Success', translations.signInAlertSuccess || 'Signed in successfully!', [
+            { text: translations.ok || 'OK', onPress: () => {} }
           ]);
         } else {
-          // Sign-in failed
           console.error('Sign-in failed:', result.message);
-          Alert.alert('Error', result.message || 'Sign-in failed. Please try again.');
+          Alert.alert(translations.errorAlertTitle || 'Error', result.message || translations.signInAlertFailed || 'Sign-in failed. Please try again.');
         }
       } catch (error) {
-        // Handle network errors
         console.error('Network error during sign-in:', error);
-        Alert.alert('Error', 'Could not connect to the server. Please check the network connection and the server IP address.');
+        Alert.alert(translations.errorAlertTitle || 'Error', translations.serverConnectionError || 'Could not connect to the server. Please check the network connection and the server IP address.');
       }
     } else {
-      // If client-side validation fails
-      Alert.alert('Error', 'Please correct the highlighted errors.');
+      Alert.alert(translations.errorAlertTitle || 'Error', translations.formValidationError || 'Please correct the highlighted errors.');
     }
   };
 
-  // Placeholder for Google sign-in
   const handleGoogleSignIn = () => {
     console.log('Signing in with Google');
-    // Implement Google OAuth logic here
-    Alert.alert('Google Sign-in', 'Initiating Google sign-in process...');
+    Alert.alert(translations.googleSignInTitle || 'Google Sign-in', translations.googleSignInMessage || 'Initiating Google sign-in process...');
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* Back Arrow - Positioned dynamically using safe area insets */}
       <TouchableOpacity
         style={[styles.backButton, { top: insets.top + 20 }]}
         onPress={() => router.back()}
       >
-        <Text style={styles.backButtonText}>←</Text>
+        <AntDesign name="arrowleft" size={24} color="#1A213B" />
       </TouchableOpacity>
 
-      {/* KeyboardAvoidingView to handle keyboard overlap */}
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* ScrollView for content that might exceed screen height */}
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          {/* Robot Image */}
           <View style={styles.robotImageContainer}>
             <Image
               source={require('../assets/images/vaultvu-logo.jpg')}
@@ -121,14 +113,12 @@ export default function SignInPage() {
             />
           </View>
 
-          {/* Sign In Header */}
           <Text style={styles.signInHeader}>
-            Sign in to <Text style={styles.vaultVuHighlight}>VaultVu</Text>
+            {translations.signInTo || 'Sign in to'} <Text style={styles.vaultVuHighlight}>VaultVu</Text>
           </Text>
 
-          {/* Input Fields */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Email</Text>
+            <Text style={styles.inputLabel}>{translations.emailLabel || 'Email'}</Text>
             <TextInput
               style={[styles.input, emailError ? styles.inputError : null]}
               placeholder="john@beyondlogic.ai"
@@ -142,7 +132,7 @@ export default function SignInPage() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Password</Text>
+            <Text style={styles.inputLabel}>{translations.passwordLabel || 'Password'}</Text>
             <TextInput
               style={[styles.input, passwordError ? styles.inputError : null]}
               placeholder="••••••••••••"
@@ -154,35 +144,31 @@ export default function SignInPage() {
             {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
           </View>
 
-          {/* Remember Me & Forgot Password */}
           <View style={styles.optionsContainer}>
             <TouchableOpacity style={styles.checkboxContainer} onPress={() => setRememberMe(!rememberMe)}>
               <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
                 {rememberMe && <Text style={styles.checkboxCheck}>✓</Text>}
               </View>
-              <Text style={styles.checkboxText}>Remember me</Text>
+              <Text style={styles.checkboxText}>{translations.rememberMe || 'Remember me'}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/forgetpass')}>
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              <Text style={styles.forgotPasswordText}>{translations.forgotPassword || 'Forgot Password?'}</Text>
             </TouchableOpacity>
           </View>
 
-          {/* OR Separator */}
-          <Text style={styles.orText}>or</Text>
+          <Text style={styles.orText}>{translations.or || 'or'}</Text>
 
-          {/* Google Sign-in Button */}
           <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
             <Image
               source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png' }}
               style={styles.googleLogo}
               resizeMode="contain"
             />
-            <Text style={styles.googleButtonText}>Sign in with Google</Text>
+            <Text style={styles.googleButtonText}>{translations.signInWithGoogle || 'Sign in with Google'}</Text>
           </TouchableOpacity>
 
-          {/* SIGN IN Button */}
           <TouchableOpacity style={styles.signInMainButton} onPress={handleSignIn}>
-            <Text style={styles.signInMainButtonText}>SIGN IN</Text>
+            <Text style={styles.signInMainButtonText}>{translations.signInMainButton || 'SIGN IN'}</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
