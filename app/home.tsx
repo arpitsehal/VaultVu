@@ -104,6 +104,13 @@ export default function DashboardScreen() {
       description: translations.fraudProtectionDesc || 'Safeguard your bank accounts and financial transactions.',
       route: 'FraudProtectionScreen',
     },
+    {
+      id: 'budgetManager',
+      title: translations.budgetManager || 'Budget Manager',
+      icon: '💰',
+      description: translations.budgetManagerDesc || 'Manage your budgets, EMIs, SIPs and other financial tools.',
+      route: 'BudgetManagerScreen',
+    },
   ];
 
   const gamificationModules = [
