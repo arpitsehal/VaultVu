@@ -5,16 +5,25 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
-import { AntDesign } from '@expo/vector-icons'; // Assuming you have @expo/vector-icons installed
+import { DocumentPickerAsset } from 'expo-document-picker'; // Import the type for DocumentPickerAsset
+
+import { AntDesign } from '@expo/vector-icons';
+// Import the useLanguage hook
+import { useLanguage } from '../contexts/LanguageContext';
+
 
 export default function VoiceTheftCheckerScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const [audioFile, setAudioFile] = useState(null);
+  // Correctly type the state for audioFile
+  const [audioFile, setAudioFile] = useState<DocumentPickerAsset | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', message: '', type: 'success' });
+
+  // Use the useLanguage hook to get translations
+  const { translations } = useLanguage();
 
   const showModal = (title, message, type = 'success') => {
     setModalContent({ title, message, type });
@@ -31,17 +40,21 @@ export default function VoiceTheftCheckerScreen() {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         setAudioFile(result.assets[0]);
         setResult(null);
-        showModal('File Selected', `Ready to check "${result.assets[0].name}"`, 'info');
+        showModal(
+          translations.fileSelected || 'File Selected',
+          `${translations.readyToCheck || 'Ready to check'} "${result.assets[0].name}"`,
+          'info'
+        );
       }
     } catch (error) {
       console.error('Error picking audio file:', error);
-      showModal('Error', 'Could not select the audio file. Please try again.', 'error');
+      showModal(translations.apiError || 'Error', translations.apiErrorMessage || 'Could not select the audio file. Please try again.', 'error');
     }
   };
 
   const handleCheckVoice = async () => {
     if (!audioFile) {
-      showModal('No File Selected', 'Please select an audio file to check.', 'error');
+      showModal(translations.noFileSelected || 'No File Selected', translations.selectFileMessage || 'Please select an audio file to check.', 'error');
       return;
     }
 
@@ -53,7 +66,6 @@ export default function VoiceTheftCheckerScreen() {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      // Simulating a network call
       const apiUrl = 'http://192.168.1.7:5000/api/voice-check';
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -70,14 +82,14 @@ export default function VoiceTheftCheckerScreen() {
       const data = await response.json();
       setResult(data);
       if (data.isGenuine) {
-        showModal('Check Complete', 'The voice message appears genuine.', 'success');
+        showModal(translations.checkComplete || 'Check Complete', translations.voiceGenuine || 'The voice message appears genuine.', 'success');
       } else {
-        showModal('Check Complete', 'Potential fraud detected. Be cautious!', 'warning');
+        showModal(translations.checkComplete || 'Check Complete', translations.potentialFraud || 'Potential fraud detected. Be cautious!', 'warning');
       }
 
     } catch (error) {
       console.error('Error checking voice message:', error);
-      showModal('API Error', 'Could not check the voice message. Please try again.', 'error');
+      showModal(translations.apiError || 'API Error', translations.apiErrorMessage || 'Could not check the voice message. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
@@ -87,23 +99,23 @@ export default function VoiceTheftCheckerScreen() {
     if (!result) return null;
 
     const { isGenuine, riskScore, reasons } = result;
-    const resultColor = isGenuine ? '#5cb85c' : '#d9534f'; // Green for genuine, Red for fraud
-    const borderColor = isGenuine ? '#5cb85c' : '#d9534f'; // Border color matches result status
+    const resultColor = isGenuine ? '#5cb85c' : '#d9534f';
+    const borderColor = isGenuine ? '#5cb85c' : '#d9534f';
 
     return (
       <View style={[styles.resultCard, { borderColor }]}>
         <Text style={[styles.resultTitle, { color: resultColor }]}>
-          {isGenuine ? 'Voice message appears genuine' : 'Potential fraud detected'}
+          {isGenuine ? translations.voiceGenuine || 'Voice message appears genuine' : translations.potentialFraud || 'Potential fraud detected'}
         </Text>
         
         <View style={styles.scoreContainer}>
-          <Text style={styles.scoreLabel}>Risk Score:</Text>
+          <Text style={styles.scoreLabel}>{translations.riskScore || 'Risk Score'}:</Text>
           <Text style={[styles.resultScore, { color: resultColor }]}>{riskScore}/10</Text>
         </View>
 
         {reasons && reasons.length > 0 && (
           <View style={styles.reasonsContainer}>
-            <Text style={styles.reasonsTitle}>Reasons for the score:</Text>
+            <Text style={styles.reasonsTitle}>{translations.reasonsTitle || 'Reasons for the score:'}</Text>
             {reasons.map((reason, index) => (
               <Text key={index} style={styles.reasonText}>• {reason}</Text>
             ))}
@@ -112,7 +124,7 @@ export default function VoiceTheftCheckerScreen() {
         
         {!isGenuine && (
           <Text style={styles.warningText}>
-            This message shows signs of potential manipulation. Proceed with caution.
+            {translations.warningText || 'This message shows signs of potential manipulation. Proceed with caution.'}
           </Text>
         )}
       </View>
@@ -140,31 +152,31 @@ export default function VoiceTheftCheckerScreen() {
 
       <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <AntDesign name="arrowleft" size={24} color="#A8C3D1" /> {/* Adjusted color */}
+          <AntDesign name="arrowleft" size={24} color="#A8C3D1" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Voice Theft Checker</Text>
+        <Text style={styles.headerTitle}>{translations.voiceTheftChecker || 'Voice Theft Checker'}</Text>
         <View style={{ width: 40 }} />
       </View>
       <View style={styles.screenTitleContainer}>
-        <AntDesign name="sound" size={40} color="#A8C3D1" style={{ marginRight: 10 }} /> {/* Adjusted color */}
-        <Text style={styles.screenSubtitle}>Detect deepfake voice messages</Text>
+        <AntDesign name="sound" size={40} color="#A8C3D1" style={{ marginRight: 10 }} />
+        <Text style={styles.screenSubtitle}>{translations.detectDeepfakeVoice || 'Detect deepfake voice messages'}</Text>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.contentContainer}>
           <Text style={styles.promptText}>
-            Upload a voice message to check for signs of fraud or manipulation.
+            {translations.uploadPrompt || 'Upload a voice message to check for signs of fraud or manipulation.'}
           </Text>
 
           <View style={styles.filePickerContainer}>
             <TouchableOpacity style={styles.filePicker} onPress={pickAudioFile}>
               <Text style={styles.filePickerText}>
-                {audioFile ? 'Change Audio File' : 'Select Audio File'}
+                {audioFile ? translations.changeAudioFile || 'Change Audio File' : translations.selectAudioFile || 'Select Audio File'}
               </Text>
             </TouchableOpacity>
             
             {audioFile && (
               <Text style={styles.selectedFileText}>
-                Selected: {audioFile.name}
+                {translations.selected || 'Selected'}: {audioFile.name}
               </Text>
             )}
           </View>
@@ -177,7 +189,7 @@ export default function VoiceTheftCheckerScreen() {
             {loading ? (
               <ActivityIndicator color="#1A213B" size="small" /> 
             ) : (
-              <Text style={styles.checkButtonText}>Check Voice Message</Text>
+              <Text style={styles.checkButtonText}>{translations.checkVoiceMessage || 'Check Voice Message'}</Text>
             )}
           </TouchableOpacity>
           
@@ -185,7 +197,6 @@ export default function VoiceTheftCheckerScreen() {
         </View>
       </ScrollView>
       
-      {/* Custom Modal for Notifications */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -201,7 +212,7 @@ export default function VoiceTheftCheckerScreen() {
               style={[styles.modalButton, styles.buttonClose]}
               onPress={() => setModalVisible(false)}
             >
-              <Text style={styles.modalButtonText}>OK</Text>
+              <Text style={styles.modalButtonText}>{translations.ok || 'OK'}</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -213,7 +224,7 @@ export default function VoiceTheftCheckerScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#1A213B', // Primary background color (soft dark blue)
+    backgroundColor: '#1A213B',
   },
   scrollContent: {
     flexGrow: 1,
@@ -225,7 +236,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#1A213B', // Primary background
+    backgroundColor: '#1A213B',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
@@ -235,7 +246,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#f5f5f5', // Light text for contrast
+    color: '#f5f5f5',
     flexShrink: 1,
     textAlign: 'center',
   },
@@ -244,11 +255,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    backgroundColor: '#1C2434', // Secondary background (slightly darker card color)
+    backgroundColor: '#1C2434',
   },
   screenSubtitle: {
     fontSize: 16,
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     textAlign: 'center',
   },
   contentContainer: {
@@ -259,7 +270,7 @@ const styles = StyleSheet.create({
   },
   promptText: {
     fontSize: 18,
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     textAlign: 'center',
     marginBottom: 30,
     lineHeight: 26,
@@ -270,7 +281,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   filePicker: {
-    backgroundColor: '#1C2434', // Secondary background for file picker
+    backgroundColor: '#1C2434',
     borderRadius: 12,
     paddingVertical: 15,
     paddingHorizontal: 30,
@@ -278,21 +289,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
     borderWidth: 2,
-    borderColor: '#3a3a57', // Border for file picker
+    borderColor: '#3a3a57',
   },
   filePickerText: {
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     fontSize: 16,
     fontWeight: 'bold',
   },
   selectedFileText: {
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     fontSize: 14,
     textAlign: 'center',
     marginTop: 5,
   },
   checkButton: {
-    backgroundColor: '#A8C3D1', // Button background from screenshot
+    backgroundColor: '#A8C3D1',
     borderRadius: 12,
     paddingVertical: 15,
     paddingHorizontal: 30,
@@ -310,13 +321,13 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   checkButtonText: {
-    color: '#1A213B', // Dark text on light button
+    color: '#1A213B',
     fontSize: 18,
     fontWeight: 'bold',
   },
   resultCard: {
     marginTop: 30,
-    backgroundColor: '#1C2434', // Secondary background for result card
+    backgroundColor: '#1C2434',
     borderRadius: 12,
     padding: 20,
     width: '100%',
@@ -336,7 +347,7 @@ const styles = StyleSheet.create({
   },
   scoreLabel: {
     fontSize: 18,
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     marginRight: 5,
   },
   resultScore: {
@@ -349,23 +360,22 @@ const styles = StyleSheet.create({
   reasonsTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     marginBottom: 5,
   },
   reasonText: {
     fontSize: 14,
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     marginBottom: 5,
     lineHeight: 20,
   },
   warningText: {
     marginTop: 15,
-    color: '#f0ad4e', // Warning accent color (orange)
+    color: '#f0ad4e',
     fontSize: 16,
     textAlign: 'center',
     fontWeight: 'bold',
   },
-  // Modal Styles
   centeredView: {
     flex: 1,
     justifyContent: 'center',
@@ -374,7 +384,7 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: '#1C2434', // Secondary background for modal
+    backgroundColor: '#1C2434',
     borderRadius: 20,
     padding: 35,
     alignItems: 'center',
@@ -390,7 +400,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     marginTop: 15,
     marginBottom: 10,
     textAlign: 'center',
@@ -398,7 +408,7 @@ const styles = StyleSheet.create({
   modalText: {
     marginBottom: 15,
     textAlign: 'center',
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
   },
   modalButton: {
     borderRadius: 10,
@@ -407,11 +417,11 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   buttonClose: {
-    backgroundColor: '#A8C3D1', // Button background from screenshot
+    backgroundColor: '#A8C3D1',
     width: 100,
   },
   modalButtonText: {
-    color: '#1A213B', // Dark text on light button
+    color: '#1A213B',
     fontWeight: 'bold',
     textAlign: 'center',
   },

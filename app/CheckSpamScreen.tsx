@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, TextInput, Platform, ActivityIndicator, ScrollView, Modal, Pressable } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { AntDesign } from '@expo/vector-icons'; // Assuming you have @expo/vector-icons installed
+import { AntDesign } from '@expo/vector-icons';
+import { useLanguage } from '../contexts/LanguageContext'; // Import the useLanguage hook
 
 export default function CheckSpamScreen() {
   const navigation = useNavigation();
@@ -15,6 +16,9 @@ export default function CheckSpamScreen() {
   // State for the custom modal
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', message: '', type: 'success' });
+  
+  // Use the useLanguage hook to get translations
+  const { translations } = useLanguage();
 
   // Function to show the custom modal
   const showModal = (title, message, type = 'success') => {
@@ -24,7 +28,7 @@ export default function CheckSpamScreen() {
 
   const handleCheckSpam = async () => {
     if (!phoneNumber) {
-      showModal('Input Required', 'Please enter a mobile number to check.', 'error');
+      showModal(translations.inputRequired || 'Input Required', translations.inputRequiredMessage || 'Please enter a mobile number to check.', 'error');
       return;
     }
 
@@ -46,16 +50,16 @@ export default function CheckSpamScreen() {
       if (response.ok) {
         setResult(data);
         if (data.isGenuine) {
-          showModal('Check Complete', 'The number appears genuine.', 'success');
+          showModal(translations.checkComplete || 'Check Complete', translations.numberGenuine || 'The number appears genuine.', 'success');
         } else {
-          showModal('Check Complete', 'Suspicious number detected. Be cautious!', 'warning');
+          showModal(translations.checkComplete || 'Check Complete', translations.numberSuspicious || 'Suspicious number detected. Be cautious!', 'warning');
         }
       } else {
-        showModal('Error', data.error || 'Failed to check phone number', 'error');
+        showModal(translations.apiError || 'Error', data.error || translations.apiConnectionError || 'Failed to check phone number', 'error');
       }
     } catch (error) {
       console.error('Error checking phone number:', error);
-      showModal('API Error', 'Could not connect to the server. Please try again.', 'error');
+      showModal(translations.apiError || 'API Error', translations.apiConnectionError || 'Could not connect to the server. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
@@ -65,23 +69,23 @@ export default function CheckSpamScreen() {
     if (!result) return null;
 
     const { isGenuine, riskScore, reasons, carrierInfo, location, lineType } = result;
-    const resultColor = isGenuine ? '#5cb85c' : '#d9534f'; // Green for genuine, Red for suspicious
-    const borderColor = isGenuine ? '#5cb85c' : '#d9534f'; // Border color matches result status
+    const resultColor = isGenuine ? '#5cb85c' : '#d9534f';
+    const borderColor = isGenuine ? '#5cb85c' : '#d9534f';
     
     return (
       <View style={[styles.resultCard, { borderColor }]}>
         <Text style={[styles.resultTitle, { color: resultColor }]}>
-          {isGenuine ? 'Number appears genuine' : 'Suspicious number detected'}
+          {isGenuine ? translations.numberGenuine || 'Number appears genuine' : translations.numberSuspicious || 'Suspicious number detected'}
         </Text>
         
         <View style={styles.scoreContainer}>
-          <Text style={styles.scoreLabel}>Risk Score:</Text>
+          <Text style={styles.scoreLabel}>{translations.riskScore || 'Risk Score'}:</Text>
           <Text style={[styles.resultScore, { color: resultColor }]}>{riskScore}/10</Text>
         </View>
         
         {reasons && reasons.length > 0 && (
           <View style={styles.reasonsContainer}>
-            <Text style={styles.reasonsTitle}>Reasons for the score:</Text>
+            <Text style={styles.reasonsTitle}>{translations.reasonsTitle || 'Reasons for the score:'}</Text>
             {reasons.map((reason, index) => (
               <Text key={index} style={styles.reasonText}>• {reason}</Text>
             ))}
@@ -89,21 +93,21 @@ export default function CheckSpamScreen() {
         )}
         
         <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>Additional Details:</Text>
+          <Text style={styles.detailsTitle}>{translations.additionalDetails || 'Additional Details'}:</Text>
           {carrierInfo && (
-            <Text style={styles.infoText}>Carrier: {carrierInfo}</Text>
+            <Text style={styles.infoText}>{translations.carrier || 'Carrier'}: {carrierInfo}</Text>
           )}
           {location && (
-            <Text style={styles.infoText}>Location: {location}</Text>
+            <Text style={styles.infoText}>{translations.location || 'Location'}: {location}</Text>
           )}
           {lineType && (
-            <Text style={styles.infoText}>Line Type: {lineType}</Text>
+            <Text style={styles.infoText}>{translations.lineType || 'Line Type'}: {lineType}</Text>
           )}
         </View>
 
         {!isGenuine && (
           <Text style={styles.warningText}>
-            Be cautious! This number shows signs of potential spam or fraud.
+            {translations.spamWarningText || 'Be cautious! This number shows signs of potential spam or fraud.'}
           </Text>
         )}
       </View>
@@ -128,35 +132,30 @@ export default function CheckSpamScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Status Bar: Matches the primary background color */}
       <StatusBar barStyle="light-content" backgroundColor={styles.safeArea.backgroundColor} />
 
-      {/* Header Section */}
       <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <AntDesign name="arrowleft" size={24} color="#A8C3D1" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Check Spam</Text>
-        <View style={{ width: 40 }} /> {/* Spacer for symmetry */}
+        <Text style={styles.headerTitle}>{translations.checkSpam || 'Check Spam'}</Text>
+        <View style={{ width: 40 }} />
       </View>
 
-      {/* Screen Title and Subtitle with Icon */}
       <View style={styles.screenTitleContainer}>
         <AntDesign name="phone" size={40} color="#A8C3D1" style={{ marginRight: 10 }} />
-        <Text style={styles.screenSubtitle}>Verify phone numbers for spam</Text>
+        <Text style={styles.screenSubtitle}>{translations.verifyPhoneNumbers || 'Verify phone numbers for spam'}</Text>
       </View>
 
-      {/* Main Content Area (Scrollable) */}
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.contentContainer}>
           <Text style={styles.promptText}>
-            Enter a mobile number to check for spam or fraudulent activity.
+            {translations.spamPrompt || 'Enter a mobile number to check for spam or fraudulent activity.'}
           </Text>
 
-          {/* Phone Number Input Field */}
           <TextInput
             style={styles.input}
-            placeholder="Enter mobile number"
+            placeholder={translations.enterMobileNumber || 'Enter mobile number'}
             placeholderTextColor="#A8C3D1"
             value={phoneNumber}
             onChangeText={setPhoneNumber}
@@ -164,7 +163,6 @@ export default function CheckSpamScreen() {
             maxLength={15}
           />
 
-          {/* Check Button */}
           <TouchableOpacity 
             style={[styles.checkButton, loading ? styles.disabledButton : null]} 
             onPress={handleCheckSpam}
@@ -173,16 +171,14 @@ export default function CheckSpamScreen() {
             {loading ? (
               <ActivityIndicator color="#1A213B" size="small" />
             ) : (
-              <Text style={styles.checkButtonText}>Check Number</Text>
+              <Text style={styles.checkButtonText}>{translations.checkNumber || 'Check Number'}</Text>
             )}
           </TouchableOpacity>
           
-          {/* Render Result Card */}
           {renderResult()}
         </View>
       </ScrollView>
 
-      {/* Custom Modal for Notifications */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -198,7 +194,7 @@ export default function CheckSpamScreen() {
               style={[styles.modalButton, styles.buttonClose]}
               onPress={() => setModalVisible(false)}
             >
-              <Text style={styles.modalButtonText}>OK</Text>
+              <Text style={styles.modalButtonText}>{translations.ok || 'OK'}</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -210,7 +206,7 @@ export default function CheckSpamScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#1A213B', // Adjusted to match the new background
+    backgroundColor: '#1A213B',
   },
   scrollContent: {
     flexGrow: 1,
@@ -222,7 +218,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#1A213B', // Adjusted to match the new background
+    backgroundColor: '#1A213B',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
@@ -232,7 +228,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#f5f5f5', // Adjusted for better contrast on the new background
+    color: '#f5f5f5',
     flexShrink: 1,
     textAlign: 'center',
   },
@@ -241,7 +237,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    backgroundColor: '#1C2434', // Adjusted for the slightly darker card background
+    backgroundColor: '#1C2434',
   },
   screenSubtitle: {
     fontSize: 16,
@@ -262,7 +258,7 @@ const styles = StyleSheet.create({
     lineHeight: 26,
   },
   input: {
-    backgroundColor: '#1C2434', // Adjusted for the slightly darker card background
+    backgroundColor: '#1C2434',
     color: '#A8C3D1',
     borderRadius: 12,
     paddingHorizontal: 20,
@@ -275,7 +271,7 @@ const styles = StyleSheet.create({
     borderColor: '#3a3a57',
   },
   checkButton: {
-    backgroundColor: '#A8C3D1', // Button background from screenshot
+    backgroundColor: '#A8C3D1',
     borderRadius: 12,
     paddingVertical: 15,
     paddingHorizontal: 30,
@@ -293,13 +289,13 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   checkButtonText: {
-    color: '#1A213B', // Dark text on the light button
+    color: '#1A213B',
     fontSize: 18,
     fontWeight: 'bold',
   },
   resultCard: {
     marginTop: 30,
-    backgroundColor: '#1C2434', // Adjusted for the slightly darker card background
+    backgroundColor: '#1C2434',
     borderRadius: 12,
     padding: 20,
     width: '100%',
@@ -360,12 +356,11 @@ const styles = StyleSheet.create({
   },
   warningText: {
     marginTop: 15,
-    color: '#f0ad4e', // Warning accent color (orange)
+    color: '#f0ad4e',
     fontSize: 16,
     textAlign: 'center',
     fontWeight: 'bold',
   },
-  // Modal Styles
   centeredView: {
     flex: 1,
     justifyContent: 'center',
@@ -374,7 +369,7 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: '#1C2434', // Adjusted for the slightly darker card background
+    backgroundColor: '#1C2434',
     borderRadius: 20,
     padding: 35,
     alignItems: 'center',

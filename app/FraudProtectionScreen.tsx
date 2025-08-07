@@ -2,23 +2,26 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const fraudModules = [
-  { id: 'phishing', title: 'Phishing Fraud', routeName: 'phishingFraud' },
-  { id: 'cardCloning', title: 'Card Cloning/Skimming', routeName: 'cardCloningFraud' },
-  { id: 'upiFraud', title: 'UPI/Internet Banking Fraud', routeName: 'upiFraud' },
-  { id: 'loanFraud', title: 'Fake Loan Apps & Loan Fraud', routeName: 'loanFraud' },
-  { id: 'kYCUpdate', title: 'KYC Update Fraud', routeName: 'kycFraud' },
-  { id: 'atmFraud', title: 'ATM Fraud', routeName: 'atmFraud' },
-  { id: 'investmentFraud', title: 'Investment & Ponzi Schemes', routeName: 'investmentFraud' },
-  { id: 'insuranceFraud', title: 'Insurance Fraud', routeName: 'insuranceFraud' },
-  { id: 'identityTheft', title: 'Identity Theft', routeName: 'identityTheftFraud' },
-  { id: 'fakeCustomerCare', title: 'Fake Customer Care', routeName: 'fakeCustomerCareFraud' },
-];
+import { AntDesign } from '@expo/vector-icons';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function FraudProtectionScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { translations } = useLanguage();
+
+  const fraudModules = [
+    { id: 'phishing', title: translations.fraudTitle_phishing || 'Phishing Fraud', routeName: 'phishingFraud' },
+    { id: 'cardCloning', title: translations.fraudTitle_cardCloning || 'Card Cloning/Skimming', routeName: 'cardCloningFraud' },
+    { id: 'upiFraud', title: translations.fraudTitle_upiFraud || 'UPI/Internet Banking Fraud', routeName: 'upiFraud' },
+    { id: 'loanFraud', title: translations.fraudTitle_loanFraud || 'Fake Loan Apps & Loan Fraud', routeName: 'loanFraud' },
+    { id: 'kYCUpdate', title: translations.fraudTitle_kycFraud || 'KYC Update Fraud', routeName: 'kycFraud' },
+    { id: 'atmFraud', title: translations.fraudTitle_atmFraud || 'ATM Fraud', routeName: 'atmFraud' },
+    { id: 'investmentFraud', title: translations.fraudTitle_investmentFraud || 'Investment & Ponzi Schemes', routeName: 'investmentFraud' },
+    { id: 'insuranceFraud', title: translations.fraudTitle_insuranceFraud || 'Insurance Fraud', routeName: 'insuranceFraud' },
+    { id: 'identityTheft', title: translations.fraudTitle_identityTheft || 'Identity Theft', routeName: 'identityTheftFraud' },
+    { id: 'fakeCustomerCare', title: translations.fraudTitle_fakeCustomerCare || 'Fake Customer Care', routeName: 'fakeCustomerCareFraud' },
+  ];
 
   const handleFraudTypePress = (routeName: string) => {
     navigation.navigate(routeName);
@@ -30,9 +33,9 @@ export default function FraudProtectionScreen() {
       {/* Header for Fraud Protection Screen */}
       <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}> 
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>←</Text>
+          <AntDesign name="arrowleft" size={24} color="#A8C3D1" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Fraud Protection (RBI India)</Text>
+        <Text style={styles.headerTitle}>{translations.fraudProtectionScreenTitle || 'Fraud Protection (RBI India)'}</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView style={styles.scrollView}>
@@ -118,4 +121,4 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#A8C3D1',
   },
-}); 
+});

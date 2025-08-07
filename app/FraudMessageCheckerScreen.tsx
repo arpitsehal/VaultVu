@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, TextInput, Platform, ActivityIndicator, ScrollView, Modal, Pressable } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { AntDesign } from '@expo/vector-icons'; // Assuming you have @expo/vector-icons installed
+import { AntDesign } from '@expo/vector-icons';
+import { useLanguage } from '../contexts/LanguageContext'; // Import the useLanguage hook
 
 export default function FraudMessageCheckerScreen() {
   const navigation = useNavigation();
@@ -15,6 +16,9 @@ export default function FraudMessageCheckerScreen() {
   // State for the custom modal
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', message: '', type: 'success' });
+  
+  // Use the useLanguage hook to get translations
+  const { translations } = useLanguage();
 
   // Function to show the custom modal
   const showModal = (title, message, type = 'success') => {
@@ -24,7 +28,7 @@ export default function FraudMessageCheckerScreen() {
 
   const handleCheckMessage = async () => {
     if (!message) {
-      showModal('Input Required', 'Please enter a message to check.', 'error');
+      showModal(translations.inputRequired || 'Input Required', translations.enterMessageToCheck || 'Please enter a message to check.', 'error');
       return;
     }
 
@@ -45,13 +49,13 @@ export default function FraudMessageCheckerScreen() {
       const data = await response.json();
       setResult(data);
       if (data.isGenuine) {
-        showModal('Check Complete', 'The message appears genuine.', 'success');
+        showModal(translations.checkComplete || 'Check Complete', translations.messageGenuine || 'The message appears genuine.', 'success');
       } else {
-        showModal('Check Complete', 'Potential fraud detected. Be cautious!', 'warning');
+        showModal(translations.checkComplete || 'Check Complete', translations.potentialFraud || 'Potential fraud detected. Be cautious!', 'warning');
       }
     } catch (error) {
       console.error('Error checking message:', error);
-      showModal('API Error', 'Could not check the message. Please try again.', 'error');
+      showModal(translations.apiError || 'API Error', translations.messageApiErrorMessage || 'Could not check the message. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
@@ -67,17 +71,17 @@ export default function FraudMessageCheckerScreen() {
     return (
       <View style={[styles.resultCard, { borderColor }]}>
         <Text style={[styles.resultTitle, { color: resultColor }]}>
-          {isGenuine ? 'Message appears genuine' : 'Potential fraud detected'}
+          {isGenuine ? translations.messageGenuine || 'Message appears genuine' : translations.potentialFraudDetected || 'Potential fraud detected'}
         </Text>
         
         <View style={styles.scoreContainer}>
-          <Text style={styles.scoreLabel}>Risk Score:</Text>
+          <Text style={styles.scoreLabel}>{translations.riskScore || 'Risk Score'}:</Text>
           <Text style={[styles.resultScore, { color: resultColor }]}>{riskScore}/10</Text>
         </View>
         
         {reasons && reasons.length > 0 && (
           <View style={styles.reasonsContainer}>
-            <Text style={styles.reasonsTitle}>Reasons for the score:</Text>
+            <Text style={styles.reasonsTitle}>{translations.reasonsTitle || 'Reasons for the score:'}</Text>
             {reasons.map((reason, index) => (
               <Text key={index} style={styles.reasonText}>• {reason}</Text>
             ))}
@@ -86,7 +90,7 @@ export default function FraudMessageCheckerScreen() {
         
         {!isGenuine && (
           <Text style={styles.warningText}>
-            Be cautious! This message shows signs of potential fraud or scam.
+            {translations.messageWarningText || 'Be cautious! This message shows signs of potential fraud or scam.'}
           </Text>
         )}
       </View>
@@ -119,26 +123,26 @@ export default function FraudMessageCheckerScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <AntDesign name="arrowleft" size={24} color="#A8C3D1" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Message Fraud Checker</Text>
+        <Text style={styles.headerTitle}>{translations.messageFraudChecker || 'Message Fraud Checker'}</Text>
         <View style={{ width: 40 }} /> {/* Spacer for symmetry */}
       </View>
 
       {/* Screen Title and Subtitle with Icon */}
       <View style={styles.screenTitleContainer}>
         <AntDesign name="message1" size={40} color="#A8C3D1" style={{ marginRight: 10 }} />
-        <Text style={styles.screenSubtitle}>Analyze messages for fraudulent content</Text>
+        <Text style={styles.screenSubtitle}>{translations.analyzeMessages || 'Analyze messages for fraudulent content'}</Text>
       </View>
 
       {/* Main Content Area (Scrollable) */}
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
         <Text style={styles.promptText}>
-          Enter a message to check for potential fraud or scam content.
+          {translations.messagePrompt || 'Enter a message to check for potential fraud or scam content.'}
         </Text>
 
         {/* Message Input Field */}
         <TextInput
           style={styles.input}
-          placeholder="Paste message text here"
+          placeholder={translations.pasteMessagePlaceholder || "Paste message text here"}
           placeholderTextColor="#A8C3D1"
           value={message}
           onChangeText={setMessage}
@@ -156,7 +160,7 @@ export default function FraudMessageCheckerScreen() {
           {loading ? (
             <ActivityIndicator color="#1A213B" size="small" />
           ) : (
-            <Text style={styles.checkButtonText}>Check Message</Text>
+            <Text style={styles.checkButtonText}>{translations.checkMessage || 'Check Message'}</Text>
           )}
         </TouchableOpacity>
         
@@ -180,7 +184,7 @@ export default function FraudMessageCheckerScreen() {
               style={[styles.modalButton, styles.buttonClose]}
               onPress={() => setModalVisible(false)}
             >
-              <Text style={styles.modalButtonText}>OK</Text>
+              <Text style={styles.modalButtonText}>{translations.ok || 'OK'}</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -192,7 +196,7 @@ export default function FraudMessageCheckerScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#1A213B', // Adjusted to match the new background
+    backgroundColor: '#1A213B',
   },
   scrollView: {
     flex: 1,
@@ -204,7 +208,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#1A213B', // Adjusted to match the new background
+    backgroundColor: '#1A213B',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
@@ -214,7 +218,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#f5f5f5', // Adjusted for better contrast on the new background
+    color: '#f5f5f5',
     flexShrink: 1,
     textAlign: 'center',
   },
@@ -223,7 +227,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    backgroundColor: '#1C2434', // Adjusted for the slightly darker card background
+    backgroundColor: '#1C2434',
   },
   screenSubtitle: {
     fontSize: 16,
@@ -242,7 +246,7 @@ const styles = StyleSheet.create({
     lineHeight: 26,
   },
   input: {
-    backgroundColor: '#1C2434', // Adjusted for the slightly darker card background
+    backgroundColor: '#1C2434',
     color: '#A8C3D1',
     borderRadius: 12,
     paddingHorizontal: 20,
@@ -273,13 +277,13 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   checkButtonText: {
-    color: '#1A213B', // Dark text on the light button
+    color: '#1A213B',
     fontSize: 18,
     fontWeight: 'bold',
   },
   resultCard: {
     marginTop: 30,
-    backgroundColor: '#1C2434', // Adjusted for the slightly darker card background
+    backgroundColor: '#1C2434',
     borderRadius: 12,
     padding: 20,
     width: '100%',
@@ -328,7 +332,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
   },
-  // Modal Styles
   centeredView: {
     flex: 1,
     justifyContent: 'center',
@@ -337,7 +340,7 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: '#1C2434', // Adjusted for the slightly darker card background
+    backgroundColor: '#1C2434',
     borderRadius: 20,
     padding: 35,
     alignItems: 'center',

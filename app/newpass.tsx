@@ -1,21 +1,57 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, StatusBar, Image, TextInput, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; // Import useSafeAreaInsets
+import React, { useState, useEffect } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  TouchableOpacity, 
+  StatusBar, 
+  Image, 
+  TextInput, 
+  ScrollView, 
+  KeyboardAvoidingView, 
+  Platform, 
+  Alert,
+  ActivityIndicator 
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CreateNewPasswordPage() {
   const router = useRouter();
-  const insets = useSafeAreaInsets(); // Call the hook to get safe area insets
+  const insets = useSafeAreaInsets();
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [resetToken, setResetToken] = useState('');
 
   // State for validation errors
   const [newPasswordError, setNewPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+
+  // Load reset token from AsyncStorage
+  useEffect(() => {
+    const loadResetToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('resetToken');
+        if (token) {
+          setResetToken(token);
+        } else {
+          // If no token is found, go back to forgot password page
+          Alert.alert('Error', 'Reset token not found. Please try again.');
+          router.replace('/forgetpass');
+        }
+      } catch (error) {
+        console.error('Error loading reset token:', error);
+      }
+    };
+
+    loadResetToken();
+  }, []);
 
   // Password validation function
   const validatePassword = (password: string) => {
@@ -38,8 +74,8 @@ export default function CreateNewPasswordPage() {
     return errors;
   };
 
-  // Placeholder for handling continue button press
-  const handleContinue = () => {
+  // Handle continue button press
+  const handleContinue = async () => {
     // Reset previous errors
     setNewPasswordError('');
     setConfirmPasswordError('');
@@ -57,14 +93,49 @@ export default function CreateNewPasswordPage() {
       isValid = false;
     }
 
-    if (isValid) {
-      console.log('Creating new password:', { newPassword, confirmPassword, rememberMe });
-      // Implement password reset logic here
-      Alert.alert('Success', 'Password created successfully!', [
-        { text: 'OK', onPress: () => router.push('/signin') }
-      ]);
-    } else {
+    if (!isValid) {
       Alert.alert('Error', 'Please fix the password errors.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Call API to reset password
+      const response = await fetch('http://192.168.1.7:5000/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ resetToken, newPassword }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Clear reset data
+        await AsyncStorage.removeItem('resetEmail');
+        await AsyncStorage.removeItem('resetToken');
+        
+        // If remember me is checked, store the email for login
+        if (rememberMe) {
+          const email = await AsyncStorage.getItem('resetEmail');
+          if (email) {
+            await AsyncStorage.setItem('rememberedEmail', email);
+          }
+        }
+
+        Alert.alert('Success', 'Password reset successfully!', [
+          { text: 'OK', onPress: () => router.push('/signin') }
+        ]);
+      } else {
+        Alert.alert('Error', data.message || 'Failed to reset password. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      Alert.alert('Error', 'Network error. Please check your connection and try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -72,9 +143,9 @@ export default function CreateNewPasswordPage() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* Back Arrow - Positioned dynamically using safe area insets */}
+      {/* Back Arrow */}
       <TouchableOpacity
-        style={[styles.backButton, { top: insets.top + 20 }]} // Use insets.top for accurate positioning
+        style={[styles.backButton, { top: insets.top + 20 }]}
         onPress={() => router.back()}
       >
         <Text style={styles.backButtonText}>←</Text>
@@ -85,10 +156,10 @@ export default function CreateNewPasswordPage() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          {/* Robot Image (Placeholder for the lock icon or similar) */}
+          {/* Logo Image */}
           <View style={styles.robotImageContainer}>
             <Image
-              source={require('../assets/images/vaultvu-logo.jpg')} // Ensure this path is correct
+              source={require('../assets/images/vaultvu-logo.jpg')}
               style={styles.robotImage}
               resizeMode="contain"
             />
@@ -156,8 +227,16 @@ export default function CreateNewPasswordPage() {
           </View>
 
           {/* CONTINUE Button */}
-          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-            <Text style={styles.continueButtonText}>CONTINUE</Text>
+          <TouchableOpacity 
+            style={[styles.continueButton, isLoading && styles.disabledButton]} 
+            onPress={handleContinue}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text style={styles.continueButtonText}>CONTINUE</Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -165,6 +244,7 @@ export default function CreateNewPasswordPage() {
   );
 }
 
+// Keep existing styles and add new ones for loading state
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -248,67 +328,14 @@ const styles = StyleSheet.create({
     borderColor: 'red',
     borderWidth: 2,
   },
+  disabledButton: {
+    backgroundColor: '#A8C3D1',
+    opacity: 0.7,
+  },
   errorText: {
     color: 'red',
-    fontSize: 12,
+    fontSize: 14,
     marginTop: 5,
     marginLeft: 5,
-  },
-  eyeButton: {
-    position: 'absolute',
-    right: 10,
-    top: '50%',
-    transform: [{ translateY: -12 }],
-    padding: 5,
-  },
-  eyeIcon: {
-    fontSize: 20,
-    color: '#A8C3D1',
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    width: '100%',
-    marginBottom: 40,
-    paddingHorizontal: 5,
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 5,
-    borderWidth: 2,
-    borderColor: '#1A213B',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  checkboxChecked: {
-    backgroundColor: '#1A213B',
-  },
-  checkboxCheck: {
-    color: '#FFFFFF',
-    fontSize: 14,
-  },
-  checkboxText: {
-    color: '#1A213B',
-    fontSize: 14,
-  },
-  continueButton: {
-    backgroundColor: '#1A213B',
-    paddingVertical: 14,
-    paddingHorizontal: 45,
-    borderRadius: 25,
-    marginBottom: 0,
-    width: '80%',
-    alignItems: 'center',
-  },
-  continueButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });

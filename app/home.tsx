@@ -35,95 +35,6 @@ const dailyTips = [
   "Never use public Wi-Fi for sensitive activities like banking or shopping.",
 ];
 
-const quickAccessModules = [
-  {
-    id: 'voiceFraudChecker',
-    title: 'Voice Fraud Checker',
-    icon: '🔊',
-    description: 'Check if the voice is Fraudulent or not.',
-    route: '/VoiceTheftCheckerScreen',
-    cardColor: '#1A213B',
-    textColor: '#A8C3D1',
-  },
-  {
-    id: 'checkSpam',
-    title: 'Check Spam',
-    icon: '👤',
-    description: 'Protect you from spam and phishing attempts.',
-    route: '/CheckSpamScreen',
-    cardColor: '#A8C3D1',
-    textColor: '#1A213B',
-  },
-  {
-    id: 'urlFraudChecker',
-    title: 'URL Fraud Checker',
-    icon: '📊',
-    description: 'Help you to identify if a given URL is genuine or not.',
-    route: '/URLTheftCheckerScreen',
-    cardColor: '#A8C3D1',
-    textColor: '#1A213B',
-  },
-  {
-    id: 'fraudMessageChecker',
-    title: 'Fraud Message Checker',
-    icon: '🕵️',
-    description: 'Check if the message is Fraudulent or not.',
-    route: '/FraudMessageCheckerScreen',
-    cardColor: '#1A213B',
-    textColor: '#A8C3D1',
-  },
-];
-
-const learningModules = [
-  {
-    id: 'scamProtection',
-    title: 'Scam Protection',
-    icon: '🚨',
-    description: 'Identify and avoid common scams and phishing attempts.',
-    route: 'ScamProtectionScreen',
-  },
-  {
-    id: 'fraudProtection',
-    title: 'Fraud Protection',
-    icon: '💳',
-    description: 'Safeguard your bank accounts and financial transactions.',
-    route: 'FraudProtectionScreen',
-  },
-];
-
-const gamificationModules = [
-  {
-    id: 'financialLiteracyQuiz',
-    title: 'Financial Literacy Quiz',
-    icon: '🧠',
-    description: 'Test your knowledge and improve your financial IQ!',
-    route: 'Quiz',
-    cardColor: '#A8C3D1',
-    textColor: '#1A213B',
-  },
-  {
-    id: 'leaderboard',
-    title: 'Leaderboard',
-    icon: '🏆',
-    description: 'See how you rank among other security champions!',
-    route: '/leaderboard',
-    cardColor: '#1A213B',
-    textColor: '#A8C3D1',
-  },
-];
-
-const reportModules = [
-  {
-    id: 'reportIssue',
-    title: 'Report an Issue',
-    icon: '⚠️',
-    description: 'Quickly report any suspicious activity or security concerns.',
-    route: '/report',
-    cardColor: '#A8C3D1',
-    textColor: '#1A213B',
-  },
-];
-
 export default function DashboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -138,13 +49,103 @@ export default function DashboardScreen() {
     }, [])
   );
 
+  // Define module data here so it can use the translations object
+  const quickAccessModules = [
+    {
+      id: 'voiceFraudChecker',
+      title: translations.voiceFraudChecker || 'Voice Fraud Checker',
+      icon: '🔊',
+      description: translations.voiceFraudCheckerDesc || 'Check if the voice is Fraudulent or not.',
+      route: '/VoiceTheftCheckerScreen',
+      cardColor: '#1A213B',
+      textColor: '#A8C3D1',
+    },
+    {
+      id: 'checkSpam',
+      title: translations.checkSpam || 'Check Spam',
+      icon: '👤',
+      description: translations.checkSpamDesc || 'Protect you from spam and phishing attempts.',
+      route: '/CheckSpamScreen',
+      cardColor: '#A8C3D1',
+      textColor: '#1A213B',
+    },
+    {
+      id: 'urlFraudChecker',
+      title: translations.urlFraudChecker || 'URL Fraud Checker',
+      icon: '📊',
+      description: translations.urlFraudCheckerDesc || 'Help you to identify if a given URL is genuine or not.',
+      route: '/URLTheftCheckerScreen',
+      cardColor: '#A8C3D1',
+      textColor: '#1A213B',
+    },
+    {
+      id: 'fraudMessageChecker',
+      title: translations.fraudMessageChecker || 'Fraud Message Checker',
+      icon: '🕵️',
+      description: translations.fraudMessageCheckerDesc || 'Check if the message is Fraudulent or not.',
+      route: '/FraudMessageCheckerScreen',
+      cardColor: '#1A213B',
+      textColor: '#A8C3D1',
+    },
+  ];
+
+  const learningModules = [
+    {
+      id: 'scamProtection',
+      title: translations.scamProtection || 'Scam Protection',
+      icon: '🚨',
+      description: translations.scamProtectionDesc || 'Identify and avoid common scams and phishing attempts.',
+      route: 'ScamProtectionScreen',
+    },
+    {
+      id: 'fraudProtection',
+      title: translations.fraudProtection || 'Fraud Protection',
+      icon: '💳',
+      description: translations.fraudProtectionDesc || 'Safeguard your bank accounts and financial transactions.',
+      route: 'FraudProtectionScreen',
+    },
+  ];
+
+  const gamificationModules = [
+    {
+      id: 'financialLiteracyQuiz',
+      title: translations.financialLiteracyQuiz || 'Financial Literacy Quiz',
+      icon: '🧠',
+      description: translations.financialLiteracyQuizDesc || 'Test your knowledge and improve your financial IQ!',
+      route: 'Quiz',
+      cardColor: '#A8C3D1',
+      textColor: '#1A213B',
+    },
+    {
+      id: 'leaderboard',
+      title: translations.leaderboard || 'Leaderboard',
+      icon: '🏆',
+      description: translations.leaderboardDesc || 'See how you rank among other security champions!',
+      route: '/leaderboard',
+      cardColor: '#1A213B',
+      textColor: '#A8C3D1',
+    },
+  ];
+
+  const reportModules = [
+    {
+      id: 'reportIssue',
+      title: translations.reportAnIssue || 'Report an Issue',
+      icon: '⚠️',
+      description: translations.reportAnIssueDesc || 'Quickly report any suspicious activity or security concerns.',
+      route: '/report',
+      cardColor: '#A8C3D1',
+      textColor: '#1A213B',
+    },
+  ];
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#1A213B" />
 
       <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.appName}>VaultVu</Text>
+          <Text style={styles.appName}>{translations.appName || "VaultVu"}</Text>
           <Image
             source={require('../assets/images/vaultvu-logo.jpg')}
             style={styles.headerLogo}
@@ -172,7 +173,8 @@ export default function DashboardScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Quick Access Section */}
-        <Text style={styles.sectionTitle}>Quick Access</Text>
+        <Text style={styles.sectionTitle}>{translations.quickAccessModules || "Quick Access"}</Text>
+
         <View style={styles.featuredCardsContainer}>
           {quickAccessModules.map((item) => (
             <TouchableOpacity
@@ -192,7 +194,7 @@ export default function DashboardScreen() {
         </View>
 
         {/* Learning Modules Section */}
-        <Text style={styles.sectionTitle}>Learning Modules</Text>
+        <Text style={styles.sectionTitle}>{translations.learningModules || "Learning Modules"}</Text>
         <View style={styles.learningModulesContainer}>
           {learningModules.map((module) => (
             <TouchableOpacity
@@ -211,7 +213,7 @@ export default function DashboardScreen() {
         </View>
 
         {/* Gamification Section */}
-        <Text style={styles.sectionTitle}>Test Your Knowledge</Text>
+        <Text style={styles.sectionTitle}>{translations.testYourKnowledge || "Test Your Knowledge"}</Text>
         <View style={styles.gamificationCardsContainer}>
           {gamificationModules.map((item) => (
             <TouchableOpacity
@@ -230,8 +232,7 @@ export default function DashboardScreen() {
           ))}
         </View>
 
-        {/* Report Section - Enhanced UI */}
-        <Text style={styles.sectionTitle}>Report</Text>
+        <Text style={styles.sectionTitle}>{translations.report || "Report"}</Text>
         <View style={styles.reportModulesContainer}>
           {reportModules.map((module) => (
             <TouchableOpacity
@@ -256,6 +257,7 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
+  // ... (Your existing styles remain the same)
   safeArea: {
     flex: 1,
     backgroundColor: '#1A213B',
@@ -421,7 +423,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 20,
   },
-  // New Report UI styles
   reportModulesContainer: {
     width: '100%',
     paddingHorizontal: 20,
@@ -461,45 +462,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#1A213B',
     marginTop: 2,
-  },
-  // The old styles for cardsGrid are no longer in use, but are kept for reference if needed
-  cardsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    width: '100%',
-    paddingHorizontal: 15,
-  },
-  moduleCard: {
-    backgroundColor: '#333A4B',
-    borderRadius: 15,
-    padding: 10,
-    marginBottom: 15,
-    width: (screenWidth - 45) / 3,
-    aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  moduleIcon: {
-    fontSize: 30,
-    marginBottom: 8,
-    color: '#A8C3D1',
-  },
-  moduleTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
-    marginBottom: 3,
-  },
-  moduleDescription: {
-    fontSize: 10,
-    color: 'rgba(168, 195, 209, 0.8)',
-    textAlign: 'center',
   },
 });

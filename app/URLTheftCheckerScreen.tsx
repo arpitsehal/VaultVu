@@ -4,6 +4,7 @@ import { StyleSheet, Text, View, TouchableOpacity, StatusBar, TextInput, Platfor
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function URLTheftCheckerScreen() {
   const navigation = useNavigation();
@@ -13,6 +14,9 @@ export default function URLTheftCheckerScreen() {
   const [result, setResult] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', message: '', type: 'success' });
+  
+  // Use the useLanguage hook to get translations
+  const { translations } = useLanguage();
 
   const showModal = (title, message, type = 'success') => {
     setModalContent({ title, message, type });
@@ -21,14 +25,13 @@ export default function URLTheftCheckerScreen() {
 
   const handleCheckUrl = async () => {
     if (!url) {
-      showModal('Input Required', 'Please enter a website URL to check.', 'error');
+      showModal(translations.inputRequired || 'Input Required', translations.enterUrlMessage || 'Please enter a website URL to check.', 'error');
       return;
     }
 
-    // Enhanced URL validation
     const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
     if (!urlRegex.test(url)) {
-      showModal('Invalid URL', 'Please enter a valid website URL.', 'error');
+      showModal(translations.invalidUrl || 'Invalid URL', translations.invalidUrlMessage || 'Please enter a valid website URL.', 'error');
       return;
     }
 
@@ -36,7 +39,6 @@ export default function URLTheftCheckerScreen() {
     setResult(null);
 
     try {
-      // Simulating API call - replace with your actual API endpoint
       const apiUrl = 'http://192.168.1.7:5000/api/url-check';
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -50,14 +52,14 @@ export default function URLTheftCheckerScreen() {
       setResult(data);
       
       if (data.isSafe) {
-        showModal('Check Complete', 'The URL appears safe to visit.', 'success');
+        showModal(translations.checkComplete || 'Check Complete', translations.urlSafe || 'The URL appears safe to visit.', 'success');
       } else {
-        showModal('Check Complete', 'Potential risk detected. Exercise caution!', 'warning');
+        showModal(translations.checkComplete || 'Check Complete', translations.potentialRisk || 'Potential risk detected. Exercise caution!', 'warning');
       }
 
     } catch (error) {
       console.error('Error checking URL:', error);
-      showModal('API Error', 'Could not check the URL. Please try again later.', 'error');
+      showModal(translations.apiError || 'API Error', translations.apiErrorMessage || 'Could not check the URL. Please try again later.', 'error');
     } finally {
       setLoading(false);
     }
@@ -72,30 +74,30 @@ export default function URLTheftCheckerScreen() {
     if (!result) return null;
 
     const { isSafe, riskScore, reasons, category } = result;
-    const resultColor = isSafe ? '#5cb85c' : '#d9534f'; // Green for safe, Red for risk
-    const borderColor = isSafe ? '#5cb85c' : '#d9534f'; // Border color matches result status
+    const resultColor = isSafe ? '#5cb85c' : '#d9534f';
+    const borderColor = isSafe ? '#5cb85c' : '#d9534f';
 
     return (
       <View style={[styles.resultCard, { borderColor }]}>
         <Text style={[styles.resultTitle, { color: resultColor }]}>
-          {isSafe ? 'URL appears safe to visit' : 'Potential risk detected'}
+          {isSafe ? translations.urlSafe || 'URL appears safe to visit' : translations.potentialRiskDetected || 'Potential risk detected'}
         </Text>
         
         <View style={styles.scoreContainer}>
-          <Text style={styles.scoreLabel}>Risk Score:</Text>
+          <Text style={styles.scoreLabel}>{translations.riskScore || 'Risk Score'}:</Text>
           <Text style={[styles.resultScore, { color: resultColor }]}>{riskScore}/10</Text>
         </View>
 
         {category && (
           <View style={styles.categoryContainer}>
-            <Text style={styles.categoryLabel}>Category:</Text>
+            <Text style={styles.categoryLabel}>{translations.category || 'Category'}:</Text>
             <Text style={[styles.categoryText, { color: resultColor }]}>{category}</Text>
           </View>
         )}
 
         {reasons && reasons.length > 0 && (
           <View style={styles.reasonsContainer}>
-            <Text style={styles.reasonsTitle}>Analysis details:</Text>
+            <Text style={styles.reasonsTitle}>{translations.analysisDetails || 'Analysis details'}:</Text>
             {reasons.map((reason, index) => (
               <Text key={index} style={styles.reasonText}>• {reason}</Text>
             ))}
@@ -106,7 +108,7 @@ export default function URLTheftCheckerScreen() {
           <View style={styles.warningContainer}>
             <AntDesign name="warning" size={20} color="#f0ad4e" style={{ marginRight: 8 }} />
             <Text style={styles.warningText}>
-              This URL shows signs of potential phishing, malware, or fraud. Proceed with extreme caution.
+              {translations.urlWarningText || 'This URL shows signs of potential phishing, malware, or fraud. Proceed with extreme caution.'}
             </Text>
           </View>
         )}
@@ -135,28 +137,28 @@ export default function URLTheftCheckerScreen() {
 
       <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <AntDesign name="arrowleft" size={24} color="#A8C3D1" /> {/* Adjusted color */}
+          <AntDesign name="arrowleft" size={24} color="#A8C3D1" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>URL Safety Checker</Text>
+        <Text style={styles.headerTitle}>{translations.urlSafetyChecker || 'URL Safety Checker'}</Text>
         <View style={{ width: 40 }} />
       </View>
       
       <View style={styles.screenTitleContainer}>
-        <AntDesign name="link" size={40} color="#A8C3D1" style={{ marginRight: 10 }} /> {/* Adjusted color */}
-        <Text style={styles.screenSubtitle}>Verify website safety & detect threats</Text>
+        <AntDesign name="link" size={40} color="#A8C3D1" style={{ marginRight: 10 }} />
+        <Text style={styles.screenSubtitle}>{translations.verifyWebsiteSafety || 'Verify website safety & detect threats'}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.contentContainer}>
           <Text style={styles.promptText}>
-            Enter a website URL to analyze for potential security threats, phishing attempts, and malicious content.
+            {translations.urlPrompt || 'Enter a website URL to analyze for potential security threats, phishing attempts, and malicious content.'}
           </Text>
 
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
-              placeholder="https://example.com"
-              placeholderTextColor="#A8C3D1" // Adjusted color
+              placeholder={translations.enterUrlPlaceholder || "https://example.com"}
+              placeholderTextColor="#A8C3D1"
               value={url}
               onChangeText={setUrl}
               keyboardType="url"
@@ -165,7 +167,7 @@ export default function URLTheftCheckerScreen() {
             />
             {url.length > 0 && (
               <TouchableOpacity onPress={clearUrl} style={styles.clearButton}>
-                <AntDesign name="close" size={20} color="#A8C3D1" /> {/* Adjusted color */}
+                <AntDesign name="close" size={20} color="#A8C3D1" />
               </TouchableOpacity>
             )}
           </View>
@@ -178,7 +180,7 @@ export default function URLTheftCheckerScreen() {
             {loading ? (
               <ActivityIndicator color="#1A213B" size="small" /> 
             ) : (
-              <Text style={styles.checkButtonText}>Analyze Website Safety</Text>
+              <Text style={styles.checkButtonText}>{translations.analyzeWebsiteSafety || 'Analyze Website Safety'}</Text>
             )}
           </TouchableOpacity>
           
@@ -186,7 +188,6 @@ export default function URLTheftCheckerScreen() {
         </View>
       </ScrollView>
 
-      {/* Custom Modal for Notifications */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -202,7 +203,7 @@ export default function URLTheftCheckerScreen() {
               style={[styles.modalButton, styles.buttonClose]}
               onPress={() => setModalVisible(false)}
             >
-              <Text style={styles.modalButtonText}>OK</Text>
+              <Text style={styles.modalButtonText}>{translations.ok || 'OK'}</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -214,7 +215,7 @@ export default function URLTheftCheckerScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#1A213B', // Primary background color (soft dark blue)
+    backgroundColor: '#1A213B',
   },
   scrollContent: {
     flexGrow: 1,
@@ -226,7 +227,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#1A213B', // Primary background
+    backgroundColor: '#1A213B',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#f5f5f5', // Light text for contrast
+    color: '#f5f5f5',
     flexShrink: 1,
     textAlign: 'center',
   },
@@ -245,11 +246,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    backgroundColor: '#1C2434', // Secondary background (slightly darker card color)
+    backgroundColor: '#1C2434',
   },
   screenSubtitle: {
     fontSize: 16,
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     textAlign: 'center',
   },
   contentContainer: {
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
   },
   promptText: {
     fontSize: 18,
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     textAlign: 'center',
     marginBottom: 30,
     lineHeight: 26,
@@ -271,16 +272,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   input: {
-    backgroundColor: '#1C2434', // Secondary background for input
-    color: '#A8C3D1', // Adjusted color
+    backgroundColor: '#1C2434',
+    color: '#A8C3D1',
     borderRadius: 12,
     paddingHorizontal: 20,
     paddingVertical: 15,
-    paddingRight: 50, // Make room for clear button
+    paddingRight: 50,
     fontSize: 16,
     width: '100%',
     borderWidth: 2,
-    borderColor: '#3a3a57', // Border for input field
+    borderColor: '#3a3a57',
   },
   clearButton: {
     position: 'absolute',
@@ -289,7 +290,7 @@ const styles = StyleSheet.create({
     transform: [{ translateY: -10 }],
   },
   checkButton: {
-    backgroundColor: '#A8C3D1', // Button background from screenshot
+    backgroundColor: '#A8C3D1',
     borderRadius: 12,
     paddingVertical: 15,
     paddingHorizontal: 30,
@@ -307,13 +308,13 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   checkButtonText: {
-    color: '#1A213B', // Dark text on light button
+    color: '#1A213B',
     fontSize: 18,
     fontWeight: 'bold',
   },
   resultCard: {
     marginTop: 30,
-    backgroundColor: '#1C2434', // Secondary background for result card
+    backgroundColor: '#1C2434',
     borderRadius: 12,
     padding: 20,
     width: '100%',
@@ -333,7 +334,7 @@ const styles = StyleSheet.create({
   },
   scoreLabel: {
     fontSize: 18,
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     marginRight: 5,
   },
   resultScore: {
@@ -348,7 +349,7 @@ const styles = StyleSheet.create({
   },
   categoryLabel: {
     fontSize: 16,
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     marginRight: 8,
   },
   categoryText: {
@@ -361,12 +362,12 @@ const styles = StyleSheet.create({
   reasonsTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     marginBottom: 5,
   },
   reasonText: {
     fontSize: 14,
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     marginBottom: 5,
     lineHeight: 20,
   },
@@ -387,7 +388,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 18,
   },
-  // Modal Styles
   centeredView: {
     flex: 1,
     justifyContent: 'center',
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: '#1C2434', // Secondary background for modal
+    backgroundColor: '#1C2434',
     borderRadius: 20,
     padding: 35,
     alignItems: 'center',
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
     marginTop: 15,
     marginBottom: 10,
     textAlign: 'center',
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
   modalText: {
     marginBottom: 15,
     textAlign: 'center',
-    color: '#A8C3D1', // Adjusted color
+    color: '#A8C3D1',
   },
   modalButton: {
     borderRadius: 10,
@@ -429,11 +429,11 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   buttonClose: {
-    backgroundColor: '#A8C3D1', // Button background from screenshot
+    backgroundColor: '#A8C3D1',
     width: 100,
   },
   modalButtonText: {
-    color: '#1A213B', // Dark text on light button
+    color: '#1A213B',
     fontWeight: 'bold',
     textAlign: 'center',
   },
