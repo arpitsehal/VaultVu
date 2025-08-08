@@ -1,22 +1,22 @@
-// BlackmailScamScreen.js
+// ImposterScamScreen.js
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-export default function BlackmailScamScreen() {
+export default function ImposterScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
   const scamDetails = {
-    title: 'Blackmail Scams',
-    description: 'A blackmailer’s mission is to scare you into sending them money by threatening to distribute private content—from your computer or phone, or shared with them over an email, text, or social media—that could embarrass you. They might ask you to wire them money, or send it using a mobile app, a gift card, or cryptocurrency. Sometimes these scammers are complete strangers and other times they might be someone you met online and thought you could trust.',
+    title: 'Imposter Scams',
+    description: 'In an imposter scam, a scammer pretends to be someone you know and trust, like a family member, a government official, a bank representative, or a tech support agent. They might claim there is a problem that requires your immediate attention, like a security breach on your account, a fine that needs to be paid, or a family emergency. The goal is to create fear and urgency to pressure you into sending money, providing personal information, or giving them remote access to your devices.',
     whatToDo: [
-      'Try to stay calm in spite of blackmailers’ intimidation and high-pressure tactics. Stop communicating with them and don’t pay them. Keep all messages as evidence to help law enforcement. Keep in mind that you don’t need to deal with this alone.',
-      'Do NOT comply with demands for money, personal details, OTPs, or to install apps.',
-      'End the call immediately—do not press keys, share information, or click on any links.',
-      'Do not panic. Impersonators typically aim to create fear and urgency to push you into action',
-      'File a complaint on the National Cybercrime Reporting Portal:  cybercrime.gov.in or call the toll‑free helpline 1930'
+      "Do NOT panic. Impersonators typically aim to create fear and urgency to push you into action without thinking. Stop communicating with the person immediately.",
+      "Verify the identity of the person or organization. If they claim to be from a bank or government agency, hang up and call them back using the official number from their website or your records, not a number they provided.",
+      "Never share personal details, OTPs, or financial information like bank passwords or credit card numbers. Legitimate organizations will never ask for this information over the phone or in an unsolicited message.",
+      "Do NOT comply with demands for money or to install apps. Be extremely cautious of requests to wire money, send gift cards, or pay with cryptocurrency.",
+      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll‑free helpline 1930.'
     ],
   };
 
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 20,
   },
-  whatToDoTitle: { // Renamed from tipsTitle for clarity
+  whatToDoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#A8C3D1',
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   tipText: {
     fontSize: 16,
     color: 'white',
-    flex: 1, // Allows text to wrap
+    flex: 1,
     lineHeight: 22,
   },
 });

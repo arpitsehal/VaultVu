@@ -1,22 +1,22 @@
-// BlackmailScamScreen.js
+// MoneyTransferScamScreen.js
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-export default function BlackmailScamScreen() {
+export default function MoneyTransferScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
   const scamDetails = {
-    title: 'Blackmail Scams',
-    description: 'A blackmailer’s mission is to scare you into sending them money by threatening to distribute private content—from your computer or phone, or shared with them over an email, text, or social media—that could embarrass you. They might ask you to wire them money, or send it using a mobile app, a gift card, or cryptocurrency. Sometimes these scammers are complete strangers and other times they might be someone you met online and thought you could trust.',
+    title: 'Money Transfer & Mobile Payment Fraud',
+    description: "These scams happen when criminals trick you into sending them money through mobile payment apps like UPI, Google Pay, or through other money transfer services. They often impersonate a bank representative, a government official, or even a family member in an emergency. The scammer's goal is to get you to authorize a transaction or share a One-Time Password (OTP) that they can use to steal from your account. They might send a fake payment request or a QR code, claiming it's to 'receive' money, but it actually authorizes a payment from you to them.",
     whatToDo: [
-      'Try to stay calm in spite of blackmailers’ intimidation and high-pressure tactics. Stop communicating with them and don’t pay them. Keep all messages as evidence to help law enforcement. Keep in mind that you don’t need to deal with this alone.',
-      'Do NOT comply with demands for money, personal details, OTPs, or to install apps.',
-      'End the call immediately—do not press keys, share information, or click on any links.',
-      'Do not panic. Impersonators typically aim to create fear and urgency to push you into action',
-      'File a complaint on the National Cybercrime Reporting Portal:  cybercrime.gov.in or call the toll‑free helpline 1930'
+      "Be highly skeptical of any urgent request for money, especially from someone you don’t know or a family member you haven’t spoken to directly in a while. Always verify the request by calling the person on a trusted phone number.",
+      "Never share your OTP, PIN, or password. A legitimate bank or mobile payment service will never ask for this information to 'verify' your account or a transaction.",
+      "Do not scan QR codes or approve payment requests from unknown contacts. Remember, to receive money, you do not need to enter your PIN or scan a QR code.",
+      "Enable multi-factor authentication (MFA) on your payment apps and bank accounts to add an extra layer of security.",
+      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll-free helpline 1930. Inform your bank and the payment service provider immediately if you\'ve been scammed.'
     ],
   };
 
@@ -30,8 +30,7 @@ export default function BlackmailScamScreen() {
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{scamDetails.title}</Text>
-        {/* Spacer to balance header title */}
-        <View style={{ width: 40 }} />
+        <View style={{ width: 40 }} /> {/* Spacer to balance header title */}
       </View>
 
       <ScrollView style={styles.scrollView}>
@@ -96,7 +95,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 20,
   },
-  whatToDoTitle: { // Renamed from tipsTitle for clarity
+  whatToDoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#A8C3D1',
@@ -115,7 +114,7 @@ const styles = StyleSheet.create({
   tipText: {
     fontSize: 16,
     color: 'white',
-    flex: 1, // Allows text to wrap
+    flex: 1,
     lineHeight: 22,
   },
 });

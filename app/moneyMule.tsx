@@ -1,22 +1,22 @@
-// BlackmailScamScreen.js
+// MoneyMuleScamScreen.js
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-export default function BlackmailScamScreen() {
+export default function MoneyMuleScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
   const scamDetails = {
-    title: 'Blackmail Scams',
-    description: 'A blackmailer’s mission is to scare you into sending them money by threatening to distribute private content—from your computer or phone, or shared with them over an email, text, or social media—that could embarrass you. They might ask you to wire them money, or send it using a mobile app, a gift card, or cryptocurrency. Sometimes these scammers are complete strangers and other times they might be someone you met online and thought you could trust.',
+    title: 'Money Mule Scams',
+    description: "In a money mule scam, you're recruited by criminals to receive and move stolen money. The scammer might pose as an employer offering a work-from-home job, a love interest you met online, or a lottery official. They'll ask you to receive money into your bank account and then transfer it to someone else, often through wire transfers, cryptocurrency, or gift cards. You might be told to keep a percentage as your 'commission.' Unknowingly, you are participating in money laundering, and using your bank account to move illegal funds can lead to serious legal and financial consequences.",
     whatToDo: [
-      'Try to stay calm in spite of blackmailers’ intimidation and high-pressure tactics. Stop communicating with them and don’t pay them. Keep all messages as evidence to help law enforcement. Keep in mind that you don’t need to deal with this alone.',
-      'Do NOT comply with demands for money, personal details, OTPs, or to install apps.',
-      'End the call immediately—do not press keys, share information, or click on any links.',
-      'Do not panic. Impersonators typically aim to create fear and urgency to push you into action',
-      'File a complaint on the National Cybercrime Reporting Portal:  cybercrime.gov.in or call the toll‑free helpline 1930'
+      "Be wary of job offers that involve transferring money. Legitimate companies will not ask you to use your personal bank account to handle their funds.",
+      "Never agree to receive and transfer money for someone you've only met online, especially if the relationship is new. This is a common tactic in romance scams.",
+      "Question any request to send money using hard-to-trace methods like wire transfers, gift cards, or cryptocurrency. These are red flags for scams and illegal activities.",
+      "If an offer seems too good to be true, it probably is. Be skeptical of high-paying jobs with minimal effort or unexpected windfalls that require you to move money.",
+      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll-free helpline 1930. Inform your bank immediately if you suspect you’ve been involved in a money mule scheme.'
     ],
   };
 
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 20,
   },
-  whatToDoTitle: { // Renamed from tipsTitle for clarity
+  whatToDoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#A8C3D1',
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   tipText: {
     fontSize: 16,
     color: 'white',
-    flex: 1, // Allows text to wrap
+    flex: 1,
     lineHeight: 22,
   },
 });

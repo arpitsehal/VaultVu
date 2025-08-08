@@ -1,22 +1,22 @@
-// BlackmailScamScreen.js
+// NonexistentGoodsScamScreen.js
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-export default function BlackmailScamScreen() {
+export default function NonexistentGoodsScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
   const scamDetails = {
-    title: 'Blackmail Scams',
-    description: 'A blackmailer’s mission is to scare you into sending them money by threatening to distribute private content—from your computer or phone, or shared with them over an email, text, or social media—that could embarrass you. They might ask you to wire them money, or send it using a mobile app, a gift card, or cryptocurrency. Sometimes these scammers are complete strangers and other times they might be someone you met online and thought you could trust.',
+    title: 'Nonexistent Goods Scams',
+    description: "In a nonexistent goods scam, a fraudster advertises products or services that do not exist or are not in their possession. This scam is common on online marketplaces, social media, and classified ad websites. The seller will list a highly desirable item, often at a low price, to attract buyers quickly. They'll ask for an upfront payment, usually through an untraceable method like a wire transfer or mobile payment app. Once the payment is made, the scammer disappears, and the buyer never receives the promised item.",
     whatToDo: [
-      'Try to stay calm in spite of blackmailers’ intimidation and high-pressure tactics. Stop communicating with them and don’t pay them. Keep all messages as evidence to help law enforcement. Keep in mind that you don’t need to deal with this alone.',
-      'Do NOT comply with demands for money, personal details, OTPs, or to install apps.',
-      'End the call immediately—do not press keys, share information, or click on any links.',
-      'Do not panic. Impersonators typically aim to create fear and urgency to push you into action',
-      'File a complaint on the National Cybercrime Reporting Portal:  cybercrime.gov.in or call the toll‑free helpline 1930'
+      "Be suspicious of deals that seem too good to be true, especially for high-demand items. A deeply discounted price is a common tactic to lure buyers into a scam.",
+      "Insist on using a secure and reputable payment method that offers buyer protection, such as a credit card or a verified payment platform. Avoid paying with wire transfers, gift cards, or cryptocurrency, as these transactions are almost impossible to reverse.",
+      "Check the seller’s reputation. Look for reviews, ratings, and a history of successful transactions on the platform. If the seller has a new account or a vague profile, proceed with caution.",
+      "Request to see the item in person or ask for a live video call to verify the product's existence before making a payment. If the seller refuses, it's a major red flag.",
+      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll-free helpline 1930. Report the seller and the listing to the platform where you found the ad.'
     ],
   };
 
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 20,
   },
-  whatToDoTitle: { // Renamed from tipsTitle for clarity
+  whatToDoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#A8C3D1',
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   tipText: {
     fontSize: 16,
     color: 'white',
-    flex: 1, // Allows text to wrap
+    flex: 1,
     lineHeight: 22,
   },
 });

@@ -1,22 +1,22 @@
-// BlackmailScamScreen.js
+// ManInTheMiddleScamScreen.js
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-export default function BlackmailScamScreen() {
+export default function ManInTheMiddleScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
   const scamDetails = {
-    title: 'Blackmail Scams',
-    description: 'A blackmailer’s mission is to scare you into sending them money by threatening to distribute private content—from your computer or phone, or shared with them over an email, text, or social media—that could embarrass you. They might ask you to wire them money, or send it using a mobile app, a gift card, or cryptocurrency. Sometimes these scammers are complete strangers and other times they might be someone you met online and thought you could trust.',
+    title: 'Man-in-the-Middle Scams',
+    description: 'A "Man-in-the-Middle" (MITM) scam is a type of cyberattack where a scammer secretly intercepts and alters communication between two parties who believe they are communicating directly with each other. For example, a scammer might hack into a business’s email and monitor conversations with a client. When the time comes to send an invoice, the scammer sends a fake one with their own bank details. The client, believing the email is from the business, pays the fraudulent invoice. This type of scam can also occur on public Wi-Fi networks where attackers can intercept data being sent and received.',
     whatToDo: [
-      'Try to stay calm in spite of blackmailers’ intimidation and high-pressure tactics. Stop communicating with them and don’t pay them. Keep all messages as evidence to help law enforcement. Keep in mind that you don’t need to deal with this alone.',
-      'Do NOT comply with demands for money, personal details, OTPs, or to install apps.',
-      'End the call immediately—do not press keys, share information, or click on any links.',
-      'Do not panic. Impersonators typically aim to create fear and urgency to push you into action',
-      'File a complaint on the National Cybercrime Reporting Portal:  cybercrime.gov.in or call the toll‑free helpline 1930'
+      "Always verify payment information. If you receive an unexpected request to change bank account details or a sudden invoice, contact the sender through a separate, trusted channel, like a known phone number, before making any payments.",
+      "Be cautious when using public Wi-Fi. Avoid making financial transactions or accessing sensitive information on unsecured networks. Use a Virtual Private Network (VPN) to encrypt your data if you must use public Wi-Fi.",
+      "Look for 'https://' at the beginning of a website address and the padlock icon in the browser bar to ensure the connection is secure, especially when entering personal or financial information.",
+      "Regularly update your software, antivirus, and firewall. These updates often include security patches that protect against vulnerabilities scammers exploit.",
+      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll-free helpline 1930.'
     ],
   };
 
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 20,
   },
-  whatToDoTitle: { // Renamed from tipsTitle for clarity
+  whatToDoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#A8C3D1',
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   tipText: {
     fontSize: 16,
     color: 'white',
-    flex: 1, // Allows text to wrap
+    flex: 1,
     lineHeight: 22,
   },
 });

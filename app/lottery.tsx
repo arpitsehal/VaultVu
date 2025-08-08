@@ -1,22 +1,22 @@
-// BlackmailScamScreen.js
+// LotteryPrizeScamScreen.js
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-export default function BlackmailScamScreen() {
+export default function LotteryPrizeScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
   const scamDetails = {
-    title: 'Blackmail Scams',
-    description: 'A blackmailer’s mission is to scare you into sending them money by threatening to distribute private content—from your computer or phone, or shared with them over an email, text, or social media—that could embarrass you. They might ask you to wire them money, or send it using a mobile app, a gift card, or cryptocurrency. Sometimes these scammers are complete strangers and other times they might be someone you met online and thought you could trust.',
+    title: 'Lottery or Prize Scams',
+    description: 'In a lottery or prize scam, you receive an unexpected notification—by phone, email, text, or mail—that you have won a large sum of money, a new car, or an expensive vacation. The catch is that to receive your winnings, you must first pay a fee for "taxes," "processing," or "insurance." Scammers will pressure you to pay this fee quickly, often by wire transfer, gift cards, or cryptocurrency, which are difficult to trace. Remember, if you didn\'t enter a lottery, you can\'t win one.',
     whatToDo: [
-      'Try to stay calm in spite of blackmailers’ intimidation and high-pressure tactics. Stop communicating with them and don’t pay them. Keep all messages as evidence to help law enforcement. Keep in mind that you don’t need to deal with this alone.',
-      'Do NOT comply with demands for money, personal details, OTPs, or to install apps.',
-      'End the call immediately—do not press keys, share information, or click on any links.',
-      'Do not panic. Impersonators typically aim to create fear and urgency to push you into action',
-      'File a complaint on the National Cybercrime Reporting Portal:  cybercrime.gov.in or call the toll‑free helpline 1930'
+      "Be skeptical of any unexpected notification that you've won a prize. If you didn't enter a contest or lottery, it's a scam.",
+      "Never pay a fee to collect your 'winnings.' Legitimate lotteries or sweepstakes do not require you to pay money upfront to receive a prize.",
+      "Do not provide any personal or financial information, such as your bank account details or social security number, to claim a prize.",
+      "If you receive a suspicious call or email, do not respond. Delete the message and block the sender. Do not click on any links in the email, as they may lead to malicious websites.",
+      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll-free helpline 1930.'
     ],
   };
 
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 20,
   },
-  whatToDoTitle: { // Renamed from tipsTitle for clarity
+  whatToDoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#A8C3D1',
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   tipText: {
     fontSize: 16,
     color: 'white',
-    flex: 1, // Allows text to wrap
+    flex: 1,
     lineHeight: 22,
   },
 });

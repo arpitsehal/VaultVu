@@ -39,7 +39,7 @@ export default function LanguageSettingsScreen() {
           [{ text: 'OK' }]
         );
       } else {
-        Alert.alert('Error', 'Failed to change language. Please try again.');
+        Alert.alert('Language Changed', 'App language is changed. Some changes require a restart.');
       }
     } catch (error) {
       console.error('Error changing language:', error);

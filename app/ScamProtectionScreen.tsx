@@ -30,7 +30,8 @@ export default function ScamProtectionScreen() {
     { id: 'nonexistentGoods', title: translations.scamProtectionTitle_nonexistentGoods || 'Sale of Nonexistent Goods or Services Scams', routeName: 'nonexistentGoods' },
   ];
 
-  const handleScamTypePress = (routeName) => {
+  const handleScamTypePress = (routeName: string) => {
+
     navigation.navigate(routeName);
   };
 

@@ -1,22 +1,22 @@
-// BlackmailScamScreen.js
+// GrandparentScamScreen.js
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-export default function BlackmailScamScreen() {
+export default function GrandparentScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
   const scamDetails = {
-    title: 'Blackmail Scams',
-    description: 'A blackmailer’s mission is to scare you into sending them money by threatening to distribute private content—from your computer or phone, or shared with them over an email, text, or social media—that could embarrass you. They might ask you to wire them money, or send it using a mobile app, a gift card, or cryptocurrency. Sometimes these scammers are complete strangers and other times they might be someone you met online and thought you could trust.',
+    title: 'Grandparent Scams',
+    description: "In a 'grandparent scam,' a scammer poses as a desperate grandchild in trouble. You might receive a call, text, or social media message claiming they've been in an accident, arrested, or are stranded in another country. The scammer creates a sense of urgency, asking you to wire money, send gift cards, or use a mobile app to pay for bail, hospital bills, or travel expenses. They'll often beg you not to tell their parents, which isolates you and keeps the scam going.",
     whatToDo: [
-      'Try to stay calm in spite of blackmailers’ intimidation and high-pressure tactics. Stop communicating with them and don’t pay them. Keep all messages as evidence to help law enforcement. Keep in mind that you don’t need to deal with this alone.',
-      'Do NOT comply with demands for money, personal details, OTPs, or to install apps.',
-      'End the call immediately—do not press keys, share information, or click on any links.',
-      'Do not panic. Impersonators typically aim to create fear and urgency to push you into action',
-      'File a complaint on the National Cybercrime Reporting Portal:  cybercrime.gov.in or call the toll‑free helpline 1930'
+      "Stay calm and don't act immediately. If you get a call, hang up and try to contact your grandchild directly using a phone number you know is theirs, not the one provided by the caller.",
+      "Ask the caller personal questions that only your real grandchild would know, like a pet's name or a special family memory. If they can't answer, it's a scam.",
+      "Never send money, gift cards, or personal information in response to an urgent, unexpected request. Scammers often pressure you to act fast so you don't have time to think or verify their story.",
+      "Tell a trusted family member or friend about the call. A second opinion can help you realize it's a scam.",
+      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll-free helpline 1930.'
     ],
   };
 

@@ -98,6 +98,8 @@ cd backend
 npm start
 ```
 
+
+
 The server will start on port 5000 (or the port specified in your `.env` file).
 
 ### 2. Start the Frontend

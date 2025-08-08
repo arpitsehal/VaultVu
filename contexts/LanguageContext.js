@@ -163,7 +163,7 @@ const translationsData = {
     scamProtectionTitle_moneyTransfer: 'Money Transfer or Mobile Payment Services Fraud',
     scamProtectionTitle_mortgageClosing: 'Mortgage Closing Scams',
     scamProtectionTitle_nonexistentGoods: 'Sale of Nonexistent Goods or Services Scams',
-
+    scamProtectionTitle_romance: 'Romance Scams',
     // Fraud Protection Screen
     fraudProtectionScreenTitle: 'Fraud Protection (RBI India)',
     fraudTitle_phishing: 'Phishing Fraud',
@@ -257,6 +257,17 @@ const translationsData = {
     sipTracker: 'SIP Tracker & Calculator',
     budgetManager: 'Budget Manager',
     budgetManagerDesc: 'Manage your budgets, EMIs, SIPs and other financial tools.',
+
+    // Add these translations to the English section
+fraudDetection: 'Fraud Detection',
+callDetection: 'Call Detection',
+callDetectionDesc: 'Get alerts for potentially fraudulent calls',
+messageDetection: 'Message Detection',
+messageDetectionDesc: 'Get alerts for potentially fraudulent messages',
+suspiciousCallAlert: 'Suspicious Call Alert',
+suspiciousMessageAlert: 'Suspicious Message Alert',
+callVerified: 'Call Verified',
+messageVerified: 'Message Verified',
   },
   hindi: {
     // Common
@@ -421,6 +432,8 @@ const translationsData = {
     scamProtectionTitle_moneyTransfer: 'मनी ट्रांसफर या मोबाइल भुगतान सेवा धोखाधड़ी',
     scamProtectionTitle_mortgageClosing: 'बंधक समापन घोटाले',
     scamProtectionTitle_nonexistentGoods: 'अस्तित्वहीन सामान या सेवाओं की बिक्री के घोटाले',
+    scamProtectionTitle_romance: 'रोमांस घोटाले',
+
 
     // Fraud Protection Screen
     fraudProtectionScreenTitle: 'धोखाधड़ी से सुरक्षा (RBI भारत)',
@@ -574,6 +587,18 @@ const translationsData = {
     addCategoryFailed: 'श्रेणी जोड़ने में विफल रहा',
     editCategoryFailed: 'श्रेणी अपडेट करने में विफल रहा',
     unexpectedError: 'एक अप्रत्याशित त्रुटि हुई',
+
+    // Add these translations to the Hindi section
+fraudDetection: 'धोखाधड़ी का पता लगाना',
+callDetection: 'कॉल डिटेक्शन',
+callDetectionDesc: 'संभावित धोखाधड़ी वाले कॉल के लिए अलर्ट प्राप्त करें',
+messageDetection: 'संदेश डिटेक्शन',
+messageDetectionDesc: 'संभावित धोखाधड़ी वाले संदेशों के लिए अलर्ट प्राप्त करें',
+suspiciousCallAlert: 'संदिग्ध कॉल अलर्ट',
+suspiciousMessageAlert: 'संदिग्ध संदेश अलर्ट',
+callVerified: 'कॉल सत्यापित',
+messageVerified: 'संदेश सत्यापित',
+
   },
   punjabi: {
     // Common
@@ -737,6 +762,8 @@ const translationsData = {
     scamProtectionTitle_moneyTransfer: 'ਮਨੀ ਟ੍ਰਾਂਸਫਰ ਜਾਂ ਮੋਬਾਈਲ ਭੁਗਤਾਨ ਸੇਵਾਵਾਂ ਧੋਖਾਧੜੀ',
     scamProtectionTitle_mortgageClosing: 'ਮੋਰਟਗੇਜ ਸਮਾਪਤੀ ਸਕੈਮ',
     scamProtectionTitle_nonexistentGoods: 'ਗੈਰ-ਮੌਜੂਦ ਵਸਤੂਆਂ ਜਾਂ ਸੇਵਾਵਾਂ ਦੀ ਵਿਕਰੀ ਦੇ ਸਕੈਮ',
+    scamProtectionTitle_romance: 'ਰੋਮਾਂਸ ਸਕੈਮ',
+
 
     // Fraud Protection Screen
     fraudProtectionScreenTitle: 'ਧੋਖਾਧੜੀ ਤੋਂ ਸੁਰੱਖਿਆ (RBI ਭਾਰਤ)',
@@ -890,53 +917,79 @@ const translationsData = {
     addCategoryFailed: 'ਸ਼੍ਰੇਣੀ ਸ਼ਾਮਲ ਕਰਨ ਵਿੱਚ ਅਸਫਲ ਰਿਹਾ',
     editCategoryFailed: 'ਸ਼੍ਰੇਣੀ ਅੱਪਡੇਟ ਕਰਨ ਵਿੱਚ ਅਸਫਲ ਰਿਹਾ',
     unexpectedError: 'ਇੱਕ ਅਣਕਿਆਸੀ ਗਲਤੀ ਹੋਈ',
+
+    // Add these translations to the Punjabi section
+fraudDetection: 'ਧੋਖਾਧੜੀ ਦਾ ਪਤਾ ਲਗਾਉਣਾ',
+callDetection: 'ਕਾਲ ਡਿਟੈਕਸ਼ਨ',
+callDetectionDesc: 'ਸੰਭਾਵੀ ਧੋਖਾਧੜੀ ਵਾਲੀਆਂ ਕਾਲਾਂ ਲਈ ਅਲਰਟ ਪ੍ਰਾਪਤ ਕਰੋ',
+messageDetection: 'ਸੰਦੇਸ਼ ਡਿਟੈਕਸ਼ਨ',
+messageDetectionDesc: 'ਸੰਭਾਵੀ ਧੋਖਾਧੜੀ ਵਾਲੇ ਸੰਦੇਸ਼ਾਂ ਲਈ ਅਲਰਟ ਪ੍ਰਾਪਤ ਕਰੋ',
+suspiciousCallAlert: 'ਸ਼ੱਕੀ ਕਾਲ ਅਲਰਟ',
+suspiciousMessageAlert: 'ਸ਼ੱਕੀ ਸੰਦੇਸ਼ ਅਲਰਟ',
+callVerified: 'ਕਾਲ ਪ੍ਰਮਾਣਿਤ',
+messageVerified: 'ਸੰਦੇਸ਼ ਪ੍ਰਮਾਣਿਤ',
   },
 };
 
 // Create the context
-const LanguageContext = createContext();
+const LanguageContext = createContext({
+  currentLanguage: 'english',
+  translations: translationsData.english || {},
+  changeLanguage: () => {},
+});
 
 // Create provider component
 export const LanguageProvider = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState('english');
-  const [translations, setTranslations] = useState(translationsData.english);
+  const [translations, setTranslations] = useState(translationsData.english || {});
 
   useEffect(() => {
     // Load saved language preference
-    const loadLanguage = async () => {
+    const loadLanguagePreference = async () => {
       try {
         const savedLanguage = await AsyncStorage.getItem('language');
         if (savedLanguage) {
-          setCurrentLanguage(savedLanguage);
-          setTranslations(translationsData[savedLanguage]);
+          changeLanguage(savedLanguage);
         }
       } catch (error) {
         console.error('Error loading language preference:', error);
       }
     };
 
-    loadLanguage();
+    loadLanguagePreference();
   }, []);
-
-  // Function to change language
-  const changeLanguage = async (languageId) => {
-    try {
-      await AsyncStorage.setItem('language', languageId);
-      setCurrentLanguage(languageId);
-      setTranslations(translationsData[languageId]);
-      return true;
-    } catch (error) {
-      console.error('Error saving language preference:', error);
-      return false;
+const changeLanguage = (language) => {
+    if (translationsData[language]) {
+      setCurrentLanguage(language);
+      setTranslations(translationsData[language]);
+      AsyncStorage.setItem('language', language).catch(error => {
+        console.error('Error saving language preference:', error);
+      });
+    } else {
+      console.warn(`Language '${language}' not found, defaulting to English`);
+      setCurrentLanguage('english');
+      setTranslations(translationsData.english || {});
     }
   };
 
-  return (
+
+   return (
     <LanguageContext.Provider value={{ currentLanguage, translations, changeLanguage }}>
       {children}
     </LanguageContext.Provider>
   );
 };
-
-// Custom hook to use the language context
-export const useLanguage = () => useContext(LanguageContext);
+// Create a custom hook for using the language context
+export const useLanguage = () => {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    console.warn('useLanguage must be used within a LanguageProvider');
+    // Return default values to prevent crashes
+    return {
+      currentLanguage: 'english',
+      translations: translationsData.english || {},
+      changeLanguage: () => {},
+    };
+  }
+  return context;
+};

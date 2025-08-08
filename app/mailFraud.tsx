@@ -1,22 +1,22 @@
-// BlackmailScamScreen.js
+// MailFraudScreen.js
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 
-export default function BlackmailScamScreen() {
+export default function MailFraudScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
   const scamDetails = {
-    title: 'Blackmail Scams',
-    description: 'A blackmailer’s mission is to scare you into sending them money by threatening to distribute private content—from your computer or phone, or shared with them over an email, text, or social media—that could embarrass you. They might ask you to wire them money, or send it using a mobile app, a gift card, or cryptocurrency. Sometimes these scammers are complete strangers and other times they might be someone you met online and thought you could trust.',
+    title: 'Mail Fraud',
+    description: 'Mail fraud involves scams that are carried out using the postal service. This can include fake lotteries or sweepstakes, "get rich quick" schemes, fraudulent inheritance letters, or requests for donations to fake charities. Scammers may send official-looking letters to trick you into sending money or personal information. They often use high-pressure language and urgent deadlines to get you to act quickly before you have a chance to think or verify the offer.',
     whatToDo: [
-      'Try to stay calm in spite of blackmailers’ intimidation and high-pressure tactics. Stop communicating with them and don’t pay them. Keep all messages as evidence to help law enforcement. Keep in mind that you don’t need to deal with this alone.',
-      'Do NOT comply with demands for money, personal details, OTPs, or to install apps.',
-      'End the call immediately—do not press keys, share information, or click on any links.',
-      'Do not panic. Impersonators typically aim to create fear and urgency to push you into action',
-      'File a complaint on the National Cybercrime Reporting Portal:  cybercrime.gov.in or call the toll‑free helpline 1930'
+      "Be suspicious of unsolicited mail promising large sums of money, prizes, or lucrative investment opportunities.",
+      "Never send money, personal information, or a check to cover 'taxes' or 'fees' for a prize you supposedly won.",
+      "Research the sender. A legitimate company or charity will have a verifiable address, phone number, and online presence. If the information is difficult to find or seems generic, it's likely a scam.",
+      "Do not reply to the mail, and never use the provided return envelope. This confirms your address is active and can lead to more scam attempts.",
+      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll-free helpline 1930. You can also report it to your postal service.'
     ],
   };
 
@@ -30,8 +30,7 @@ export default function BlackmailScamScreen() {
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{scamDetails.title}</Text>
-        {/* Spacer to balance header title */}
-        <View style={{ width: 40 }} />
+        <View style={{ width: 40 }} /> {/* Spacer to balance header title */}
       </View>
 
       <ScrollView style={styles.scrollView}>
@@ -96,7 +95,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 20,
   },
-  whatToDoTitle: { // Renamed from tipsTitle for clarity
+  whatToDoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#A8C3D1',
@@ -115,7 +114,7 @@ const styles = StyleSheet.create({
   tipText: {
     fontSize: 16,
     color: 'white',
-    flex: 1, // Allows text to wrap
+    flex: 1,
     lineHeight: 22,
   },
 });
