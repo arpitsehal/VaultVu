@@ -37,7 +37,7 @@ export default function FraudMessageCheckerScreen() {
 
     try {
       // Call our backend API
-      const apiUrl = 'http://192.168.1.7:5000/api/message-check';
+      const apiUrl = 'https://vaultvu.onrender.com/api/message-check';
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {

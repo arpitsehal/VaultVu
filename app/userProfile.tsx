@@ -155,7 +155,7 @@ export default function UserProfileScreen() {
       }
       
       // Call API to update profile on server
-      const response = await fetch('http://192.168.1.7:5000/api/auth/profile', {
+      const response = await fetch('https://vaultvu.onrender.com/api/auth/profile', {
         method: 'PUT',  // Changed from POST to PUT
         headers: {
           'Content-Type': 'application/json',

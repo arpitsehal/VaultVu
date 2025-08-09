@@ -14,7 +14,7 @@ Notifications.setNotificationHandler({
 // Function to check if a phone number is potentially fraudulent
 async function checkPhoneNumber(phoneNumber) {
   try {
-    const response = await fetch('http://192.168.1.7:5000/api/phone-check', {
+    const response = await fetch('https://vaultvu.onrender.com/api/phone-check', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

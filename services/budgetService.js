@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.1.7:5000/api/budget';
+const API_URL = 'https://vaultvu.onrender.com/api/budget';
 
 // Get the auth token for authenticated requests
 const getToken = async () => {

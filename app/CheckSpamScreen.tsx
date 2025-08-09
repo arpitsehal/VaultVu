@@ -37,7 +37,7 @@ export default function CheckSpamScreen() {
 
     try {
       // Make API call to our backend
-      const response = await fetch('http://192.168.1.7:5000/api/phone-check', {
+      const response = await fetch('https://vaultvu.onrender.com/api/phone-check', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

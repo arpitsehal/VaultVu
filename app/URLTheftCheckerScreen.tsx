@@ -39,7 +39,7 @@ export default function URLTheftCheckerScreen() {
     setResult(null);
 
     try {
-      const apiUrl = 'http://192.168.1.7:5000/api/url-check';
+      const apiUrl = 'https://vaultvu.onrender.com/api/url-check';
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {

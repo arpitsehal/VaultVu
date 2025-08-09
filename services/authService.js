@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.1.7:5000/api/auth';
+// To this
+const API_URL = 'https://vaultvu.onrender.com/api/auth';
 
 export async function login(emailOrUsername, password) {
   try {
@@ -62,4 +63,4 @@ export async function logout() {
   } catch (error) {
     return { success: false, message: 'Logout error' };
   }
-} 
+}

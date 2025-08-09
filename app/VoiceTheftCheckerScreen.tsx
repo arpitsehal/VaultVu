@@ -66,7 +66,7 @@ export default function VoiceTheftCheckerScreen() {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      const apiUrl = 'http://192.168.1.7:5000/api/voice-check';
+      const apiUrl = 'https://vaultvu.onrender.com/api/voice-check';
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
