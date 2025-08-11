@@ -1,0 +1,432 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+    ActivityIndicator,
+    Dimensions,
+    Platform,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+    Modal, // Added Modal for custom UI
+    Pressable, // Added Pressable for modal buttons
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const { width: screenWidth } = Dimensions.get('window');
+const totalQuizTime = 120;
+const BACKEND_URL = 'https://vaultvu-backend.onrender.com/api/questions';
+
+const LEADERBOARD_URL = 'https://vaultvu-backend.onrender.com/api/leaderboard/scores'; // Corrected URL
+
+interface Question {
+    _id: string;
+    question: string;
+    options: string[];
+    correctAnswer: string;
+    category?: string;
+    difficulty?: string;
+    tags?: string[];
+    created_at?: string;
+}
+
+// Custom Modal Component for Quiz Results
+const ResultModal = ({
+    isVisible,
+    score,
+    totalQuestions,
+    onLeaderboardPress,
+    onDashboardPress
+}: {
+    isVisible: boolean;
+    score: number;
+    totalQuestions: number;
+    onLeaderboardPress: () => void;
+    onDashboardPress: () => void;
+}) => (
+    <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isVisible}
+        onRequestClose={onDashboardPress}
+    >
+        <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+                <Text style={styles.modalTitle}>Quiz Finished!</Text>
+                <Text style={styles.modalText}>You scored {score} out of {totalQuestions}.</Text>
+                <View style={styles.modalButtonsContainer}>
+                    <Pressable
+                        style={[styles.modalButton, styles.buttonLeaderboard]}
+                        onPress={onLeaderboardPress}
+                    >
+                        <Text style={styles.buttonText}>Go to Leaderboard</Text>
+                    </Pressable>
+                    <Pressable
+                        style={[styles.modalButton, styles.buttonDashboard]}
+                        onPress={onDashboardPress}
+                    >
+                        <Text style={styles.buttonText}>Return to Dashboard</Text>
+                    </Pressable>
+                </View>
+            </View>
+        </View>
+    </Modal>
+);
+
+export default function QuizPlayScreen() {
+    const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
+    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [score, setScore] = useState<number>(0);
+    const [timeLeft, setTimeLeft] = useState<number>(totalQuizTime);
+    const [quizCompleted, setQuizCompleted] = useState<boolean>(false);
+    const [showResultModal, setShowResultModal] = useState<boolean>(false);
+
+    // Updated countdown state to handle 'Start!'
+    const [countdown, setCountdown] = useState<number | string>(3);
+
+    const router = useRouter();
+    const insets = useSafeAreaInsets();
+
+    useEffect(() => {
+        const fetchQuestions = async () => {
+            try {
+                const response = await fetch(BACKEND_URL);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data: Question[] = await response.json();
+                setQuizQuestions(data);
+            } catch (e: unknown) {
+                const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
+                console.error("Fetching error:", e);
+                setError(`Failed to load quiz questions: ${errorMessage}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchQuestions();
+    }, []);
+
+    // Countdown logic
+    useEffect(() => {
+        if (loading || error || quizQuestions.length === 0) return;
+        if (countdown === 0) return;
+
+        const countdownTimer = setInterval(() => {
+            setCountdown(prevCount => {
+                if (typeof prevCount === 'number') {
+                    if (prevCount > 1) {
+                        return prevCount - 1;
+                    } else {
+                        return 'Start!';
+                    }
+                }
+                clearInterval(countdownTimer);
+                return 0;
+            });
+        }, 1000);
+
+        return () => clearInterval(countdownTimer);
+    }, [loading, error, quizQuestions.length]);
+
+
+    // Main quiz timer logic
+    useEffect(() => {
+        if (quizCompleted || loading || error || quizQuestions.length === 0 || countdown !== 0) return;
+        
+        const timer = setInterval(() => {
+            setTimeLeft(prevTime => {
+                if (prevTime <= 1) {
+                    clearInterval(timer);
+                    handleQuizEnd(score);
+                    return 0;
+                }
+                return prevTime - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [quizCompleted, loading, error, quizQuestions.length, score, countdown]);
+
+    const handleQuizEnd = async (finalScore: number) => {
+        setQuizCompleted(true);
+        setShowResultModal(true);
+
+        // TODO: Replace this with actual logged-in user's data
+        const userEmail = "user@example.com";
+        const username = "Quiz Player";
+
+        // Submit score to the corrected backend endpoint
+        try {
+            const response = await fetch(LEADERBOARD_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username: username, // <-- Added username
+                    email: userEmail,
+                    score: finalScore,
+                }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                console.log("✅ Score submitted:", data);
+            } else {
+                console.error("❌ Failed to submit score:", data.message);
+            }
+        } catch (error) {
+            console.error("⚠ Error while submitting score:", error);
+        }
+    };
+
+    const handleOptionPress = (optionValue: string) => {
+        if (selectedOption) return;
+        setSelectedOption(optionValue);
+    };
+
+    const handleNextQuestion = () => {
+        let newScore = score;
+        const currentQuestion = quizQuestions[currentQuestionIndex];
+        
+        if (selectedOption && selectedOption.trim() === currentQuestion.correctAnswer.trim()) {
+            newScore = score + 1;
+            setScore(newScore);
+        }
+        
+        if (currentQuestionIndex < quizQuestions.length - 1) {
+            setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+            setSelectedOption(null);
+        } else {
+            handleQuizEnd(newScore);
+        }
+    };
+
+    const getOptionStyle = (optionValue: string) => {
+        const currentQuestion = quizQuestions[currentQuestionIndex];
+        if (selectedOption === null) {
+            return styles.optionButton;
+        }
+        if (optionValue.trim() === currentQuestion.correctAnswer.trim()) {
+            return styles.optionCorrect;
+        }
+        if (optionValue === selectedOption) {
+            return styles.optionIncorrect;
+        }
+        return styles.optionButton;
+    };
+
+    const formatTime = (time: number) => {
+        const minutes = Math.floor(time / 60);
+        const seconds = time % 60;
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+    };
+
+    if (loading) {
+        return (
+            <SafeAreaView style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#A8C3D1" />
+                <Text style={styles.loadingText}>Loading quiz questions...</Text>
+            </SafeAreaView>
+        );
+    }
+
+    if (error || quizQuestions.length === 0) {
+        return (
+            <SafeAreaView style={styles.loadingContainer}>
+                <Text style={styles.errorText}>{error || 'No quiz questions found.'}</Text>
+                <TouchableOpacity style={styles.nextButton} onPress={() => router.back()}>
+                    <Text style={styles.nextButtonText}>Return to Dashboard</Text>
+                </TouchableOpacity>
+            </SafeAreaView>
+        );
+    }
+
+    if (quizCompleted) {
+        return (
+            <ResultModal 
+                isVisible={showResultModal}
+                score={score}
+                totalQuestions={quizQuestions.length}
+                onLeaderboardPress={() => {
+                    setShowResultModal(false);
+                    router.push('/Leaderboard');
+                }}
+                onDashboardPress={() => {
+                    setShowResultModal(false);
+                    router.back();
+                }}
+            />
+        );
+    }
+
+    // New Countdown UI
+    if (countdown > 0) {
+        return (
+            <SafeAreaView style={styles.loadingContainer}>
+                <Text style={styles.countdownText}>{countdown}</Text>
+            </SafeAreaView>
+        );
+    } else if (countdown === 'Start!') {
+        return (
+            <SafeAreaView style={styles.loadingContainer}>
+                <Text style={styles.countdownText}>{countdown}</Text>
+            </SafeAreaView>
+        );
+    }
+
+    const currentQuestion = quizQuestions[currentQuestionIndex];
+    const progress = ((currentQuestionIndex) / quizQuestions.length) * 100;
+
+    return (
+        <SafeAreaView style={styles.safeArea}>
+            <StatusBar barStyle="light-content" backgroundColor="#1A213B" />
+            <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
+                <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                    <Ionicons name="arrow-back" size={24} color="white" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Quiz</Text>
+                <View style={styles.timerContainer}>
+                    <Ionicons name="time-outline" size={20} color="white" />
+                    <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
+                </View>
+            </View>
+            <View style={styles.progressBarContainer}>
+                <View style={[styles.progressBar, { width: `${progress}%` }]} />
+            </View>
+            <View style={styles.mainContent}>
+                <Text style={styles.questionCounter}>
+                    Question {currentQuestionIndex + 1} of {quizQuestions.length}
+                </Text>
+                <Text style={styles.questionText}>{currentQuestion.question}</Text>
+                <View style={styles.optionsContainer}>
+                    {currentQuestion.options.map((option, index) => (
+                        <TouchableOpacity
+                            key={index}
+                            style={[
+                                styles.optionButton,
+                                selectedOption === option && styles.optionSelected,
+                                selectedOption && getOptionStyle(option),
+                            ]}
+                            onPress={() => handleOptionPress(option)}
+                            disabled={selectedOption !== null}
+                        >
+                            <Text style={styles.optionLabelText}>{String.fromCharCode(65 + index)}</Text>
+                            <Text style={styles.optionText}>{option}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+
+                {selectedOption && (
+                    <TouchableOpacity
+                        style={styles.nextButton}
+                        onPress={handleNextQuestion}
+                    >
+                        <Text style={styles.nextButtonText}>
+                            {currentQuestionIndex < quizQuestions.length - 1 ? 'Next Question' : 'Finish Quiz'}
+                        </Text>
+                    </TouchableOpacity>
+                )}
+            </View>
+        </SafeAreaView>
+    );
+}
+
+const styles = StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: '#1A213B' },
+    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#1A213B', padding: 20 },
+    loadingText: { marginTop: 10, color: 'white', fontSize: 18 },
+    errorText: { color: '#dc3545', fontSize: 20, textAlign: 'center', marginBottom: 20 },
+    headerContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, backgroundColor: '#1A213B' },
+    backButton: { padding: 10, position: 'absolute', left: 10, zIndex: 1 },
+    headerTitle: { flex: 1, fontSize: 24, fontWeight: 'bold', color: 'white', textAlign: 'center' },
+    timerContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#333A4B', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
+    timerText: { fontSize: 16, fontWeight: 'bold', color: 'white', marginLeft: 5 },
+    progressBarContainer: { height: 8, backgroundColor: '#333A4B', marginHorizontal: 20, borderRadius: 4, overflow: 'hidden', marginTop: 10, marginBottom: 20 },
+    progressBar: { height: '100%', backgroundColor: '#6A8EAE' },
+    mainContent: { flex: 1, padding: 20 },
+    questionCounter: { fontSize: 16, color: '#A8C3D1', fontWeight: '600', marginBottom: 10 },
+    questionText: { fontSize: 20, fontWeight: 'bold', color: 'white', marginBottom: 30, lineHeight: 28 },
+    optionsContainer: { flex: 1, justifyContent: 'center', gap: 15 },
+    optionButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#333A4B', borderRadius: 15, padding: 15, borderWidth: 2, borderColor: 'transparent' },
+    optionSelected: { borderColor: '#6A8EAE' },
+    optionCorrect: { backgroundColor: '#28a745', borderColor: '#218838' },
+    optionIncorrect: { backgroundColor: '#dc3545', borderColor: '#c82333' },
+    optionLabelText: { fontSize: 16, fontWeight: 'bold', color: 'white', marginRight: 15 },
+    optionText: { flex: 1, fontSize: 16, color: 'white', fontWeight: '500' },
+    nextButton: { backgroundColor: '#A8C3D1', borderRadius: 15, paddingVertical: 15, alignItems: 'center', marginTop: 30 },
+    nextButtonText: { fontSize: 18, fontWeight: 'bold', color: '#1A213B' },
+    countdownText: {
+        fontSize: 80,
+        fontWeight: 'bold',
+        color: 'white',
+    },
+    // Styles for the custom modal
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: 'rgba(0,0,0,0.7)',
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: "#1A213B",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+        width: '90%',
+    },
+    modalTitle: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: 'white',
+        marginBottom: 15,
+    },
+    modalText: {
+        fontSize: 20,
+        color: '#A8C3D1',
+        marginBottom: 25,
+        textAlign: 'center',
+    },
+    modalButtonsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+    },
+    modalButton: {
+        borderRadius: 15,
+        paddingVertical: 15,
+        paddingHorizontal: 25,
+        elevation: 2,
+        flex: 1,
+        marginHorizontal: 5,
+        alignItems: 'center',
+    },
+    buttonLeaderboard: {
+        backgroundColor: '#6A8EAE',
+    },
+    buttonDashboard: {
+        backgroundColor: '#333A4B',
+    },
+    buttonText: {
+        color: "white",
+        fontWeight: "bold",
+        textAlign: "center",
+        fontSize: 16,
+    },
+});

@@ -41,6 +41,7 @@ export default function RootLayout() {
           <Stack.Screen name="userProfile" />
           <Stack.Screen name="languageSettings" />
           <Stack.Screen name="aboutUs" />
+          <Stack.Screen name="report" />
           
           {/* Fraud Types */}
           <Stack.Screen name="phishingFraud" />

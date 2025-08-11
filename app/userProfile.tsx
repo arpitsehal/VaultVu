@@ -58,7 +58,8 @@ export default function UserProfileScreen() {
         }
 
         // Fetch user data from backend
-        const response = await fetch('http://192.168.1.7:5000/api/auth/profile', {
+        const response = await fetch('https://vaultvu.onrender.com/api/auth/profile', {
+
 
           method: 'GET',
           headers: {

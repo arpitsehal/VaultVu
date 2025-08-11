@@ -119,7 +119,7 @@ export default function DashboardScreen() {
       title: translations.financialLiteracyQuiz || 'Financial Literacy Quiz',
       icon: '🧠',
       description: translations.financialLiteracyQuizDesc || 'Test your knowledge and improve your financial IQ!',
-      route: 'Quiz',
+      route: '/quizscreen',
       cardColor: '#A8C3D1',
       textColor: '#1A213B',
     },
