@@ -18,6 +18,8 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AntDesign } from '@expo/vector-icons';
 import { useLanguage } from '../contexts/LanguageContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { completeProfile } from '../services/authService';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -74,7 +76,7 @@ export default function CreateAccountPage2() {
     }
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     setUsernameError('');
     setDobError('');
     setCountryError('');
@@ -100,12 +102,28 @@ export default function CreateAccountPage2() {
     }
 
     if (isValid) {
-      const formattedDateOfBirth = selectedDate.toISOString().split('T')[0];
-
-      console.log('Signing up with:', { username, dateOfBirth: formattedDateOfBirth, country, gender });
-      Alert.alert('Success', translations.accountCreatedSuccess || 'Account created successfully!', [
-        { text: translations.ok || 'OK', onPress: () => router.push('/signin') }
-      ]);
+      try {
+        const formattedDateOfBirth = selectedDate.toISOString().split('T')[0];
+        const email = await AsyncStorage.getItem('registrationEmail');
+        
+        if (!email) {
+          Alert.alert('Error', 'Registration email not found. Please try signing up again.');
+          return;
+        }
+        
+        const result = await completeProfile(email, username, formattedDateOfBirth, country, gender);
+        
+        if (result.success) {
+          Alert.alert('Success', translations.accountCreatedSuccess || 'Account created successfully!', [
+            { text: translations.ok || 'OK', onPress: () => router.push('/signin') }
+          ]);
+        } else {
+          Alert.alert('Error', result.message || 'Failed to complete profile. Please try again.');
+        }
+      } catch (error) {
+        console.error('Profile completion error:', error);
+        Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+      }
     } else {
       Alert.alert('Error', translations.allFieldsRequiredAlert || 'Please fill in all required fields.');
     }

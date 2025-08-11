@@ -17,6 +17,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router';
 import { useLanguage } from '../contexts/LanguageContext';
 import { AntDesign } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -103,6 +104,8 @@ export default function CreateAccountPage() {
 
         if (response.ok) {
           console.log('Registration successful:', data);
+          // Store email for the next step
+          await AsyncStorage.setItem('registrationEmail', email);
           Alert.alert(translations.signupSuccessAlertTitle || 'Success', data.message || translations.signupSuccessAlertMessage, [
             { text: translations.ok || 'OK', onPress: () => router.push('/signup2') }
           ]);
