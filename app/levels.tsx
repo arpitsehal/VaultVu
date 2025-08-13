@@ -229,7 +229,16 @@ export default function LevelsScreen() {
       const token = userData.token;
       
       if (!token) {
-        setError('You must be logged in to view quiz levels');
+        // Instead of showing error, use local data with first level unlocked
+        const localLevels = QUIZ_LEVELS.map((level, index) => ({
+          ...level,
+          isLocked: index > 0 && level.unlockCost > 0, // Only first level unlocked
+          completed: false,
+          score: 0
+        }));
+        
+        setLevels(localLevels);
+        setUserCoins(0);
         setLoading(false);
         return;
       }

@@ -224,23 +224,154 @@ export default function QuizBattleScreen() {
     const insets = useSafeAreaInsets();
     
     useEffect(() => {
+        // Add this after the interface definitions
+        const BATTLE_QUIZ_QUESTIONS: Question[] = [
+            {
+                _id: 'bq1',
+                question: 'What is a common technique used in social engineering attacks?',
+                options: [
+                    'Encryption',
+                    'Pretexting (creating a fabricated scenario)',
+                    'Firewall configuration',
+                    'Software patching'
+                ],
+                correctAnswer: 'Pretexting (creating a fabricated scenario)',
+                category: 'Security',
+                difficulty: 'medium'
+            },
+            {
+                _id: 'bq2',
+                question: 'Which of these is a secure way to store your passwords?',
+                options: [
+                    'In a text file on your desktop',
+                    'Using the same password for all accounts',
+                    'Using a reputable password manager',
+                    'Writing them down on sticky notes'
+                ],
+                correctAnswer: 'Using a reputable password manager',
+                category: 'Security',
+                difficulty: 'easy'
+            },
+            {
+                _id: 'bq3',
+                question: 'What is a "man-in-the-middle" attack?',
+                options: [
+                    'When someone physically stands between you and an ATM',
+                    'When an attacker secretly intercepts and relays communications between two parties',
+                    'When a bank employee steals your information',
+                    'When someone looks over your shoulder as you type'
+                ],
+                correctAnswer: 'When an attacker secretly intercepts and relays communications between two parties',
+                category: 'Security',
+                difficulty: 'hard'
+            },
+            {
+                _id: 'bq4',
+                question: 'What is a secure way to make online purchases?',
+                options: [
+                    'Using public WiFi',
+                    'Using a debit card linked to your main bank account',
+                    'Using a credit card with fraud protection',
+                    'Sending cash by mail'
+                ],
+                correctAnswer: 'Using a credit card with fraud protection',
+                category: 'Finance',
+                difficulty: 'medium'
+            },
+            {
+                _id: 'bq5',
+                question: 'Which of these is NOT a sign of identity theft?',
+                options: [
+                    'Unexpected bills or accounts in your name',
+                    'Missing mail or statements',
+                    'Receiving a tax refund',
+                    'Unexplained withdrawals from your accounts'
+                ],
+                correctAnswer: 'Receiving a tax refund',
+                category: 'Fraud',
+                difficulty: 'medium'
+            },
+            {
+                _id: 'bq6',
+                question: 'What is a good practice for mobile device security?',
+                options: [
+                    'Never updating your apps',
+                    'Using the same PIN for all your accounts',
+                    'Enabling biometric authentication when available',
+                    'Downloading apps from any source'
+                ],
+                correctAnswer: 'Enabling biometric authentication when available',
+                category: 'Security',
+                difficulty: 'easy'
+            },
+            {
+                _id: 'bq7',
+                question: 'What is a "smishing" attack?',
+                options: [
+                    'A phishing attack via SMS or text messages',
+                    'A physical theft of a smartphone',
+                    'A virus that affects only iPhones',
+                    'When someone smashes your phone to steal data'
+                ],
+                correctAnswer: 'A phishing attack via SMS or text messages',
+                category: 'Security',
+                difficulty: 'medium'
+            },
+            {
+                _id: 'bq8',
+                question: 'Which of these is a secure way to access your bank account online?',
+                options: [
+                    'Using public computers',
+                    'Using the bank\'s official app on a secured device',
+                    'Clicking links from emails that appear to be from your bank',
+                    'Sharing your login with a family member'
+                ],
+                correctAnswer: 'Using the bank\'s official app on a secured device',
+                category: 'Finance',
+                difficulty: 'easy'
+            },
+            {
+                _id: 'bq9',
+                question: 'What should you do before disposing of an old computer?',
+                options: [
+                    'Nothing special is needed',
+                    'Just delete your files',
+                    'Securely wipe the hard drive or remove and destroy it',
+                    'Sell it immediately to recover value'
+                ],
+                correctAnswer: 'Securely wipe the hard drive or remove and destroy it',
+                category: 'Security',
+                difficulty: 'medium'
+            },
+            {
+                _id: 'bq10',
+                question: 'Which of these is NOT a recommended practice for online shopping?',
+                options: [
+                    'Using secure (https) websites',
+                    'Saving your payment information on all websites for convenience',
+                    'Checking seller reviews and ratings',
+                    'Using strong, unique passwords for shopping accounts'
+                ],
+                correctAnswer: 'Saving your payment information on all websites for convenience',
+                category: 'Finance',
+                difficulty: 'easy'
+            }
+        ];
+
+        // Replace the fetchQuestions function with this
         const fetchQuestions = async () => {
             try {
-                const response = await fetch(`${BACKEND_URL}/battle?count=${questionCount}`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data: Question[] = await response.json();
-                setQuizQuestions(data);
-            } catch (e: unknown) {
-                const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
-                console.error("Fetching error:", e);
-                setError(`Failed to load quiz questions: ${errorMessage}`);
+                // Instead of fetching from backend, use local questions
+                // Slice to get the requested number of questions
+                setQuizQuestions(BATTLE_QUIZ_QUESTIONS.slice(0, questionCount));
+            } catch (e) {
+                console.error("Error setting up quiz:", e);
+                setError("Failed to set up battle questions");
             } finally {
                 setLoading(false);
             }
         };
-        
+
         if (battleStarted && !battleCompleted) {
             fetchQuestions();
         }

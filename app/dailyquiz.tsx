@@ -34,6 +34,75 @@ interface Question {
     created_at?: string;
 }
 
+// Local questions for daily quiz
+const DAILY_QUIZ_QUESTIONS: Question[] = [
+    {
+        _id: 'dq1',
+        question: 'What is phishing?',
+        options: [
+            'A type of fishing sport',
+            'A cybersecurity attack where attackers impersonate legitimate entities',
+            'A software development methodology',
+            'A network protocol'
+        ],
+        correctAnswer: 'A cybersecurity attack where attackers impersonate legitimate entities',
+        category: 'Security',
+        difficulty: 'easy'
+    },
+    {
+        _id: 'dq2',
+        question: 'Which of the following is a strong password?',
+        options: [
+            'password123',
+            'qwerty',
+            'P@$$w0rd2023!',
+            'your name'
+        ],
+        correctAnswer: 'P@$$w0rd2023!',
+        category: 'Security',
+        difficulty: 'easy'
+    },
+    {
+        _id: 'dq3',
+        question: 'What is two-factor authentication (2FA)?',
+        options: [
+            'Using two different passwords',
+            'A security process requiring two different authentication methods',
+            'Logging in from two different devices',
+            'Changing your password twice a year'
+        ],
+        correctAnswer: 'A security process requiring two different authentication methods',
+        category: 'Security',
+        difficulty: 'medium'
+    },
+    {
+        _id: 'dq4',
+        question: 'Which of these is NOT a common sign of a scam?',
+        options: [
+            'Urgent requests for personal information',
+            'Offers that seem too good to be true',
+            'Requests to verify account information via official company channels',
+            'Unexpected prize notifications'
+        ],
+        correctAnswer: 'Requests to verify account information via official company channels',
+        category: 'Fraud',
+        difficulty: 'medium'
+    },
+    {
+        _id: 'dq5',
+        question: 'What should you do if you suspect your financial information has been compromised?',
+        options: [
+            'Ignore it and hope nothing happens',
+            'Only monitor your accounts for unusual activity',
+            'Contact your financial institutions and change passwords immediately',
+            'Post about it on social media'
+        ],
+        correctAnswer: 'Contact your financial institutions and change passwords immediately',
+        category: 'Finance',
+        difficulty: 'medium'
+    }
+];
+
 // Custom Modal Component for Quiz Results
 const ResultModal = ({
     isVisible,
@@ -130,19 +199,26 @@ export default function DailyQuizScreen() {
         checkQuizAvailability();
     }, []);
 
+    // Replace fetchQuestions with this function
     const fetchQuestions = async () => {
         try {
-            const response = await fetch(BACKEND_URL);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data: Question[] = await response.json();
-            // Limit to 5 questions for daily quiz
-            setQuizQuestions(data.slice(0, 5));
-        } catch (e: unknown) {
-            const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
-            console.error("Fetching error:", e);
-            setError(`Failed to load quiz questions: ${errorMessage}`);
+            // Instead of fetching from backend, use local questions
+            setQuizQuestions(DAILY_QUIZ_QUESTIONS);
+            
+            // Start countdown after setting questions
+            let count = 3;
+            const timer = setInterval(() => {
+                setCountdown(count);
+                count -= 1;
+                
+                if (count < 0) {
+                    clearInterval(timer);
+                    setCountdown(0);
+                }
+            }, 1000);
+        } catch (e) {
+            console.error("Error setting up quiz:", e);
+            setError("Failed to set up quiz questions");
         } finally {
             setLoading(false);
         }
