@@ -19,9 +19,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: screenWidth } = Dimensions.get('window');
 const QUESTION_TIME = 30; // 30 seconds per question
-const BACKEND_URL = 'https://vaultvu-backend.onrender.com/api/questions';
-const LEADERBOARD_URL = 'https://vaultvu-backend.onrender.com/api/leaderboard/scores';
-const USER_API_URL = 'https://vaultvu-backend.onrender.com/api/users';
+const BACKEND_URL = 'https://vaultvu.onrender.com/api/questions';
+const LEADERBOARD_URL = 'https://vaultvu.onrender.com/api/leaderboard/scores';
+const USER_API_URL = 'https://vaultvu.onrender.com/api/users';
 
 interface Question {
     _id: string;

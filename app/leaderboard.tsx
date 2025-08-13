@@ -1,23 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
+    FlatList,
     Platform,
     StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
-    FlatList,
-    Image,
+    View
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: screenWidth } = Dimensions.get('window');
-const LEADERBOARD_URL = 'https://vaultvu-backend.onrender.com/api/leaderboard/scores';
+const LEADERBOARD_URL = 'https://vaultvu.onrender.com/api/leaderboard/scores';
 
 interface LeaderboardEntry {
     username: string;

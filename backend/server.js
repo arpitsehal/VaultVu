@@ -23,7 +23,13 @@ connectDB();
 // This is the easiest way to solve the CORS error for now.
 // However, for production, it is generally safer to specify
 // the exact origins you trust, as shown in the previous example.
-app.use(cors());
+const corsOptions = {
+    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*', // Allows multiple origins
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204,
+};
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: '50mb' }));
 

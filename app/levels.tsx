@@ -19,7 +19,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: screenWidth } = Dimensions.get('window');
-const API_URL = 'https://vaultvu-backend.onrender.com/api/users';
+const API_URL = 'https://vaultvu.onrender.com/api/users';
 
 interface Level {
   id: number;
