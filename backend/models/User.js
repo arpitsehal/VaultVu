@@ -1,4 +1,3 @@
-// Add this to your existing User model
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -41,6 +40,45 @@ const BudgetCategorySchema = new Schema({
   transactions: [TransactionSchema]
 });
 
+// Badge schema for user achievements
+const BadgeSchema = new Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  icon: {
+    type: String,
+    default: '🏆'
+  },
+  dateEarned: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+// Quiz progress schema to track completed levels
+const QuizLevelSchema = new Schema({
+  levelId: {
+    type: Number,
+    required: true
+  },
+  completed: {
+    type: Boolean,
+    default: false
+  },
+  score: {
+    type: Number,
+    default: 0
+  },
+  completedAt: {
+    type: Date
+  }
+});
+
 // Add this to your existing UserSchema
 const userSchema = new mongoose.Schema({
   email: {
@@ -72,7 +110,28 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  budgetCategories: [BudgetCategorySchema] // Uncomment this line to add the field
+  // Quiz and gamification related fields
+  coins: {
+    type: Number,
+    default: 0
+  },
+  points: {
+    type: Number,
+    default: 0
+  },
+  streak: {
+    type: Number,
+    default: 0
+  },
+  lastQuizDate: {
+    type: Date
+  },
+  badges: [BadgeSchema],
+  quizLevels: [QuizLevelSchema],
+  leaderboardRank: {
+    type: Number
+  },
+  budgetCategories: [BudgetCategorySchema]
 });
 
 module.exports = mongoose.model('User', userSchema);

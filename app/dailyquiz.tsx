@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Dimensions,
     Platform,
     StatusBar,
@@ -10,16 +11,17 @@ import {
     Text,
     TouchableOpacity,
     View,
-    Modal, // Added Modal for custom UI
-    Pressable, // Added Pressable for modal buttons
+    Modal,
+    Pressable,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: screenWidth } = Dimensions.get('window');
-const totalQuizTime = 120;
+const QUESTION_TIME = 30; // 30 seconds per question
 const BACKEND_URL = 'https://vaultvu-backend.onrender.com/api/questions';
-
-const LEADERBOARD_URL = 'https://vaultvu-backend.onrender.com/api/leaderboard/scores'; // Corrected URL
+const LEADERBOARD_URL = 'https://vaultvu-backend.onrender.com/api/leaderboard/scores';
+const USER_API_URL = 'https://vaultvu-backend.onrender.com/api/users';
 
 interface Question {
     _id: string;
@@ -37,12 +39,14 @@ const ResultModal = ({
     isVisible,
     score,
     totalQuestions,
+    coinsEarned,
     onLeaderboardPress,
     onDashboardPress
 }: {
     isVisible: boolean;
     score: number;
     totalQuestions: number;
+    coinsEarned: number;
     onLeaderboardPress: () => void;
     onDashboardPress: () => void;
 }) => (
@@ -56,6 +60,7 @@ const ResultModal = ({
             <View style={styles.modalView}>
                 <Text style={styles.modalTitle}>Quiz Finished!</Text>
                 <Text style={styles.modalText}>You scored {score} out of {totalQuestions}.</Text>
+                <Text style={styles.modalCoins}>+{coinsEarned} coins earned!</Text>
                 <View style={styles.modalButtonsContainer}>
                     <Pressable
                         style={[styles.modalButton, styles.buttonLeaderboard]}
@@ -75,47 +80,77 @@ const ResultModal = ({
     </Modal>
 );
 
-export default function QuizPlayScreen() {
+export default function DailyQuizScreen() {
     const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [score, setScore] = useState<number>(0);
-    const [timeLeft, setTimeLeft] = useState<number>(totalQuizTime);
+    const [timeLeft, setTimeLeft] = useState<number>(QUESTION_TIME);
     const [quizCompleted, setQuizCompleted] = useState<boolean>(false);
     const [showResultModal, setShowResultModal] = useState<boolean>(false);
-
-    // Updated countdown state to handle 'Start!'
     const [countdown, setCountdown] = useState<number | string>(3);
+    const [coinsEarned, setCoinsEarned] = useState<number>(0);
+    const [canPlayQuiz, setCanPlayQuiz] = useState<boolean>(true);
 
     const router = useRouter();
     const insets = useSafeAreaInsets();
 
+    // Check if user can play the daily quiz
     useEffect(() => {
-        const fetchQuestions = async () => {
+        const checkQuizAvailability = async () => {
             try {
-                const response = await fetch(BACKEND_URL);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                const lastPlayedDate = await AsyncStorage.getItem('lastDailyQuizDate');
+                if (lastPlayedDate) {
+                    const lastPlayed = new Date(lastPlayedDate);
+                    const now = new Date();
+                    
+                    // Check if it's the same day
+                    if (
+                        lastPlayed.getDate() === now.getDate() &&
+                        lastPlayed.getMonth() === now.getMonth() &&
+                        lastPlayed.getFullYear() === now.getFullYear()
+                    ) {
+                        setCanPlayQuiz(false);
+                        setError('You have already played the daily quiz today. Come back tomorrow!');
+                    }
                 }
-                const data: Question[] = await response.json();
-                setQuizQuestions(data);
-            } catch (e: unknown) {
-                const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
-                console.error("Fetching error:", e);
-                setError(`Failed to load quiz questions: ${errorMessage}`);
+            } catch (e) {
+                console.error('Error checking quiz availability:', e);
             } finally {
-                setLoading(false);
+                if (canPlayQuiz) {
+                    fetchQuestions();
+                } else {
+                    setLoading(false);
+                }
             }
         };
-        fetchQuestions();
+
+        checkQuizAvailability();
     }, []);
+
+    const fetchQuestions = async () => {
+        try {
+            const response = await fetch(BACKEND_URL);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data: Question[] = await response.json();
+            // Limit to 5 questions for daily quiz
+            setQuizQuestions(data.slice(0, 5));
+        } catch (e: unknown) {
+            const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
+            console.error("Fetching error:", e);
+            setError(`Failed to load quiz questions: ${errorMessage}`);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Countdown logic
     useEffect(() => {
-        if (loading || error || quizQuestions.length === 0) return;
+        if (loading || error || quizQuestions.length === 0 || !canPlayQuiz) return;
         if (countdown === 0) return;
 
         const countdownTimer = setInterval(() => {
@@ -133,51 +168,100 @@ export default function QuizPlayScreen() {
         }, 1000);
 
         return () => clearInterval(countdownTimer);
-    }, [loading, error, quizQuestions.length]);
+    }, [loading, error, quizQuestions.length, canPlayQuiz]);
 
-
-    // Main quiz timer logic
+    // Question timer logic
     useEffect(() => {
-        if (quizCompleted || loading || error || quizQuestions.length === 0 || countdown !== 0) return;
+        if (quizCompleted || loading || error || quizQuestions.length === 0 || countdown !== 0 || !canPlayQuiz) return;
         
         const timer = setInterval(() => {
             setTimeLeft(prevTime => {
                 if (prevTime <= 1) {
                     clearInterval(timer);
-                    handleQuizEnd(score);
-                    return 0;
+                    // Time's up for this question, move to next
+                    if (currentQuestionIndex < quizQuestions.length - 1) {
+                        setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+                        setSelectedOption(null);
+                        return QUESTION_TIME; // Reset timer for next question
+                    } else {
+                        // End of quiz
+                        handleQuizEnd(score);
+                        return 0;
+                    }
                 }
                 return prevTime - 1;
             });
         }, 1000);
         return () => clearInterval(timer);
-    }, [quizCompleted, loading, error, quizQuestions.length, score, countdown]);
+    }, [quizCompleted, loading, error, quizQuestions.length, score, countdown, currentQuestionIndex, canPlayQuiz]);
 
     const handleQuizEnd = async (finalScore: number) => {
         setQuizCompleted(true);
         setShowResultModal(true);
+        
+        // Calculate coins earned (2 per correct answer)
+        const earnedCoins = finalScore * 2;
+        setCoinsEarned(earnedCoins);
+        
+        // Save last played date
+        await AsyncStorage.setItem('lastDailyQuizDate', new Date().toISOString());
 
-        // TODO: Replace this with actual logged-in user's data
-        const userEmail = "user@example.com";
-        const username = "Quiz Player";
+        // Get user token
+        const token = await AsyncStorage.getItem('token');
+        if (!token) {
+            console.error("No token found, can't update user data");
+            return;
+        }
 
-        // Submit score to the corrected backend endpoint
+        // Update user's coins, streak and points in the backend
         try {
-            const response = await fetch(LEADERBOARD_URL, {
+            const response = await fetch(`${USER_API_URL}/quiz-rewards`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    username: username, // <-- Added username
-                    email: userEmail,
-                    score: finalScore,
+                    coins: earnedCoins,
+                    quizType: 'daily',
+                    score: finalScore
                 }),
             });
 
             const data = await response.json();
             if (response.ok) {
-                console.log("✅ Score submitted:", data);
+                console.log("✅ User data updated:", data);
+            } else {
+                console.error("❌ Failed to update user data:", data.message);
+            }
+        } catch (error) {
+            console.error("⚠ Error while updating user data:", error);
+        }
+
+        // Submit score to leaderboard
+        try {
+            const userDataStr = await AsyncStorage.getItem('user');
+            const userData = userDataStr ? JSON.parse(userDataStr) : {};
+            const username = userData.username || "Quiz Player";
+            const email = userData.email || "user@example.com";
+
+            const response = await fetch(LEADERBOARD_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    username: username,
+                    email: email,
+                    score: finalScore,
+                    quizType: 'daily'
+                }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                console.log("✅ Score submitted to leaderboard:", data);
             } else {
                 console.error("❌ Failed to submit score:", data.message);
             }
@@ -189,13 +273,18 @@ export default function QuizPlayScreen() {
     const handleOptionPress = (optionValue: string) => {
         if (selectedOption) return;
         setSelectedOption(optionValue);
+        
+        // Auto-advance to next question after a short delay
+        setTimeout(() => {
+            handleNextQuestion(optionValue);
+        }, 1000);
     };
 
-    const handleNextQuestion = () => {
+    const handleNextQuestion = (optionValue: string) => {
         let newScore = score;
         const currentQuestion = quizQuestions[currentQuestionIndex];
         
-        if (selectedOption && selectedOption.trim() === currentQuestion.correctAnswer.trim()) {
+        if (optionValue.trim() === currentQuestion.correctAnswer.trim()) {
             newScore = score + 1;
             setScore(newScore);
         }
@@ -203,6 +292,7 @@ export default function QuizPlayScreen() {
         if (currentQuestionIndex < quizQuestions.length - 1) {
             setCurrentQuestionIndex(prevIndex => prevIndex + 1);
             setSelectedOption(null);
+            setTimeLeft(QUESTION_TIME); // Reset timer for next question
         } else {
             handleQuizEnd(newScore);
         }
@@ -223,10 +313,7 @@ export default function QuizPlayScreen() {
     };
 
     const formatTime = (time: number) => {
-        const minutes = Math.floor(time / 60);
-        const seconds = time % 60;
-        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-
+        return `${time}s`;
     };
 
     if (loading) {
@@ -255,6 +342,7 @@ export default function QuizPlayScreen() {
                 isVisible={showResultModal}
                 score={score}
                 totalQuestions={quizQuestions.length}
+                coinsEarned={coinsEarned}
                 onLeaderboardPress={() => {
                     setShowResultModal(false);
                     router.push('/Leaderboard');
@@ -292,7 +380,7 @@ export default function QuizPlayScreen() {
                 <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
                     <Ionicons name="arrow-back" size={24} color="white" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Quiz</Text>
+                <Text style={styles.headerTitle}>Daily Quiz</Text>
                 <View style={styles.timerContainer}>
                     <Ionicons name="time-outline" size={20} color="white" />
                     <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
@@ -323,17 +411,6 @@ export default function QuizPlayScreen() {
                         </TouchableOpacity>
                     ))}
                 </View>
-
-                {selectedOption && (
-                    <TouchableOpacity
-                        style={styles.nextButton}
-                        onPress={handleNextQuestion}
-                    >
-                        <Text style={styles.nextButtonText}>
-                            {currentQuestionIndex < quizQuestions.length - 1 ? 'Next Question' : 'Finish Quiz'}
-                        </Text>
-                    </TouchableOpacity>
-                )}
             </View>
         </SafeAreaView>
     );
@@ -400,6 +477,13 @@ const styles = StyleSheet.create({
     modalText: {
         fontSize: 20,
         color: '#A8C3D1',
+        marginBottom: 15,
+        textAlign: 'center',
+    },
+    modalCoins: {
+        fontSize: 24,
+        color: '#FFD700',
+        fontWeight: 'bold',
         marginBottom: 25,
         textAlign: 'center',
     },
@@ -427,6 +511,6 @@ const styles = StyleSheet.create({
         color: "white",
         fontWeight: "bold",
         textAlign: "center",
-        fontSize: 16,
-    },
+        fontSize: 16,
+    },
 });

@@ -106,9 +106,7 @@ export default function CreateAccountPage() {
           console.log('Registration successful:', data);
           // Store email for the next step
           await AsyncStorage.setItem('registrationEmail', email);
-          Alert.alert(translations.signupSuccessAlertTitle || 'Success', data.message || translations.signupSuccessAlertMessage, [
-            { text: translations.ok || 'OK', onPress: () => router.push('/signup2') }
-          ]);
+          router.push('/signup2'); // Direct navigation
         } else {
           console.error('Registration failed:', data);
           Alert.alert(translations.errorAlertTitle_signup || 'Error', data.message || translations.signupFailedAlertMessage || 'Registration failed. Please try again.');
