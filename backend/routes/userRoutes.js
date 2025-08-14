@@ -21,6 +21,8 @@ router.post(
         name: user.name,
         email: user.email,
         token: generateToken(user._id),
+        points: user.points, // Add this line
+        
       });
     } else {
       res.status(401);
@@ -66,11 +68,7 @@ router.post(
         quizLevels: user.quizLevels, // Include quizLevels in response
         levelsUnlocked: user.levelsUnlocked, // Include levelsUnlocked in response  
         quizProgress: user.quizProgress, // Include quizProgress in response
-        
-
-
-
-
+        points: user.points, // Add this line
       });
     } else {
       res.status(400);
@@ -197,7 +195,8 @@ router.post(
       success: true,
       quizLevels: user.quizLevels,
       coins: user.coins,
-      coinsEarned
+      coinsEarned,
+      points: user.points, // Add this line
     });
   })
 );
