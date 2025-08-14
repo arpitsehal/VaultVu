@@ -1,63 +1,63 @@
-import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Linking, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router'; // Changed from useNavigation to useRouter for consistency with QuizScreen
 import { useLanguage } from '../contexts/LanguageContext';
 
 export default function ReportIssueScreen() {
-  const navigation = useNavigation();
+  const router = useRouter(); // Changed from navigation to router
   const insets = useSafeAreaInsets();
   const { translations } = useLanguage();
 
   const reportLinks = [
     {
       id: 'rbi',
-      title: 'RBI Fraud Reporting',
-      description: 'Report financial frauds directly to Reserve Bank of India',
+      title: translations.rbiReportingTitle || 'RBI Fraud Reporting',
+      description: translations.rbiReportingDesc || 'Report financial frauds directly to Reserve Bank of India',
       url: 'https://cms.rbi.org.in/',
       icon: 'account-balance'
     },
     {
       id: 'punjabBank',
-      title: 'Punjab and Sindh Bank Fraud Reporting',
-      description: 'Report suspicious activities related to Punjab and Sindh Bank accounts',
+      title: translations.punjabBankReportingTitle || 'Punjab and Sindh Bank Fraud Reporting',
+      description: translations.punjabBankReportingDesc || 'Report suspicious activities related to Punjab and Sindh Bank accounts',
       url: 'https://punjabandsindbank.co.in/content/fraud-reporting',
-        icon: 'security'
-        },
+      icon: 'security'
+    },
     {
       id: 'cybercrime',
-      title: 'National Cybercrime Reporting Portal',
-      description: 'Report all types of cybercrimes including financial frauds',
+      title: translations.cybercrimeReportingTitle || 'National Cybercrime Reporting Portal',
+      description: translations.cybercrimeReportingDesc || 'Report all types of cybercrimes including financial frauds',
       url: 'https://cybercrime.gov.in/',
       icon: 'computer'
     },
     {
       id: 'upifraud',
-      title: 'UPI Fraud Reporting',
-      description: 'Report UPI-related frauds and unauthorized transactions',
+      title: translations.upiFraudReportingTitle || 'UPI Fraud Reporting',
+      description: translations.upiFraudReportingDesc || 'Report UPI-related frauds and unauthorized transactions',
       url: 'https://www.npci.org.in/what-we-do/upi/upi-ecosystem-protection-framework',
       icon: 'smartphone'
     },
     {
       id: 'phishing',
-      title: 'Phishing Website Reporting',
-      description: 'Report phishing websites and emails to CERT-In',
+      title: translations.phishingReportingTitle || 'Phishing Website Reporting',
+      description: translations.phishingReportingDesc || 'Report phishing websites and emails to CERT-In',
       url: 'https://www.cert-in.org.in/',
       icon: 'web'
     }
   ];
 
-  const handleLinkPress = (url: string) => {
-
+  const handleLinkPress = (url) => {
     Linking.canOpenURL(url).then(supported => {
       if (supported) {
         Linking.openURL(url);
       } else {
+        // Use translations for the Alert
         Alert.alert(
-          'Error',
-          'Cannot open this URL. Please try again later.',
-          [{ text: 'OK' }]
+          translations.error || 'Error',
+          translations.cannotOpenUrlError || 'Cannot open this URL. Please try again later.',
+          [{ text: translations.ok || 'OK' }]
         );
       }
     });
@@ -68,7 +68,7 @@ export default function ReportIssueScreen() {
       <StatusBar barStyle="light-content" backgroundColor="#1A213B" />
       {/* Header */}
       <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <AntDesign name="arrowleft" size={24} color="#A8C3D1" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{translations.reportAnIssue || 'Report an Issue'}</Text>
@@ -78,7 +78,7 @@ export default function ReportIssueScreen() {
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
           <Text style={styles.introText}>
-            Access official fraud reporting portals directly. Select the appropriate link below to report your issue.
+            {translations.introText || 'Access official fraud reporting portals directly. Select the appropriate link below to report your issue.'}
           </Text>
 
           {reportLinks.map((link) => (
@@ -99,7 +99,7 @@ export default function ReportIssueScreen() {
           ))}
 
           <Text style={styles.disclaimerText}>
-            Disclaimer: These links direct you to official websites. VaultVu is not responsible for the content or services provided by these external sites.
+            {translations.disclaimerText || 'Disclaimer: These links direct you to official websites. VaultVu is not responsible for the content or services provided by these external sites.'}
           </Text>
         </View>
       </ScrollView>

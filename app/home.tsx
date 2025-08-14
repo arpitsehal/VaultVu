@@ -18,23 +18,6 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-const dailyTips = [
-  "Always use a strong, unique password for your banking apps and email.",
-  "Never share your OTP or PIN with anyone, not even bank employees.",
-  "Be cautious of unsolicited calls asking for personal financial information.",
-  "Check your bank statements regularly for any unauthorized transactions.",
-  "Use two-factor authentication (2FA) wherever possible for added security.",
-  "Don't click on suspicious links in emails or text messages.",
-  "Only download apps from official app stores like Google Play or the App Store.",
-  "Use a separate email address for online banking and sensitive accounts.",
-  "When shopping online, use secure connections (HTTPS) and reputable sites.",
-  "Be skeptical of urgent requests for money, especially from family or friends online.",
-  "Review your privacy settings on social media to limit public information.",
-  "Shred documents with personal information before discarding them.",
-  "Protect your Wi-Fi network with a strong password to prevent unauthorized access.",
-  "Never use public Wi-Fi for sensitive activities like banking or shopping.",
-];
-
 export default function DashboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -44,9 +27,12 @@ export default function DashboardScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      const randomIndex = Math.floor(Math.random() * dailyTips.length);
-      setDailyTip(dailyTips[randomIndex]);
-    }, [])
+      // Access the daily tips array from the translations object
+      if (translations.dailyTips && translations.dailyTips.length > 0) {
+        const randomIndex = Math.floor(Math.random() * translations.dailyTips.length);
+        setDailyTip(translations.dailyTips[randomIndex]);
+      }
+    }, [translations]) // Added translations to the dependency array to re-run when language changes
   );
 
   // Define module data here so it can use the translations object
@@ -55,7 +41,7 @@ export default function DashboardScreen() {
       id: 'voiceFraudChecker',
       title: translations.voiceFraudChecker || 'Voice Fraud Checker',
       icon: '🔊',
-      description: translations.voiceFraudCheckerDesc || 'Check if the voice is Fraudulent or not.',
+      description: translations.voiceFraudCheckerDesc || 'Check if the voice is fraudulent or not.',
       route: '/VoiceTheftCheckerScreen',
       cardColor: '#1A213B',
       textColor: '#A8C3D1',
@@ -82,7 +68,7 @@ export default function DashboardScreen() {
       id: 'fraudMessageChecker',
       title: translations.fraudMessageChecker || 'Fraud Message Checker',
       icon: '🕵️',
-      description: translations.fraudMessageCheckerDesc || 'Check if the message is Fraudulent or not.',
+      description: translations.fraudMessageCheckerDesc || 'Check if the message is fraudulent or not.',
       route: '/FraudMessageCheckerScreen',
       cardColor: '#1A213B',
       textColor: '#A8C3D1',
@@ -264,7 +250,6 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  // ... (Your existing styles remain the same)
   safeArea: {
     flex: 1,
     backgroundColor: '#1A213B',

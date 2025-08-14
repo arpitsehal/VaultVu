@@ -12,6 +12,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -40,6 +41,8 @@ const QuizCard: React.FC<QuizCardProps> = ({ title, description, iconName, onPre
 export default function QuizScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  // Use the custom hook to get the translations
+  const { translations } = useLanguage();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -50,31 +53,35 @@ export default function QuizScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <AntDesign name="arrowleft" size={24} color="#F0F4F8" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Test Your Knowledge</Text>
+        {/* Replace hardcoded string with a translation key */}
+        <Text style={styles.headerTitle}>{translations.testYourKnowledge}</Text>
         <View style={styles.spacer} />
       </View>
 
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* Daily Quiz Card */}
         <QuizCard
-          title="Daily Quiz"
-          description="Challenge yourself with a new set of questions every day!"
+          // Replace hardcoded strings with translation keys
+          title={translations.dailyQuiz}
+          description={translations.dailyQuizDesc}
           iconName="clockcircleo"
           onPress={() => router.push('/dailyquiz')}
         />
 
         {/* Quiz Battle Card */}
         <QuizCard
-          title="Quiz Battle"
-          description="Compete against friends or other users in real-time."
+          // Replace hardcoded strings with translation keys
+          title={translations.quizBattle}
+          description={translations.quizBattleDesc}
           iconName="rocket1"
           onPress={() => router.push('/quizBattle')}
         />
 
         {/* New Levels Card */}
         <QuizCard
-          title="Levels"
-          description="Progress through different levels to become a quiz master."
+          // Replace hardcoded strings with translation keys
+          title={translations.levels}
+          description={translations.levelsDesc}
           iconName="bars"
           onPress={() => router.push('/levels')}
         />
