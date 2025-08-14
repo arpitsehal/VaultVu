@@ -62,6 +62,15 @@ router.post(
         dateOfBirth: user.dateOfBirth, // Include dateOfBirth in response
         gender: user.gender, // Include gender in response
         token: generateToken(user._id),
+        coins: user.coins, // Include coins in response
+        quizLevels: user.quizLevels, // Include quizLevels in response
+        levelsUnlocked: user.levelsUnlocked, // Include levelsUnlocked in response  
+        quizProgress: user.quizProgress, // Include quizProgress in response
+        
+
+
+
+
       });
     } else {
       res.status(400);
