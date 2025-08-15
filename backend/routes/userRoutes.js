@@ -201,4 +201,79 @@ router.post(
   })
 );
 
+// @desc    Submit quiz battle score
+// @route   POST /api/users/quiz/battle
+// @access  Private
+router.post(
+  '/quiz/battle',
+  asyncHandler(async (req, res) => {
+    const { score } = req.body;
+
+    if (score === undefined) {
+      res.status(400);
+      throw new Error('Score is required');
+    }
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      res.status(404);
+      throw new Error('User not found');
+    }
+
+    // Award coins (e.g., 1 coin per point in battle)
+    const coinsEarned = score;
+    user.coins += coinsEarned;
+
+    // Update user's total points
+    user.points += score;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      coins: user.coins,
+      points: user.points,
+      coinsEarned,
+    });
+  })
+);
+
+// @desc    Submit daily quiz rewards
+// @route   POST /api/users/quiz-rewards
+// @access  Private
+router.post(
+  '/quiz-rewards',
+  asyncHandler(async (req, res) => {
+    const { coins, quizType, score } = req.body;
+    
+    if (!coins || !quizType || score === undefined) {
+      res.status(400);
+      throw new Error('Coins, quiz type and score are required');
+    }
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      res.status(404);
+      throw new Error('User not found');
+    }
+
+    // Update user's coins
+    user.coins += coins;
+    
+    // Update user's total points
+    user.points += score;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      coins: user.coins,
+      points: user.points,
+      coinsEarned: coins
+    });
+  })
+);
+
 module.exports = router;

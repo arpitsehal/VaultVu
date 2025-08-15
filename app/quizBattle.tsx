@@ -18,7 +18,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-const BACKEND_URL = 'https://vaultvu-backend.onrender.com/api/questions';
+const BACKEND_URL = 'https://vaultvu.onrender.com/api/questions';
 
 interface Question {
     _id: string;
@@ -427,27 +427,43 @@ export default function QuizBattleScreen() {
         }
     };
     
-    const handleBattleEnd = async () => {
+    const handleBattleEnd = async (winningPlayer: Player) => {
         setBattleCompleted(true);
         setShowResultsModal(true);
         
         // Award 1 coin to the user
         try {
             const token = await AsyncStorage.getItem('token');
-            if (token) {
-                await fetch('https://vaultvu-backend.onrender.com/api/users/quiz/battle', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        coinsEarned: 1
-                    })
-                });
+            if (!token) {
+                console.error('No token found');
+                return;
+            }
+
+            const response = await fetch('https://vaultvu.onrender.com/api/users/quiz/battle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ score: winningPlayer.score }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                console.log('Battle score submitted successfully:', data);
+                // Update user's coins in AsyncStorage
+                const userData = await AsyncStorage.getItem('user');
+                if (userData) {
+                    const user = JSON.parse(userData);
+                    user.coins = data.coins; // Assuming data.coins contains the updated coin count
+                    await AsyncStorage.setItem('user', JSON.stringify(user));
+                    console.log('AsyncStorage updated with new coin count:', user.coins);
+                }
+            } else {
+                console.error('Failed to submit battle score:', data.message);
             }
         } catch (error) {
-            console.error("Error updating user coins:", error);
+            console.error('Error submitting battle score:', error);
         }
     };
     

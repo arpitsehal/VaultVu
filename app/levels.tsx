@@ -1,6 +1,6 @@
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 const { width: screenWidth } = Dimensions.get('window');
 const API_URL = 'https://vaultvu.onrender.com/api/users';
@@ -205,19 +206,20 @@ const LevelCard = ({
 };
 
 export default function LevelsScreen() {
+  const insets = useSafeAreaInsets();
   const [levels, setLevels] = useState<Level[]>([]);
   const [userCoins, setUserCoins] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
   const [showUnlockModal, setShowUnlockModal] = useState<boolean>(false);
-  
+  const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
   const router = useRouter();
-  const insets = useSafeAreaInsets();
 
-  useEffect(() => {
-    fetchUserLevels();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserLevels();
+    }, [])
+  );
 
   const fetchUserLevels = async () => {
     try {

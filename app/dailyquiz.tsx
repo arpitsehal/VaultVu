@@ -307,6 +307,13 @@ export default function DailyQuizScreen() {
             const data = await response.json();
             if (response.ok) {
                 console.log("✅ User data updated:", data);
+                // Update AsyncStorage with new coin count
+                const userDataStr = await AsyncStorage.getItem('user');
+                if (userDataStr) {
+                    const userData = JSON.parse(userDataStr);
+                    userData.coins = (userData.coins || 0) + earnedCoins;
+                    await AsyncStorage.setItem('user', JSON.stringify(userData));
+                }
             } else {
                 console.error("❌ Failed to update user data:", data.message);
             }

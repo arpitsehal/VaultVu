@@ -72,6 +72,7 @@ export default function RootLayout() {
           <Stack.Screen name="mortgageClosing" />
           <Stack.Screen name="romance" />
           <Stack.Screen name="nonexistentGoods" />
+          <Stack.Screen name="dailyquiz" />
         </Stack>
         <StatusBar style="light" />
       </ThemeProvider>
