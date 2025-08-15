@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -15,6 +15,7 @@ import {
     Pressable,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -166,46 +167,10 @@ export default function DailyQuizScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
 
-    // Check if user can play the daily quiz
-    useEffect(() => {
-        const checkQuizAvailability = async () => {
-            try {
-                const lastPlayedDate = await AsyncStorage.getItem('lastDailyQuizDate');
-                if (lastPlayedDate) {
-                    const lastPlayed = new Date(lastPlayedDate);
-                    const now = new Date();
-                    
-                    // Check if it's the same day
-                    if (
-                        lastPlayed.getDate() === now.getDate() &&
-                        lastPlayed.getMonth() === now.getMonth() &&
-                        lastPlayed.getFullYear() === now.getFullYear()
-                    ) {
-                        setCanPlayQuiz(false);
-                        setError('You have already played the daily quiz today. Come back tomorrow!');
-                    }
-                }
-            } catch (e) {
-                console.error('Error checking quiz availability:', e);
-            } finally {
-                if (canPlayQuiz) {
-                    fetchQuestions();
-                } else {
-                    setLoading(false);
-                }
-            }
-        };
-
-        checkQuizAvailability();
-    }, []);
-
-    // Replace fetchQuestions with this function
-    const fetchQuestions = async () => {
+    const fetchQuestions = useCallback(async () => {
         try {
-            // Instead of fetching from backend, use local questions
             setQuizQuestions(DAILY_QUIZ_QUESTIONS);
             
-            // Start countdown after setting questions
             let count = 3;
             const timer = setInterval(() => {
                 setCountdown(count);
@@ -222,9 +187,66 @@ export default function DailyQuizScreen() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    // Countdown logic
+    const checkQuizAvailability = useCallback(async () => {
+        try {
+            const userDataStr = await AsyncStorage.getItem('user');
+            if (!userDataStr) {
+                console.log('No user data found in AsyncStorage.');
+                return;
+            }
+            const user = JSON.parse(userDataStr);
+            const userId = user._id;
+
+            const lastPlayedDate = await AsyncStorage.getItem(`lastDailyQuizDate_${userId}`);
+            if (lastPlayedDate) {
+                const lastPlayed = new Date(lastPlayedDate);
+                const now = new Date();
+                
+                if (
+                    lastPlayed.getDate() === now.getDate() &&
+                    lastPlayed.getMonth() === now.getMonth() &&
+                    lastPlayed.getFullYear() === now.getFullYear()
+                ) {
+                    setCanPlayQuiz(false);
+                    setError('You have already played the daily quiz today. Come back tomorrow!');
+                } else {
+                    setCanPlayQuiz(true);
+                }
+            } else {
+                setCanPlayQuiz(true);
+            }
+        } catch (e) {
+            console.error('Error checking quiz availability:', e);
+            setCanPlayQuiz(true); // Default to true if there's an error
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            let isActive = true;
+            
+            const prepareQuiz = async () => {
+                setLoading(true);
+                await checkQuizAvailability();
+                if (isActive && canPlayQuiz) {
+                    fetchQuestions();
+                } else {
+                    setLoading(false);
+                }
+            };
+
+            prepareQuiz();
+
+            return () => {
+                isActive = false;
+            };
+        }, [fetchQuestions, checkQuizAvailability, canPlayQuiz])
+    );
+    
     useEffect(() => {
         if (loading || error || quizQuestions.length === 0 || !canPlayQuiz) return;
         if (countdown === 0) return;
@@ -246,50 +268,29 @@ export default function DailyQuizScreen() {
         return () => clearInterval(countdownTimer);
     }, [loading, error, quizQuestions.length, canPlayQuiz]);
 
-    // Question timer logic
-    useEffect(() => {
-        if (quizCompleted || loading || error || quizQuestions.length === 0 || countdown !== 0 || !canPlayQuiz) return;
-        
-        const timer = setInterval(() => {
-            setTimeLeft(prevTime => {
-                if (prevTime <= 1) {
-                    clearInterval(timer);
-                    // Time's up for this question, move to next
-                    if (currentQuestionIndex < quizQuestions.length - 1) {
-                        setCurrentQuestionIndex(prevIndex => prevIndex + 1);
-                        setSelectedOption(null);
-                        return QUESTION_TIME; // Reset timer for next question
-                    } else {
-                        // End of quiz
-                        handleQuizEnd(score);
-                        return 0;
-                    }
-                }
-                return prevTime - 1;
-            });
-        }, 1000);
-        return () => clearInterval(timer);
-    }, [quizCompleted, loading, error, quizQuestions.length, score, countdown, currentQuestionIndex, canPlayQuiz]);
-
     const handleQuizEnd = async (finalScore: number) => {
         setQuizCompleted(true);
         setShowResultModal(true);
         
-        // Calculate coins earned (2 per correct answer)
         const earnedCoins = finalScore * 2;
         setCoinsEarned(earnedCoins);
         
-        // Save last played date
-        await AsyncStorage.setItem('lastDailyQuizDate', new Date().toISOString());
+        const userDataStr = await AsyncStorage.getItem('user');
+        if (!userDataStr) {
+            console.error("No user data found.");
+            return;
+        }
+        const user = JSON.parse(userDataStr);
+        const userId = user._id;
 
-        // Get user token
+        await AsyncStorage.setItem(`lastDailyQuizDate_${userId}`, new Date().toISOString());
+
         const token = await AsyncStorage.getItem('token');
         if (!token) {
             console.error("No token found, can't update user data");
             return;
         }
 
-        // Update user's coins, streak and points in the backend
         try {
             const response = await fetch(`${USER_API_URL}/quiz-rewards`, {
                 method: "POST",
@@ -307,8 +308,6 @@ export default function DailyQuizScreen() {
             const data = await response.json();
             if (response.ok) {
                 console.log("✅ User data updated:", data);
-                // Update AsyncStorage with new coin count
-                const userDataStr = await AsyncStorage.getItem('user');
                 if (userDataStr) {
                     const userData = JSON.parse(userDataStr);
                     userData.coins = (userData.coins || 0) + earnedCoins;
@@ -321,12 +320,9 @@ export default function DailyQuizScreen() {
             console.error("⚠ Error while updating user data:", error);
         }
 
-        // Submit score to leaderboard
         try {
-            const userDataStr = await AsyncStorage.getItem('user');
-            const userData = userDataStr ? JSON.parse(userDataStr) : {};
-            const username = userData.username || "Quiz Player";
-            const email = userData.email || "user@example.com";
+            const username = user.username || "Quiz Player";
+            const email = user.email || "user@example.com";
 
             const response = await fetch(LEADERBOARD_URL, {
                 method: "POST",
@@ -353,11 +349,32 @@ export default function DailyQuizScreen() {
         }
     };
 
+    useEffect(() => {
+        if (quizCompleted || loading || error || quizQuestions.length === 0 || countdown !== 0 || !canPlayQuiz) return;
+        
+        const timer = setInterval(() => {
+            setTimeLeft(prevTime => {
+                if (prevTime <= 1) {
+                    clearInterval(timer);
+                    if (currentQuestionIndex < quizQuestions.length - 1) {
+                        setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+                        setSelectedOption(null);
+                        return QUESTION_TIME;
+                    } else {
+                        handleQuizEnd(score);
+                        return 0;
+                    }
+                }
+                return prevTime - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [quizCompleted, loading, error, quizQuestions.length, score, countdown, currentQuestionIndex, canPlayQuiz, handleQuizEnd]);
+
     const handleOptionPress = (optionValue: string) => {
         if (selectedOption) return;
         setSelectedOption(optionValue);
         
-        // Auto-advance to next question after a short delay
         setTimeout(() => {
             handleNextQuestion(optionValue);
         }, 1000);
@@ -375,7 +392,7 @@ export default function DailyQuizScreen() {
         if (currentQuestionIndex < quizQuestions.length - 1) {
             setCurrentQuestionIndex(prevIndex => prevIndex + 1);
             setSelectedOption(null);
-            setTimeLeft(QUESTION_TIME); // Reset timer for next question
+            setTimeLeft(QUESTION_TIME);
         } else {
             handleQuizEnd(newScore);
         }
@@ -408,7 +425,7 @@ export default function DailyQuizScreen() {
         );
     }
 
-    if (error || quizQuestions.length === 0) {
+    if (error || quizQuestions.length === 0 || !canPlayQuiz) {
         return (
             <SafeAreaView style={styles.loadingContainer}>
                 <Text style={styles.errorText}>{error || 'No quiz questions found.'}</Text>
@@ -438,7 +455,6 @@ export default function DailyQuizScreen() {
         );
     }
 
-    // New Countdown UI
     if (countdown > 0) {
         return (
             <SafeAreaView style={styles.loadingContainer}>

@@ -271,7 +271,8 @@ router.post(
       success: true,
       coins: user.coins,
       points: user.points,
-      coinsEarned: coins
+      quizType: quizType,
+      score: score
     });
   })
 );

@@ -133,6 +133,7 @@ export default function SettingsScreen() {
               // Clear user data and token
               await AsyncStorage.removeItem('token');
               await AsyncStorage.removeItem('user');
+              await AsyncStorage.removeItem('lastDailyQuizDate'); // Add this line
               // Navigate to sign in screen
               router.replace('/signin');
             } catch (error) {
