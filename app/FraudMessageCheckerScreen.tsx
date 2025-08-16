@@ -1,10 +1,44 @@
 // FraudMessageCheckerScreen.tsx
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, StatusBar, TextInput, Platform, ActivityIndicator, ScrollView, Modal, Pressable } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, StatusBar, TextInput, Platform, ActivityIndicator, ScrollView, Modal, Pressable, FlatList } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../contexts/LanguageContext'; // Import the useLanguage hook
+
+// Message fraud test examples
+const MESSAGE_TEST_EXAMPLES = [
+  {
+    category: 'Safe Messages',
+    icon: '✅',
+    color: '#5cb85c',
+    messages: [
+      { message: 'Hi! How are you doing today? Would love to catch up soon.', description: 'Normal friendly message' },
+      { message: 'Meeting scheduled for 3 PM tomorrow in conference room B.', description: 'Legitimate business communication' },
+      { message: 'Your order #12345 has been shipped and will arrive in 2-3 days.', description: 'Genuine delivery notification' }
+    ]
+  },
+  {
+    category: 'Phishing Messages',
+    icon: '🎣',
+    color: '#d9534f',
+    messages: [
+      { message: 'URGENT: Your bank account will be closed! Click here immediately to verify: bit.ly/bank-verify', description: 'Fake urgency with suspicious link' },
+      { message: 'Congratulations! You won $50,000! Send your SSN and bank details to claim your prize now!', description: 'Too-good-to-be-true lottery scam' },
+      { message: 'Your PayPal account has been limited. Verify now or lose access: paypal-security.tk/verify', description: 'Fake security alert with suspicious domain' }
+    ]
+  },
+  {
+    category: 'Suspicious Patterns',
+    icon: '⚠️',
+    color: '#f0ad4e',
+    messages: [
+      { message: 'Act fast! Limited time offer expires in 1 hour. Send $99 now to secure your spot!', description: 'High-pressure sales tactics' },
+      { message: 'Hello dear, I am Prince of Nigeria. I need your help to transfer $10 million...', description: 'Classic advance fee fraud' },
+      { message: 'Your package is held at customs. Pay $25 fee immediately or it will be returned.', description: 'Fake delivery fee scam' }
+    ]
+  }
+];
 
 export default function FraudMessageCheckerScreen() {
   const navigation = useNavigation();
@@ -12,6 +46,7 @@ export default function FraudMessageCheckerScreen() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [showExamples, setShowExamples] = useState(false);
 
   // State for the custom modal
   const [modalVisible, setModalVisible] = useState(false);
@@ -24,6 +59,17 @@ export default function FraudMessageCheckerScreen() {
   const showModal = (title, message, type = 'success') => {
     setModalContent({ title, message, type });
     setModalVisible(true);
+  };
+
+  const clearPatterns = () => {
+    setResult(null);
+    showModal('Patterns Cleared', 'All analysis patterns and results have been cleared.', 'info');
+  };
+
+  const selectTestMessage = (testMessage: string) => {
+    setMessage(testMessage);
+    setShowExamples(false);
+    setResult(null);
   };
 
   const handleCheckMessage = async () => {
@@ -59,6 +105,83 @@ export default function FraudMessageCheckerScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const renderExampleCard = (example: any, category: any, index: number) => (
+    <TouchableOpacity
+      key={index}
+      style={[styles.exampleCard, { borderColor: category.color }]}
+      onPress={() => selectTestMessage(example.message)}
+      activeOpacity={0.7}
+    >
+      <View style={styles.exampleHeader}>
+        <View style={[styles.categoryBadge, { backgroundColor: category.color }]}>
+          <Text style={styles.categoryBadgeText}>{category.icon}</Text>
+        </View>
+        <Text style={[styles.exampleStatus, { color: category.color }]} numberOfLines={1}>
+          {category.category}
+        </Text>
+      </View>
+      <Text style={styles.exampleMessage} numberOfLines={3} ellipsizeMode="tail">
+        {example.message}
+      </Text>
+      <Text style={styles.exampleDescription} numberOfLines={2}>
+        {example.description}
+      </Text>
+      <View style={styles.tapHint}>
+        <Ionicons name="hand-left-outline" size={12} color="#A8C3D1" />
+        <Text style={styles.tapHintText}>Tap to test</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderTestExamples = () => {
+    return (
+      <View style={styles.examplesContainer}>
+        <View style={styles.examplesHeader}>
+          <View style={styles.examplesTitleContainer}>
+            <Ionicons name="flask" size={24} color="#A8C3D1" />
+            <Text style={styles.examplesTitle}>Test Examples</Text>
+          </View>
+          <Text style={styles.examplesSubtitle}>
+            Learn fraud patterns by testing these sample messages
+          </Text>
+        </View>
+        
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.examplesScrollContainer}
+          style={styles.examplesScrollView}
+        >
+          {MESSAGE_TEST_EXAMPLES.map((category, categoryIndex) => (
+            <View key={categoryIndex} style={styles.categorySection}>
+              {category.messages.map((example, exampleIndex) => 
+                renderExampleCard(example, category, exampleIndex)
+              )}
+            </View>
+          ))}
+        </ScrollView>
+        
+        <View style={styles.examplesFooter}>
+          <TouchableOpacity
+            style={styles.clearPatternsButton}
+            onPress={clearPatterns}
+          >
+            <Ionicons name="refresh-outline" size={16} color="#f0ad4e" />
+            <Text style={styles.clearPatternsText}>Clear Patterns</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.hideExamplesButton}
+            onPress={() => setShowExamples(false)}
+          >
+            <Ionicons name="chevron-up" size={16} color="#A8C3D1" />
+            <Text style={styles.hideExamplesText}>Hide Examples</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
   };
 
   const renderResult = () => {
@@ -163,6 +286,23 @@ export default function FraudMessageCheckerScreen() {
             <Text style={styles.checkButtonText}>{translations.checkMessage || 'Check Message'}</Text>
           )}
         </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.examplesToggleButton}
+          onPress={() => setShowExamples(!showExamples)}
+        >
+          <Ionicons 
+            name={showExamples ? "chevron-up" : "chevron-down"} 
+            size={20} 
+            color="#A8C3D1" 
+            style={{ marginRight: 8 }}
+          />
+          <Text style={styles.examplesToggleText}>
+            {showExamples ? 'Hide Test Examples' : 'Show Test Examples'}
+          </Text>
+        </TouchableOpacity>
+
+        {showExamples && renderTestExamples()}
         
         {/* Render Result Card */}
         {renderResult()}
@@ -377,8 +517,165 @@ const styles = StyleSheet.create({
     width: 100,
   },
   modalButtonText: {
-    color: '#1A213B',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  // Professional Test Examples Styles
+  examplesToggleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2A3B5C',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 15,
+    borderWidth: 1,
+    borderColor: '#3D4F73',
+  },
+  examplesToggleText: {
+    color: '#A8C3D1',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  examplesContainer: {
+    backgroundColor: '#2A3B5C',
+    borderRadius: 12,
+    padding: 20,
+    marginTop: 15,
+    borderWidth: 1,
+    borderColor: '#3D4F73',
+  },
+  examplesTitle: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  examplesSubtitle: {
+    color: '#A8C3D1',
+    fontSize: 14,
+    marginBottom: 20,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  exampleCard: {
+    backgroundColor: '#1A213B',
+    borderRadius: 12,
+    padding: 16,
+    marginRight: 12,
+    width: 280,
+    borderWidth: 1,
+    borderColor: '#3D4F73',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  exampleHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  categoryBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  categoryBadgeText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  exampleStatus: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  exampleMessage: {
+    color: '#A8C3D1',
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
+    lineHeight: 18,
+  },
+  exampleDescription: {
+    color: '#8A9BAE',
+    fontSize: 12,
+    lineHeight: 16,
+    marginBottom: 8,
+  },
+  tapHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    opacity: 0.7,
+  },
+  tapHintText: {
+    color: '#A8C3D1',
+    fontSize: 11,
+    marginLeft: 4,
+    fontStyle: 'italic',
+  },
+  examplesHeader: {
+    marginBottom: 16,
+  },
+  examplesTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  examplesScrollContainer: {
+    paddingHorizontal: 4,
+  },
+  examplesScrollView: {
+    maxHeight: 200,
+  },
+  categorySection: {
+    flexDirection: 'row',
+  },
+  examplesFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#3D4F73',
+  },
+  clearPatternsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(240, 173, 78, 0.1)',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#f0ad4e',
+  },
+  clearPatternsText: {
+    color: '#f0ad4e',
+    fontSize: 12,
+    fontWeight: '500',
+    marginLeft: 6,
+  },
+  hideExamplesButton: {
+    backgroundColor: '#3D4F73',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 6,
+    marginTop: 15,
+    alignSelf: 'center',
+  },
+  hideExamplesText: {
+    color: '#A8C3D1',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

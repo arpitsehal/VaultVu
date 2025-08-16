@@ -212,9 +212,7 @@ export default function UserProfileScreen() {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
           <View style={styles.profileImageContainer}>
-            <Text style={styles.profileInitials}>
-              {email ? email.charAt(0).toUpperCase() : '?'}
-            </Text>
+            <Ionicons name="person-circle-outline" size={80} color="#1A213B" />
           </View>
           
           {/* Email (non-editable) */}

@@ -172,9 +172,7 @@ export default function SettingsScreen() {
           onPress={() => router.push('/userProfile')}
         >
           <View style={styles.profileImageContainer}>
-            <Text style={styles.profileInitials}>
-              {user?.email ? user.email.charAt(0).toUpperCase() : '?'}
-            </Text>
+            <Ionicons name="person-circle-outline" size={70} color="#1A213B" />
           </View>
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{user?.username || user?.email || 'User'}</Text>

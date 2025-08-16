@@ -99,6 +99,18 @@ export default function DashboardScreen() {
     },
   ];
 
+  const aiAssistantModules = [
+    {
+      id: 'aiAssistant',
+      title: translations.aiAssistant || 'AI Fraud Assistant',
+      icon: '🤖',
+      description: translations.aiAssistantDesc || 'Get instant help with banking fraud prevention!',
+      route: '/(tabs)/chatbot',
+      cardColor: '#4CAF50',
+      textColor: '#FFFFFF',
+    },
+  ];
+
   const gamificationModules = [
     {
       id: 'financialLiteracyQuiz',
@@ -136,35 +148,29 @@ export default function DashboardScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#1A213B" />
 
-      <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.appName}>{translations.appName || "VaultVu"}</Text>
-          <Image
-            source={require('../assets/images/vaultvu-logo.jpg')}
-            style={styles.headerLogo}
-            resizeMode="contain"
-          />
-        </View>
-        <TouchableOpacity
-          style={styles.settingsButton}
-          onPress={() => router.push('/settings')}
-        >
-          <Ionicons name="settings-outline" size={24} color="white" />
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.welcomeText}>{translations.yourShieldInDigitalWorld || "Your Shield in the Digital World"}</Text>
-
-      <View style={styles.dailyTipCard}>
-        <Text style={styles.dailyTipHeading}>{translations.tipOfTheDay || "Tip of the Day"}</Text>
-        <Text style={styles.dailyTipText}>{dailyTip}</Text>
-      </View>
-
       <ScrollView
         style={styles.mainScrollView}
         contentContainerStyle={styles.mainContentContainer}
         showsVerticalScrollIndicator={false}
       >
+        <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
+          <View style={styles.headerTitleContainer}>
+            <Text style={styles.appName}>{translations.appName || "VaultVu"}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => router.push('/settings')}
+          >
+            <Ionicons name="settings-outline" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.welcomeText}>{translations.yourShieldInDigitalWorld || "Your Shield in the Digital World"}</Text>
+
+        <View style={styles.dailyTipCard}>
+          <Text style={styles.dailyTipHeading}>{translations.tipOfTheDay || "Tip of the Day"}</Text>
+          <Text style={styles.dailyTipText}>{dailyTip}</Text>
+        </View>
         {/* Quick Access Section */}
         <Text style={styles.sectionTitle}>{translations.quickAccessModules || "Quick Access"}</Text>
 
@@ -186,21 +192,24 @@ export default function DashboardScreen() {
           ))}
         </View>
 
-        {/* Learning Modules Section */}
-        <Text style={styles.sectionTitle}>{translations.learningModules || "Learning Modules"}</Text>
-        <View style={styles.learningModulesContainer}>
-          {learningModules.map((module) => (
+        {/* AI Assistant Section */}
+        <Text style={styles.sectionTitle}>{translations.aiAssistant || "AI Assistant"}</Text>
+        <View style={styles.aiAssistantContainer}>
+          {aiAssistantModules.map((item) => (
             <TouchableOpacity
-              key={module.id}
-              style={styles.learningCard}
-              onPress={() => router.push(module.route)}
+              key={item.id}
+              style={[
+                styles.aiAssistantCard,
+                { backgroundColor: item.cardColor }
+              ]}
+              onPress={() => router.push(item.route)}
             >
-              <Text style={styles.learningIcon}>{module.icon}</Text>
-              <View style={styles.learningTextContainer}>
-                <Text style={styles.learningTitle}>{module.title}</Text>
-                <Text style={styles.learningDescription}>{module.description}</Text>
+              <Text style={[styles.aiAssistantIcon, { color: item.textColor }]}>{item.icon}</Text>
+              <View style={styles.aiAssistantTextContainer}>
+                <Text style={[styles.aiAssistantTitle, { color: item.textColor }]}>{item.title}</Text>
+                <Text style={[styles.aiAssistantDescription, { color: item.textColor }]}>{item.description}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={24} color="#A8C3D1" />
+              <Ionicons name="chevron-forward" size={24} color={item.textColor} />
             </TouchableOpacity>
           ))}
         </View>
@@ -244,6 +253,25 @@ export default function DashboardScreen() {
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* Learning Modules Section - Moved to Bottom */}
+        <Text style={styles.sectionTitle}>{translations.learningModules || "Learning Modules"}</Text>
+        <View style={styles.learningModulesContainer}>
+          {learningModules.map((module) => (
+            <TouchableOpacity
+              key={module.id}
+              style={styles.learningCard}
+              onPress={() => router.push(module.route)}
+            >
+              <Text style={styles.learningIcon}>{module.icon}</Text>
+              <View style={styles.learningTextContainer}>
+                <Text style={styles.learningTitle}>{module.title}</Text>
+                <Text style={styles.learningDescription}>{module.description}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={24} color="#A8C3D1" />
+            </TouchableOpacity>
+          ))}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -272,10 +300,6 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: 'white',
     marginRight: 8,
-  },
-  headerLogo: {
-    width: 30,
-    height: 30,
   },
   settingsButton: {
     padding: 5,
@@ -454,5 +478,38 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#1A213B',
     marginTop: 2,
+  },
+  // AI Assistant Section Styles
+  aiAssistantContainer: {
+    width: '100%',
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  aiAssistantCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  aiAssistantIcon: {
+    fontSize: 40,
+    marginRight: 20,
+  },
+  aiAssistantTextContainer: {
+    flex: 1,
+  },
+  aiAssistantTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  aiAssistantDescription: {
+    fontSize: 14,
+    opacity: 0.9,
   },
 });

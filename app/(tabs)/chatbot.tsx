@@ -21,7 +21,39 @@ interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  context?: string[];
+  followUpSuggestions?: string[];
 }
+
+interface ConversationContext {
+  topics: string[];
+  userInterests: string[];
+  previousQuestions: string[];
+  lastTopicDiscussed?: string;
+}
+
+// Enhanced word tracking and synonym mapping
+const WORD_SYNONYMS = {
+  'scam': ['fraud', 'cheat', 'trick', 'con', 'swindle', 'deception'],
+  'phishing': ['fishing', 'fake email', 'spoofing', 'email fraud'],
+  'atm': ['cash machine', 'bank machine', 'automated teller'],
+  'identity': ['personal info', 'personal data', 'id', 'credentials'],
+  'investment': ['investing', 'stocks', 'trading', 'finance', 'money'],
+  'mobile': ['phone', 'smartphone', 'cell phone', 'device'],
+  'cryptocurrency': ['crypto', 'bitcoin', 'digital currency', 'blockchain'],
+  'elder': ['senior', 'elderly', 'old', 'grandparent', 'retirement'],
+  'business': ['company', 'corporate', 'work', 'office', 'enterprise'],
+  'romance': ['dating', 'love', 'relationship', 'online dating'],
+  'tax': ['irs', 'taxes', 'refund', 'government', 'revenue'],
+  'social engineering': ['manipulation', 'psychology', 'human hacking'],
+  'help': ['assist', 'support', 'guide', 'advice', 'information'],
+  'protect': ['secure', 'safe', 'guard', 'defend', 'shield'],
+  'money': ['cash', 'funds', 'payment', 'financial', 'banking'],
+  'steal': ['theft', 'rob', 'take', 'hijack', 'compromise'],
+  'fake': ['false', 'counterfeit', 'bogus', 'fraudulent', 'phony'],
+  'urgent': ['emergency', 'immediate', 'rush', 'quick', 'asap'],
+  'suspicious': ['strange', 'weird', 'odd', 'questionable', 'fishy']
+};
 
 // Comprehensive banking fraud knowledge base
 const FRAUD_KNOWLEDGE_BASE = {
@@ -96,60 +128,201 @@ export default function ChatbotScreen() {
   ]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [conversationContext, setConversationContext] = useState<ConversationContext>({
+    topics: [],
+    userInterests: [],
+    previousQuestions: [],
+  });
   const scrollViewRef = useRef<ScrollView>(null);
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const generateResponse = (userMessage: string): string => {
+  // Enhanced word tracking and context-aware response generation
+  const trackWordsAndContext = (userMessage: string) => {
+    const words = userMessage.toLowerCase().split(/\s+/);
+    const detectedTopics: string[] = [];
+    
+    // Track words and their synonyms
+    words.forEach(word => {
+      // Check direct matches
+      Object.entries(FRAUD_KNOWLEDGE_BASE).forEach(([topic, data]) => {
+        if (data.keywords.some(keyword => word.includes(keyword) || keyword.includes(word))) {
+          if (!detectedTopics.includes(topic)) detectedTopics.push(topic);
+        }
+      });
+      
+      Object.entries(ADVANCED_TOPICS).forEach(([topic, data]) => {
+        if (data.keywords.some(keyword => word.includes(keyword) || keyword.includes(word))) {
+          if (!detectedTopics.includes(topic)) detectedTopics.push(topic);
+        }
+      });
+      
+      // Check synonyms
+      Object.entries(WORD_SYNONYMS).forEach(([mainWord, synonyms]) => {
+        if (synonyms.some(synonym => word.includes(synonym) || synonym.includes(word))) {
+          if (!detectedTopics.includes(mainWord)) detectedTopics.push(mainWord);
+        }
+      });
+    });
+    
+    return detectedTopics;
+  };
+
+  const generateContextualFollowUps = (topic: string, userMessage: string): string[] => {
+    const followUps: string[] = [];
+    
+    switch (topic) {
+      case 'phishing':
+        followUps.push("How can I identify a phishing email?", "What should I do if I clicked a suspicious link?", "Tell me about vishing and smishing");
+        break;
+      case 'atm':
+        followUps.push("How do I check for ATM skimmers?", "What are the safest ATM practices?", "What is card shimming?");
+        break;
+      case 'identity':
+        followUps.push("How do I freeze my credit?", "What is synthetic identity theft?", "How to monitor my credit report?");
+        break;
+      case 'investment':
+        followUps.push("How to verify investment advisors?", "What are Ponzi scheme warning signs?", "Tell me about cryptocurrency scams");
+        break;
+      case 'romance_fraud':
+        followUps.push("How to verify someone's identity online?", "What are military romance scam signs?", "How to reverse image search photos?");
+        break;
+      default:
+        followUps.push("Can you give me more examples?", "What are the warning signs?", "How can I protect myself?");
+    }
+    
+    return followUps.slice(0, 3); // Return top 3 suggestions
+  };
+
+  const generateResponse = (userMessage: string): { response: string; followUps: string[]; detectedTopics: string[] } => {
     const lowerMessage = userMessage.toLowerCase();
+    const detectedTopics = trackWordsAndContext(userMessage);
+    let response = "";
+    let followUps: string[] = [];
     
-    // Check for specific fraud topics in main knowledge base
+    // Update conversation context
+    setConversationContext(prev => ({
+      ...prev,
+      previousQuestions: [...prev.previousQuestions, userMessage].slice(-10), // Keep last 10 questions
+      topics: [...new Set([...prev.topics, ...detectedTopics])],
+      lastTopicDiscussed: detectedTopics[0] || prev.lastTopicDiscussed
+    }));
+    
+    // Enhanced topic matching with fuzzy search
+    let bestMatch = "";
+    let bestScore = 0;
+    
+    // Check main knowledge base with enhanced matching
     for (const [topic, data] of Object.entries(FRAUD_KNOWLEDGE_BASE)) {
-      if (data.keywords.some(keyword => lowerMessage.includes(keyword))) {
-        return data.response;
+      let score = 0;
+      
+      // Direct keyword matches (highest priority)
+      data.keywords.forEach(keyword => {
+        if (lowerMessage.includes(keyword)) score += 10;
+        if (lowerMessage.split(' ').includes(keyword)) score += 5;
+      });
+      
+      // Synonym matches
+      Object.entries(WORD_SYNONYMS).forEach(([mainWord, synonyms]) => {
+        if (data.keywords.includes(mainWord)) {
+          synonyms.forEach(synonym => {
+            if (lowerMessage.includes(synonym)) score += 7;
+          });
+        }
+      });
+      
+      // Context-based scoring (if user previously asked about related topics)
+      if (conversationContext.topics.includes(topic)) score += 3;
+      
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = topic;
+        response = data.response;
       }
     }
     
-    // Check for advanced topics
-    for (const [topic, data] of Object.entries(ADVANCED_TOPICS)) {
-      if (data.keywords.some(keyword => lowerMessage.includes(keyword))) {
-        return data.response;
+    // Check advanced topics if no main topic found
+    if (bestScore === 0) {
+      for (const [topic, data] of Object.entries(ADVANCED_TOPICS)) {
+        let score = 0;
+        
+        data.keywords.forEach(keyword => {
+          if (lowerMessage.includes(keyword)) score += 10;
+        });
+        
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = topic;
+          response = data.response;
+        }
       }
     }
     
-    // Check for greetings
-    if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
-      return "👋 Hello! I'm here to help you learn about banking fraud prevention. What specific topic would you like to explore?";
+    // Generate contextual follow-ups
+    if (bestMatch) {
+      followUps = generateContextualFollowUps(bestMatch, userMessage);
     }
     
-    // Check for help requests
-    if (lowerMessage.includes('help') || lowerMessage.includes('assist')) {
-      return "🤝 I can help you with comprehensive fraud prevention knowledge:\n\n**Core Topics:**\n• **Phishing** - Email, SMS, and voice scams\n• **ATM Safety** - Skimming, shimming, and physical attacks\n• **Identity Theft** - Personal information protection\n• **Online Banking** - Digital security and malware protection\n• **Investment Scams** - Ponzi schemes and fake opportunities\n• **Mobile Banking** - Smartphone and app security\n• **Social Engineering** - Psychological manipulation tactics\n• **Cryptocurrency** - Digital asset fraud prevention\n\n**Specialized Areas:**\n• **Elder Fraud** - Scams targeting seniors\n• **Business Fraud** - Corporate email compromise\n• **Romance Scams** - Online dating fraud\n• **Tax Fraud** - IRS impersonation and refund fraud\n\nJust ask about any topic for detailed information, real examples, and step-by-step protection strategies!";
+    // Contextual responses based on conversation history
+    if (bestScore === 0) {
+      // Check for greetings
+      if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+        response = conversationContext.topics.length > 0 
+          ? `👋 Welcome back! I see you've been learning about ${conversationContext.topics.slice(-2).join(' and ')}. What else would you like to explore?`
+          : "👋 Hello! I'm here to help you learn about banking fraud prevention. What specific topic would you like to explore?";
+        followUps = ["Tell me about phishing", "How to stay safe at ATMs", "What is identity theft?"];
+      }
+      
+      // Enhanced help with personalized suggestions
+      else if (lowerMessage.includes('help') || lowerMessage.includes('assist')) {
+        const personalizedTopics = conversationContext.topics.length > 0 
+          ? `\n\n**Based on our conversation, you might also want to learn about:**\n${conversationContext.topics.map(topic => `• ${topic.charAt(0).toUpperCase() + topic.slice(1)} fraud prevention`).join('\n')}`
+          : "";
+        
+        response = `🤝 I can help you with comprehensive fraud prevention knowledge:\n\n**Core Topics:**\n• **Phishing** - Email, SMS, and voice scams\n• **ATM Safety** - Skimming, shimming, and physical attacks\n• **Identity Theft** - Personal information protection\n• **Online Banking** - Digital security and malware protection\n• **Investment Scams** - Ponzi schemes and fake opportunities\n• **Mobile Banking** - Smartphone and app security\n• **Social Engineering** - Psychological manipulation tactics\n• **Cryptocurrency** - Digital asset fraud prevention\n\n**Specialized Areas:**\n• **Elder Fraud** - Scams targeting seniors\n• **Business Fraud** - Corporate email compromise\n• **Romance Scams** - Online dating fraud\n• **Tax Fraud** - IRS impersonation and refund fraud${personalizedTopics}\n\nJust ask about any topic for detailed information, real examples, and step-by-step protection strategies!`;
+        followUps = ["What's the most common scam?", "How do I protect my elderly parents?", "Tell me about recent fraud trends"];
+      }
+      
+      // Context-aware examples
+      else if (lowerMessage.includes('example') || lowerMessage.includes('case study') || lowerMessage.includes('real world')) {
+        response = "📚 **Real-World Fraud Examples:**\n\n• **Bernie Madoff Ponzi Scheme:** $65 billion fraud over 20+ years\n• **Target Data Breach (2013):** 40 million credit cards stolen\n• **Equifax Breach (2017):** 147 million Americans' data exposed\n• **Twitter Bitcoin Scam (2020):** Hackers compromised celebrity accounts\n• **Colonial Pipeline Ransomware (2021):** $4.4 million paid to criminals\n\nWhich type of fraud would you like specific examples and prevention strategies for?";
+        followUps = ["Show me phishing examples", "Tell me about recent scams", "How do these attacks work?"];
+      }
+      
+      // Statistics with context
+      else if (lowerMessage.includes('statistic') || lowerMessage.includes('data') || lowerMessage.includes('numbers')) {
+        response = "📊 **Fraud Statistics (2022-2023):**\n\n• **Total Losses:** $8.8 billion reported to FTC\n• **Identity Theft:** 1.4 million reports, $52 billion losses\n• **Investment Scams:** $4.2 billion in losses\n• **Romance Scams:** $547 million, highest per-person losses\n• **Business Email Compromise:** $43 billion since 2016\n• **Cryptocurrency Fraud:** $14 billion in 2021\n• **Elder Fraud:** $3 billion targeting adults 60+\n\n**Most Targeted Age Groups:**\n• 30-39 years: Highest report rates\n• 70+ years: Highest dollar losses per person\n\nWhat specific fraud type would you like detailed information about?";
+        followUps = ["Which scams are increasing?", "How can I avoid becoming a statistic?", "What age group am I in?"];
+      }
+      
+      // Thanks with personalized touch
+      else if (lowerMessage.includes('thank') || lowerMessage.includes('thanks')) {
+        response = conversationContext.topics.length > 0
+          ? `😊 You're welcome! I'm glad I could help you learn about ${conversationContext.topics.slice(-1)[0]} and other fraud prevention topics. Stay vigilant and keep learning! Is there anything else you'd like to know?`
+          : "😊 You're welcome! Stay vigilant and keep learning about fraud prevention. Financial security is an ongoing process. Is there anything else you'd like to know?";
+        followUps = ["What should I learn next?", "Any final tips?", "How often should I check my accounts?"];
+      }
+      
+      // Reporting with context
+      else if (lowerMessage.includes('report') || lowerMessage.includes('authorities') || lowerMessage.includes('police')) {
+        response = "🚨 **How to Report Fraud:**\n\n**Federal Agencies:**\n• **FTC:** reportfraud.ftc.gov or 1-877-FTC-HELP\n• **FBI IC3:** ic3.gov for internet crimes\n• **IRS:** tigta.gov for tax-related fraud\n• **SEC:** sec.gov/complaint for investment fraud\n\n**Financial Institutions:**\n• Contact your bank's fraud department immediately\n• File disputes for unauthorized transactions\n• Request account freezes if compromised\n\n**Credit Bureaus:**\n• Equifax, Experian, TransUnion\n• Place fraud alerts or credit freezes\n• Monitor credit reports regularly\n\n**Documentation Tips:**\n• Keep records of all communications\n• Screenshot fraudulent messages\n• Note dates, times, and amounts\n• Get police report numbers when applicable";
+        followUps = ["I think I've been scammed, what now?", "How long do I have to report fraud?", "What evidence should I collect?"];
+      }
+      
+      // Smart fallback based on context
+      else {
+        const contextualResponse = conversationContext.topics.length > 0
+          ? `I understand you're asking about "${userMessage}". Based on our conversation about ${conversationContext.topics.slice(-1)[0]}, let me help you with that. Could you be more specific about what aspect you'd like to know?`
+          : GENERAL_RESPONSES[Math.floor(Math.random() * GENERAL_RESPONSES.length)];
+        
+        response = contextualResponse;
+        followUps = conversationContext.topics.length > 0 
+          ? [`More about ${conversationContext.topics.slice(-1)[0]}`, "Start a new topic", "Show me examples"]
+          : ["Tell me about phishing", "How to stay safe online", "What are common scams?"];
+      }
     }
     
-    // Check for case studies or examples
-    if (lowerMessage.includes('example') || lowerMessage.includes('case study') || lowerMessage.includes('real world')) {
-      return "📚 **Real-World Fraud Examples:**\n\n• **Bernie Madoff Ponzi Scheme:** $65 billion fraud over 20+ years\n• **Target Data Breach (2013):** 40 million credit cards stolen\n• **Equifax Breach (2017):** 147 million Americans' data exposed\n• **Twitter Bitcoin Scam (2020):** Hackers compromised celebrity accounts\n• **Colonial Pipeline Ransomware (2021):** $4.4 million paid to criminals\n\nWhich type of fraud would you like specific examples and prevention strategies for?";
-    }
-    
-    // Check for statistics or data
-    if (lowerMessage.includes('statistic') || lowerMessage.includes('data') || lowerMessage.includes('numbers')) {
-      return "📊 **Fraud Statistics (2022-2023):**\n\n• **Total Losses:** $8.8 billion reported to FTC\n• **Identity Theft:** 1.4 million reports, $52 billion losses\n• **Investment Scams:** $4.2 billion in losses\n• **Romance Scams:** $547 million, highest per-person losses\n• **Business Email Compromise:** $43 billion since 2016\n• **Cryptocurrency Fraud:** $14 billion in 2021\n• **Elder Fraud:** $3 billion targeting adults 60+\n\n**Most Targeted Age Groups:**\n• 30-39 years: Highest report rates\n• 70+ years: Highest dollar losses per person\n\nWhat specific fraud type would you like detailed information about?";
-    }
-    
-    // Check for thanks
-    if (lowerMessage.includes('thank') || lowerMessage.includes('thanks')) {
-      return "😊 You're welcome! Stay vigilant and keep learning about fraud prevention. Financial security is an ongoing process. Is there anything else you'd like to know?";
-    }
-    
-    // Check for reporting information
-    if (lowerMessage.includes('report') || lowerMessage.includes('authorities') || lowerMessage.includes('police')) {
-      return "🚨 **How to Report Fraud:**\n\n**Federal Agencies:**\n• **FTC:** reportfraud.ftc.gov or 1-877-FTC-HELP\n• **FBI IC3:** ic3.gov for internet crimes\n• **IRS:** tigta.gov for tax-related fraud\n• **SEC:** sec.gov/complaint for investment fraud\n\n**Financial Institutions:**\n• Contact your bank's fraud department immediately\n• File disputes for unauthorized transactions\n• Request account freezes if compromised\n\n**Credit Bureaus:**\n• Equifax, Experian, TransUnion\n• Place fraud alerts or credit freezes\n• Monitor credit reports regularly\n\n**Documentation Tips:**\n• Keep records of all communications\n• Screenshot fraudulent messages\n• Note dates, times, and amounts\n• Get police report numbers when applicable";
-    }
-    
-    // Default responses
-    const randomResponse = GENERAL_RESPONSES[Math.floor(Math.random() * GENERAL_RESPONSES.length)];
-    return randomResponse;
+    return { response, followUps, detectedTopics };
   };
 
   const sendMessage = async () => {
@@ -168,11 +341,15 @@ export default function ChatbotScreen() {
 
     // Simulate AI thinking time
     setTimeout(() => {
+      const { response, followUps, detectedTopics } = generateResponse(userMessage.text);
+      
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: generateResponse(userMessage.text),
+        text: response,
         isUser: false,
         timestamp: new Date(),
+        context: detectedTopics,
+        followUpSuggestions: followUps,
       };
 
       setMessages(prev => [...prev, aiResponse]);
@@ -190,41 +367,93 @@ export default function ChatbotScreen() {
     scrollToBottom();
   }, [messages, isTyping]);
 
+  const handleFollowUpPress = (followUpText: string) => {
+    setInputText(followUpText);
+    // Auto-send the follow-up question
+    setTimeout(() => {
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        text: followUpText,
+        isUser: true,
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, userMessage]);
+      setInputText('');
+      setIsTyping(true);
+
+      setTimeout(() => {
+        const { response, followUps, detectedTopics } = generateResponse(followUpText);
+        
+        const aiResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          text: response,
+          isUser: false,
+          timestamp: new Date(),
+          context: detectedTopics,
+          followUpSuggestions: followUps,
+        };
+
+        setMessages(prev => [...prev, aiResponse]);
+        setIsTyping(false);
+      }, 1000 + Math.random() * 1000);
+    }, 100);
+  };
+
   const renderMessage = (message: Message) => (
-    <View
-      key={message.id}
-      style={[
-        styles.messageContainer,
-        message.isUser ? styles.userMessage : styles.aiMessage,
-      ]}
-    >
-      {!message.isUser && (
-        <View style={styles.aiAvatar}>
-          <Ionicons name="shield-checkmark" size={16} color="#4CAF50" />
-        </View>
-      )}
+    <View key={message.id}>
       <View
         style={[
-          styles.messageBubble,
-          message.isUser ? styles.userBubble : styles.aiBubble,
+          styles.messageContainer,
+          message.isUser ? styles.userMessage : styles.aiMessage,
         ]}
       >
-        <Text style={[
-          styles.messageText,
-          message.isUser ? styles.userText : styles.aiText,
-        ]}>
-          {message.text}
-        </Text>
-        <Text style={styles.timestamp}>
-          {message.timestamp.toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          })}
-        </Text>
+        {!message.isUser && (
+          <View style={styles.aiAvatar}>
+            <Ionicons name="shield-checkmark" size={16} color="#4CAF50" />
+          </View>
+        )}
+        <View
+          style={[
+            styles.messageBubble,
+            message.isUser ? styles.userBubble : styles.aiBubble,
+          ]}
+        >
+          <Text style={[
+            styles.messageText,
+            message.isUser ? styles.userText : styles.aiText,
+          ]}>
+            {message.text}
+          </Text>
+          <Text style={styles.timestamp}>
+            {message.timestamp.toLocaleTimeString([], { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            })}
+          </Text>
+        </View>
+        {message.isUser && (
+          <View style={styles.userAvatar}>
+            <Ionicons name="person" size={16} color="#F0F4F8" />
+          </View>
+        )}
       </View>
-      {message.isUser && (
-        <View style={styles.userAvatar}>
-          <Ionicons name="person" size={16} color="#F0F4F8" />
+      
+      {/* Follow-up suggestions for AI messages */}
+      {!message.isUser && message.followUpSuggestions && message.followUpSuggestions.length > 0 && (
+        <View style={styles.followUpContainer}>
+          <Text style={styles.followUpLabel}>💡 Quick questions:</Text>
+          <View style={styles.followUpButtons}>
+            {message.followUpSuggestions.map((suggestion, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.followUpButton}
+                onPress={() => handleFollowUpPress(suggestion)}
+              >
+                <Text style={styles.followUpButtonText}>{suggestion}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       )}
     </View>
@@ -455,5 +684,34 @@ const styles = StyleSheet.create({
     backgroundColor: '#A8C3D1',
     marginHorizontal: 2,
     opacity: 0.4,
+  },
+  followUpContainer: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  followUpLabel: {
+    fontSize: 12,
+    color: '#A8C3D1',
+    marginBottom: 8,
+    marginLeft: 48, // Align with AI message bubble
+  },
+  followUpButtons: {
+    marginLeft: 48, // Align with AI message bubble
+  },
+  followUpButton: {
+    backgroundColor: '#4B5563',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 6,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#6B7280',
+  },
+  followUpButtonText: {
+    color: '#F0F4F8',
+    fontSize: 13,
+    fontWeight: '500',
   },
 });
