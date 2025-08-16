@@ -2,6 +2,7 @@ const express = require('express');
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
+const auth = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -82,6 +83,7 @@ router.post(
 // @access  Private
 router.get(
   '/quiz-levels',
+  auth,
   asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id);
 
@@ -102,6 +104,7 @@ router.get(
 // @access  Private
 router.post(
   '/quiz-levels/unlock',
+  auth,
   asyncHandler(async (req, res) => {
     const { levelId, cost } = req.body;
     
@@ -154,6 +157,7 @@ router.post(
 // @access  Private
 router.post(
   '/quiz-levels/complete',
+  auth,
   asyncHandler(async (req, res) => {
     const { levelId, score } = req.body;
     
@@ -206,6 +210,7 @@ router.post(
 // @access  Private
 router.post(
   '/quiz/battle',
+  auth,
   asyncHandler(async (req, res) => {
     const { score } = req.body;
 
@@ -244,6 +249,7 @@ router.post(
 // @access  Private
 router.post(
   '/quiz-rewards',
+  auth,
   asyncHandler(async (req, res) => {
     const { coins, quizType, score } = req.body;
     

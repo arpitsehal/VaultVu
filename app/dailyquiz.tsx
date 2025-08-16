@@ -285,9 +285,15 @@ export default function DailyQuizScreen() {
 
         await AsyncStorage.setItem(`lastDailyQuizDate_${userId}`, new Date().toISOString());
 
-        const token = await AsyncStorage.getItem('token');
+        let token = user.token;
+        
+        // Fallback: try to get token from separate storage if not in user object
         if (!token) {
-            console.error("No token found, can't update user data");
+            token = await AsyncStorage.getItem('token');
+        }
+        
+        if (!token) {
+            console.error("No token found in user data or separate storage");
             return;
         }
 

@@ -13,8 +13,9 @@ export async function login(emailOrUsername, password) {
     const data = await response.json();
     if (data.success && data.token) {
       await AsyncStorage.setItem('token', data.token);
-      await AsyncStorage.setItem('user', JSON.stringify(data.user));
-      return { success: true, user: data.user };
+      const userWithToken = { ...data.user, token: data.token };
+      await AsyncStorage.setItem('user', JSON.stringify(userWithToken));
+      return { success: true, user: userWithToken };
     } else {
       return { success: false, message: data.message };
     }
@@ -46,8 +47,10 @@ export async function completeProfile(email, username, dateOfBirth, country, gen
     });
     const data = await response.json();
     if (data.success) {
-      // Update stored user data with profile info
-      await AsyncStorage.setItem('user', JSON.stringify(data.user));
+      // Get existing token and include it with profile data
+      const existingToken = await AsyncStorage.getItem('token');
+      const userWithToken = { ...data.user, token: existingToken };
+      await AsyncStorage.setItem('user', JSON.stringify(userWithToken));
     }
     return { success: data.success, message: data.message, user: data.user };
   } catch (error) {

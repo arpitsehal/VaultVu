@@ -138,6 +138,9 @@ const ResultsModal = ({
     onPlayAgain: () => void;
     onExit: () => void;
 }) => {
+    // Add safety checks to prevent console errors
+    if (!player1 || !player2) return null;
+    
     const winner = player1.score > player2.score ? player1.name : 
                  player2.score > player1.score ? player2.name : "It's a tie!";
     
@@ -427,43 +430,60 @@ export default function QuizBattleScreen() {
         }
     };
     
-    const handleBattleEnd = async (winningPlayer: Player) => {
+    const handleBattleEnd = async () => {
         setBattleCompleted(true);
         setShowResultsModal(true);
         
         // Award 1 coin to the user
         try {
-            const token = await AsyncStorage.getItem('token');
+            // Get user data and token consistently
+            const userDataStr = await AsyncStorage.getItem('user');
+            if (!userDataStr) {
+                console.error('No user data found');
+                return;
+            }
+            
+            const userData = JSON.parse(userDataStr);
+            let token = userData.token;
+            
+            // Fallback: try to get token from separate storage if not in user object
             if (!token) {
-                console.error('No token found');
+                token = await AsyncStorage.getItem('token');
+            }
+            
+            if (!token) {
+                console.error('No token found in user data or separate storage');
                 return;
             }
 
-            const response = await fetch('https://vaultvu.onrender.com/api/users/quiz/battle', {
+            const response = await fetch('https://vaultvu.onrender.com/api/users/quiz-rewards', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ score: winningPlayer.score }),
+                body: JSON.stringify({ 
+                    coins: 1, // Fixed 1 coin for battle completion
+                    quizType: 'battle',
+                    score: Math.max(player1.score, player2.score)
+                }),
             });
 
             const data = await response.json();
             if (response.ok) {
-                console.log('Battle score submitted successfully:', data);
-                // Update user's coins in AsyncStorage
-                const userData = await AsyncStorage.getItem('user');
-                if (userData) {
-                    const user = JSON.parse(userData);
-                    user.coins = data.coins; // Assuming data.coins contains the updated coin count
-                    await AsyncStorage.setItem('user', JSON.stringify(user));
-                    console.log('AsyncStorage updated with new coin count:', user.coins);
-                }
+                console.log('✅ Battle score submitted successfully:', data);
+                // Update user's coins in AsyncStorage with the earned coins
+                const updatedUserData = {
+                    ...userData,
+                    coins: (userData.coins || 0) + 1 // Add 1 coin to existing coins
+                };
+                await AsyncStorage.setItem('user', JSON.stringify(updatedUserData));
+                console.log('✅ AsyncStorage updated with new coin count:', updatedUserData.coins);
             } else {
-                console.error('Failed to submit battle score:', data.message);
+                console.error('❌ Failed to submit battle score:', data.message);
             }
         } catch (error) {
-            console.error('Error submitting battle score:', error);
+            console.error('⚠ Error submitting battle score:', error);
         }
     };
     
@@ -669,13 +689,15 @@ export default function QuizBattleScreen() {
                 )}
             </View>
             
-            <ResultsModal 
-                isVisible={showResultsModal}
-                player1={player1}
-                player2={player2}
-                onPlayAgain={resetBattle}
-                onExit={() => router.back()}
-            />
+            {showResultsModal && (
+                <ResultsModal 
+                    isVisible={showResultsModal}
+                    player1={player1}
+                    player2={player2}
+                    onPlayAgain={resetBattle}
+                    onExit={() => router.back()}
+                />
+            )}
         </SafeAreaView>
     );
 }

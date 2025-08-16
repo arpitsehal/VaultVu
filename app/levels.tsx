@@ -1,6 +1,8 @@
 import { AntDesign, Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -16,8 +18,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
 
 const { width: screenWidth } = Dimensions.get('window');
 const API_URL = 'https://vaultvu.onrender.com/api/users';
@@ -225,10 +225,14 @@ export default function LevelsScreen() {
     try {
       setLoading(true);
       
-      // Get user token from AsyncStorage
       const userDataStr = await AsyncStorage.getItem('user');
       const userData = userDataStr ? JSON.parse(userDataStr) : {};
-      const token = userData.token;
+      let token = userData.token;
+      
+      // Fallback token retrieval from separate AsyncStorage
+      if (!token) {
+        token = await AsyncStorage.getItem('token');
+      }
       
       if (!token) {
         // Instead of showing error, use local data with first level unlocked
@@ -240,7 +244,9 @@ export default function LevelsScreen() {
         }));
         
         setLevels(localLevels);
-        setUserCoins(0);
+        // Try to get coins from AsyncStorage fallback
+        const fallbackCoins = await AsyncStorage.getItem('coins');
+        setUserCoins(userData.coins || parseInt(fallbackCoins || '0') || 0);
         setLoading(false);
         return;
       }
@@ -300,10 +306,14 @@ export default function LevelsScreen() {
     if (!selectedLevel) return;
     
     try {
-      // Get user token from AsyncStorage
       const userDataStr = await AsyncStorage.getItem('user');
       const userData = userDataStr ? JSON.parse(userDataStr) : {};
-      const token = userData.token;
+      let token = userData.token;
+      
+      // Fallback token retrieval from separate AsyncStorage
+      if (!token) {
+        token = await AsyncStorage.getItem('token');
+      }
       
       if (!token) {
         Alert.alert('Error', 'You must be logged in to unlock levels');
@@ -349,7 +359,6 @@ export default function LevelsScreen() {
       Alert.alert('Success', `You've unlocked ${selectedLevel.title}!`);
     } catch (error) {
       console.error('Error unlocking level:', error);
-      Alert.alert('Error', error.message || 'Failed to unlock level');
     }
   };
 
