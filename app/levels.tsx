@@ -18,6 +18,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import WheelProgress from '../components/WheelProgress';
 
 const { width: screenWidth } = Dimensions.get('window');
 const API_URL = 'https://vaultvu.onrender.com/api/users';
@@ -61,14 +62,30 @@ const QUIZ_LEVELS: Omit<Level, 'isLocked' | 'completed' | 'score'>[] = [
   },
   {
     id: 3,
+    title: 'Password Security',
+    description: 'Create and manage strong passwords',
+    difficulty: 'easy',
+    questionCount: 5,
+    unlockCost: 8,
+  },
+  {
+    id: 4,
+    title: 'Email Safety',
+    description: 'Recognize and avoid email scams',
+    difficulty: 'easy',
+    questionCount: 6,
+    unlockCost: 10,
+  },
+  {
+    id: 5,
     title: 'Digital Security',
     description: 'Protect your digital assets and identity',
     difficulty: 'medium',
     questionCount: 7,
-    unlockCost: 10,
+    unlockCost: 12,
   },
   {
-    id: 4,
+    id: 6,
     title: 'Investment Safety',
     description: 'Navigate investment risks and opportunities',
     difficulty: 'medium',
@@ -76,12 +93,52 @@ const QUIZ_LEVELS: Omit<Level, 'isLocked' | 'completed' | 'score'>[] = [
     unlockCost: 15,
   },
   {
-    id: 5,
+    id: 7,
+    title: 'Social Engineering',
+    description: 'Defend against manipulation tactics',
+    difficulty: 'medium',
+    questionCount: 8,
+    unlockCost: 18,
+  },
+  {
+    id: 8,
+    title: 'Mobile Security',
+    description: 'Secure your mobile devices and apps',
+    difficulty: 'medium',
+    questionCount: 8,
+    unlockCost: 20,
+  },
+  {
+    id: 9,
     title: 'Advanced Protection',
     description: 'Master advanced financial security techniques',
     difficulty: 'hard',
     questionCount: 10,
     unlockCost: 25,
+  },
+  {
+    id: 10,
+    title: 'Cryptocurrency Security',
+    description: 'Safely navigate the crypto world',
+    difficulty: 'hard',
+    questionCount: 12,
+    unlockCost: 30,
+  },
+  {
+    id: 11,
+    title: 'Identity Theft Prevention',
+    description: 'Comprehensive identity protection strategies',
+    difficulty: 'hard',
+    questionCount: 15,
+    unlockCost: 35,
+  },
+  {
+    id: 12,
+    title: 'Business Security',
+    description: 'Protect your business from financial threats',
+    difficulty: 'hard',
+    questionCount: 15,
+    unlockCost: 40,
   },
 ];
 
@@ -170,7 +227,7 @@ const LevelCard = ({
         level.completed ? styles.completedCard : null,
         level.isLocked ? styles.lockedCard : null]}
       onPress={level.isLocked ? onUnlock : onPress}
-      disabled={level.isLocked && level.unlockCost === 0 ? false : level.isLocked}
+      disabled={false}
     >
       <View style={styles.levelHeader}>
         <Text style={styles.levelTitle}>{level.title}</Text>
@@ -191,8 +248,8 @@ const LevelCard = ({
           </View>
         ) : level.completed ? (
           <View style={styles.scoreContainer}>
-            <Text style={styles.scoreText}>Score: {level.score}</Text>
-            <AntDesign name="checkcircle" size={16} color="#4CAF50" />
+            <Text style={styles.scoreText}>Score: {level.score} ✓</Text>
+            <Text style={styles.replayText}>Tap to replay</Text>
           </View>
         ) : (
           <View style={styles.playContainer}>
@@ -214,6 +271,22 @@ export default function LevelsScreen() {
   const [showUnlockModal, setShowUnlockModal] = useState<boolean>(false);
   const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
   const router = useRouter();
+
+  // Calculate progress stats for wheel
+  const getProgressStats = () => {
+    const easyLevels = levels.filter(l => l.difficulty === 'easy');
+    const mediumLevels = levels.filter(l => l.difficulty === 'medium');
+    const hardLevels = levels.filter(l => l.difficulty === 'hard');
+
+    return {
+      easyCompleted: easyLevels.filter(l => l.completed).length,
+      easyTotal: easyLevels.length,
+      mediumCompleted: mediumLevels.filter(l => l.completed).length,
+      mediumTotal: mediumLevels.length,
+      hardCompleted: hardLevels.filter(l => l.completed).length,
+      hardTotal: hardLevels.length,
+    };
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -336,11 +409,17 @@ export default function LevelsScreen() {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to unlock level');
+        Alert.alert('Error', data.message || 'Failed to unlock level');
+        return;
       }
       
       // Update local state
       setUserCoins(data.coins);
+      
+      // Update AsyncStorage with new coin count
+      const updatedUserData = { ...userData, coins: data.coins };
+      await AsyncStorage.setItem('user', JSON.stringify(updatedUserData));
+      await AsyncStorage.setItem('coins', data.coins.toString());
       
       // Update the levels list
       setLevels(prevLevels => 
@@ -359,6 +438,7 @@ export default function LevelsScreen() {
       Alert.alert('Success', `You've unlocked ${selectedLevel.title}!`);
     } catch (error) {
       console.error('Error unlocking level:', error);
+      Alert.alert('Error', 'Network error. Please check your connection and try again.');
     }
   };
 
@@ -391,9 +471,21 @@ export default function LevelsScreen() {
           <Ionicons name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Quiz Levels</Text>
-        <View style={styles.coinsContainer}>
-          <Text style={styles.coinsText}>{userCoins}</Text>
-          <AntDesign name="star" size={18} color="#FFD700" />
+        <View style={styles.headerRight}>
+          <WheelProgress
+            {...getProgressStats()}
+            onPress={() => {
+              const stats = getProgressStats();
+              Alert.alert(
+                'Level Progress',
+                `Easy: ${stats.easyCompleted}/${stats.easyTotal}\nMedium: ${stats.mediumCompleted}/${stats.mediumTotal}\nHard: ${stats.hardCompleted}/${stats.hardTotal}`
+              );
+            }}
+          />
+          <View style={styles.coinsContainer}>
+            <Text style={styles.coinsText}>{userCoins}</Text>
+            <AntDesign name="star" size={18} color="#FFD700" />
+          </View>
         </View>
       </View>
       
@@ -444,6 +536,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#F0F4F8',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   coinsContainer: {
     flexDirection: 'row',
@@ -526,13 +623,18 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   scoreContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
   },
   scoreText: {
     fontSize: 12,
     color: '#4CAF50',
-    marginRight: 4,
+    fontWeight: 'bold',
+  },
+  replayText: {
+    fontSize: 10,
+    color: '#A8C3D1',
+    fontStyle: 'italic',
   },
   playContainer: {
     flexDirection: 'row',

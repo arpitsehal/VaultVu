@@ -27,8 +27,15 @@ const QUIZ_LEVELS = [
   { id: 1, questionCount: 5 },
   { id: 2, questionCount: 5 },
   { id: 3, questionCount: 5 },
-  { id: 4, questionCount: 7 },
-  { id: 5, questionCount: 10 }
+  { id: 4, questionCount: 6 },
+  { id: 5, questionCount: 7 },
+  { id: 6, questionCount: 7 },
+  { id: 7, questionCount: 8 },
+  { id: 8, questionCount: 8 },
+  { id: 9, questionCount: 10 },
+  { id: 10, questionCount: 12 },
+  { id: 11, questionCount: 15 },
+  { id: 12, questionCount: 15 }
 ];
 
 interface Question {
@@ -46,6 +53,8 @@ const ResultModal = ({
   score,
   totalQuestions,
   coinsEarned,
+  completed,
+  percentage,
   onLevelsPress,
   onDashboardPress
 }: {
@@ -53,38 +62,60 @@ const ResultModal = ({
   score: number;
   totalQuestions: number;
   coinsEarned: number;
+  completed?: boolean;
+  percentage?: number;
   onLevelsPress: () => void;
   onDashboardPress: () => void;
-}) => (
-  <Modal
-    animationType="slide"
-    transparent={true}
-    visible={isVisible}
-    onRequestClose={onDashboardPress}
-  >
-    <View style={styles.centeredView}>
-      <View style={styles.modalView}>
-        <Text style={styles.modalTitle}>Level Completed!</Text>
-        <Text style={styles.modalText}>You scored {score} out of {totalQuestions}.</Text>
-        <Text style={styles.modalCoins}>+{coinsEarned} coins earned!</Text>
-        <View style={styles.modalButtonsContainer}>
-          <Pressable
-            style={[styles.modalButton, styles.buttonLeaderboard]}
-            onPress={onLevelsPress}
-          >
-            <Text style={styles.buttonText}>Back to Levels</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.modalButton, styles.buttonDashboard]}
-            onPress={onDashboardPress}
-          >
-            <Text style={styles.buttonText}>Return to Dashboard</Text>
-          </Pressable>
+}) => {
+  const actualPercentage = percentage || Math.round((score / totalQuestions) * 100);
+  const isCompleted = completed !== undefined ? completed : actualPercentage >= 75;
+  
+  return (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={isVisible}
+      onRequestClose={onDashboardPress}
+    >
+      <View style={styles.centeredView}>
+        <View style={styles.modalView}>
+          <Text style={styles.modalTitle}>
+            {isCompleted ? 'Level Completed! 🎉' : 'Level Attempted'}
+          </Text>
+          <Text style={styles.modalText}>
+            You scored {score} out of {totalQuestions} ({actualPercentage}%)
+          </Text>
+          {isCompleted ? (
+            <Text style={styles.modalSuccess}>
+              ✅ Level completed with {actualPercentage}%! (75% required)
+            </Text>
+          ) : (
+            <Text style={styles.modalWarning}>
+              ⚠️ Need 75% to complete. Try again to improve your score!
+            </Text>
+          )}
+          {coinsEarned > 0 && (
+            <Text style={styles.modalCoins}>+{coinsEarned} coins earned!</Text>
+          )}
+          <View style={styles.modalButtonsContainer}>
+            <Pressable
+              style={[styles.modalButton, styles.buttonLeaderboard]}
+              onPress={onLevelsPress}
+            >
+              <Text style={styles.buttonText}>Back to Levels</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.modalButton, styles.buttonDashboard]}
+              onPress={onDashboardPress}
+            >
+              <Text style={styles.buttonText}>Return to Dashboard</Text>
+            </Pressable>
+          </View>
         </View>
       </View>
-    </View>
-  </Modal>
-);
+    </Modal>
+  );
+};
 
 // Add this after the interface definitions
 const LEVEL_QUIZ_QUESTIONS: {[key: string]: Question[]} = {
@@ -597,6 +628,8 @@ export default function QuizLevelScreen() {
   const [showResultModal, setShowResultModal] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<number | string>(3);
   const [coinsEarned, setCoinsEarned] = useState<number>(0);
+  const [levelCompleted, setLevelCompleted] = useState<boolean>(false);
+  const [completionPercentage, setCompletionPercentage] = useState<number>(0);
   
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -714,7 +747,8 @@ export default function QuizLevelScreen() {
         },
         body: JSON.stringify({
           levelId: parseInt(levelId as string),
-          score: finalScore
+          score: finalScore,
+          totalQuestions: quizQuestions.length
         }),
       });
       
@@ -724,6 +758,11 @@ export default function QuizLevelScreen() {
       
       const data = await response.json();
       console.log("✅ Level completion submitted:", data);
+      
+      // Update completion status from backend response
+      setCoinsEarned(data.coinsEarned || 0);
+      setLevelCompleted(data.completed || false);
+      setCompletionPercentage(data.percentage || Math.round((finalScore / quizQuestions.length) * 100));
       
       // Show results modal
       setShowResultModal(true);
@@ -811,6 +850,8 @@ export default function QuizLevelScreen() {
         score={score}
         totalQuestions={quizQuestions.length}
         coinsEarned={coinsEarned}
+        completed={levelCompleted}
+        percentage={completionPercentage}
         onLevelsPress={() => {
           setShowResultModal(false);
           router.push('/levels');
@@ -824,7 +865,7 @@ export default function QuizLevelScreen() {
   }
 
   // Countdown UI
-  if (countdown > 0) {
+  if (typeof countdown === 'number' && countdown > 0) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <Text style={styles.countdownText}>{countdown}</Text>
@@ -1049,6 +1090,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFD700',
     marginBottom: 24,
+  },
+  modalSuccess: {
+    fontSize: 14,
+    color: '#4CAF50',
+    marginBottom: 16,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  modalWarning: {
+    fontSize: 14,
+    color: '#FFC107',
+    marginBottom: 16,
+    textAlign: 'center',
+    fontWeight: '600',
   },
   modalButtonsContainer: {
     flexDirection: 'row',

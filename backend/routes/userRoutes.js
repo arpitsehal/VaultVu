@@ -159,11 +159,11 @@ router.post(
   '/quiz-levels/complete',
   auth,
   asyncHandler(async (req, res) => {
-    const { levelId, score } = req.body;
+    const { levelId, score, totalQuestions } = req.body;
     
-    if (!levelId || score === undefined) {
+    if (!levelId || score === undefined || !totalQuestions) {
       res.status(400);
-      throw new Error('Level ID and score are required');
+      throw new Error('Level ID, score, and total questions are required');
     }
 
     const user = await User.findById(req.user.id);
@@ -181,16 +181,35 @@ router.post(
       throw new Error('Level not found or not unlocked');
     }
 
-    // Update level completion status
-    user.quizLevels[levelIndex].completed = true;
-    user.quizLevels[levelIndex].score = score;
-    user.quizLevels[levelIndex].completedAt = new Date();
-
-    // Award coins based on score (1 coin per correct answer)
-    const coinsEarned = score;
-    user.coins += coinsEarned;
+    // Calculate percentage score
+    const percentage = (score / totalQuestions) * 100;
+    const isCompleted = percentage >= 75;
     
-    // Update user's total points
+    // Check if this is the first time completing with 75%+
+    const wasAlreadyCompleted = user.quizLevels[levelIndex].completed;
+    const isFirstTimeCompletion = !wasAlreadyCompleted && isCompleted;
+
+    // Update level completion status
+    if (isCompleted) {
+      user.quizLevels[levelIndex].completed = true;
+      user.quizLevels[levelIndex].completedAt = new Date();
+    }
+    
+    // Always update the score (allow for improvement)
+    user.quizLevels[levelIndex].score = Math.max(user.quizLevels[levelIndex].score || 0, score);
+
+    let coinsEarned = 0;
+    
+    // Award coins only on first-time completion with 75%+
+    if (isFirstTimeCompletion) {
+      // Base coins + bonus for difficulty
+      const baseCoins = score;
+      const difficultyBonus = levelId <= 4 ? 2 : levelId <= 8 ? 5 : 10; // easy/medium/hard bonus
+      coinsEarned = baseCoins + difficultyBonus;
+      user.coins += coinsEarned;
+    }
+    
+    // Always update points
     user.points += score;
 
     await user.save();
@@ -200,7 +219,10 @@ router.post(
       quizLevels: user.quizLevels,
       coins: user.coins,
       coinsEarned,
-      points: user.points, // Add this line
+      points: user.points,
+      completed: isCompleted,
+      percentage: Math.round(percentage),
+      firstTimeCompletion: isFirstTimeCompletion
     });
   })
 );
