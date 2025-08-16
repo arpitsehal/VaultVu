@@ -227,7 +227,7 @@ export default function QuizBattleScreen() {
     const insets = useSafeAreaInsets();
     
     useEffect(() => {
-        // Add this after the interface definitions
+        // Expanded battle quiz questions pool
         const BATTLE_QUIZ_QUESTIONS: Question[] = [
             {
                 _id: 'bq1',
@@ -358,15 +358,155 @@ export default function QuizBattleScreen() {
                 correctAnswer: 'Saving your payment information on all websites for convenience',
                 category: 'Finance',
                 difficulty: 'easy'
+            },
+            {
+                _id: 'bq11',
+                question: 'What is the best way to handle a suspicious phone call asking for personal information?',
+                options: [
+                    'Provide the information if they sound official',
+                    'Hang up and call the organization directly using official numbers',
+                    'Ask them to call back later',
+                    'Transfer them to someone else'
+                ],
+                correctAnswer: 'Hang up and call the organization directly using official numbers',
+                category: 'Fraud',
+                difficulty: 'easy'
+            },
+            {
+                _id: 'bq12',
+                question: 'What is malware?',
+                options: [
+                    'Software designed to help your computer run faster',
+                    'Malicious software designed to damage or gain unauthorized access',
+                    'A type of hardware component',
+                    'Software for managing emails'
+                ],
+                correctAnswer: 'Malicious software designed to damage or gain unauthorized access',
+                category: 'Security',
+                difficulty: 'easy'
+            },
+            {
+                _id: 'bq13',
+                question: 'Which practice helps prevent credit card fraud?',
+                options: [
+                    'Writing your PIN on the back of your card',
+                    'Sharing your card details with friends',
+                    'Regularly monitoring your statements for unauthorized charges',
+                    'Using the same PIN for all your cards'
+                ],
+                correctAnswer: 'Regularly monitoring your statements for unauthorized charges',
+                category: 'Finance',
+                difficulty: 'easy'
+            },
+            {
+                _id: 'bq14',
+                question: 'What is a botnet?',
+                options: [
+                    'A network of robots',
+                    'A network of compromised computers controlled by cybercriminals',
+                    'A type of fishing net',
+                    'A social networking platform'
+                ],
+                correctAnswer: 'A network of compromised computers controlled by cybercriminals',
+                category: 'Security',
+                difficulty: 'hard'
+            },
+            {
+                _id: 'bq15',
+                question: 'What should you do if you accidentally click on a suspicious link?',
+                options: [
+                    'Continue browsing normally',
+                    'Immediately close the browser and run antivirus scan',
+                    'Share the link with others to warn them',
+                    'Try clicking it again to see what happens'
+                ],
+                correctAnswer: 'Immediately close the browser and run antivirus scan',
+                category: 'Security',
+                difficulty: 'medium'
+            },
+            {
+                _id: 'bq16',
+                question: 'Which is a characteristic of a secure website?',
+                options: [
+                    'It has many pop-up advertisements',
+                    'It uses HTTPS encryption and displays a lock icon',
+                    'It asks for personal information immediately',
+                    'It has flashy graphics and animations'
+                ],
+                correctAnswer: 'It uses HTTPS encryption and displays a lock icon',
+                category: 'Security',
+                difficulty: 'easy'
+            },
+            {
+                _id: 'bq17',
+                question: 'What is the safest way to connect to WiFi in public places?',
+                options: [
+                    'Connect to any available free WiFi',
+                    'Use your mobile data or a trusted VPN service',
+                    'Share your hotspot password with everyone',
+                    'Connect to networks with no password'
+                ],
+                correctAnswer: 'Use your mobile data or a trusted VPN service',
+                category: 'Security',
+                difficulty: 'medium'
+            },
+            {
+                _id: 'bq18',
+                question: 'What is pharming?',
+                options: [
+                    'Growing crops using technology',
+                    'Redirecting users from legitimate websites to fraudulent ones',
+                    'A type of fishing technique',
+                    'Managing pharmaceutical inventory'
+                ],
+                correctAnswer: 'Redirecting users from legitimate websites to fraudulent ones',
+                category: 'Security',
+                difficulty: 'hard'
+            },
+            {
+                _id: 'bq19',
+                question: 'How often should you back up important data?',
+                options: [
+                    'Never, it\'s not necessary',
+                    'Only when buying a new device',
+                    'Regularly, following the 3-2-1 backup rule',
+                    'Once a decade'
+                ],
+                correctAnswer: 'Regularly, following the 3-2-1 backup rule',
+                category: 'Security',
+                difficulty: 'medium'
+            },
+            {
+                _id: 'bq20',
+                question: 'What is the most important step when setting up online banking?',
+                options: [
+                    'Use the same password as your email',
+                    'Enable two-factor authentication and use strong passwords',
+                    'Share your login details with family members',
+                    'Access it only from public computers'
+                ],
+                correctAnswer: 'Enable two-factor authentication and use strong passwords',
+                category: 'Finance',
+                difficulty: 'medium'
             }
         ];
+
+        // Function to shuffle questions for fair battle
+        const shuffleQuestions = (questions: Question[]): Question[] => {
+            const shuffled = [...questions];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        };
 
         // Replace the fetchQuestions function with this
         const fetchQuestions = async () => {
             try {
-                // Instead of fetching from backend, use local questions
-                // Slice to get the requested number of questions
-                setQuizQuestions(BATTLE_QUIZ_QUESTIONS.slice(0, questionCount));
+                // Shuffle questions and select the requested number for fair battle
+                const shuffledQuestions = shuffleQuestions(BATTLE_QUIZ_QUESTIONS);
+                setQuizQuestions(shuffledQuestions.slice(0, questionCount));
             } catch (e) {
                 console.error("Error setting up quiz:", e);
                 setError("Failed to set up battle questions");

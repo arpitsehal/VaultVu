@@ -35,7 +35,7 @@ interface Question {
     created_at?: string;
 }
 
-// Local questions for daily quiz
+// Expanded questions pool for daily quiz with rotation
 const DAILY_QUIZ_QUESTIONS: Question[] = [
     {
         _id: 'dq1',
@@ -101,8 +101,221 @@ const DAILY_QUIZ_QUESTIONS: Question[] = [
         correctAnswer: 'Contact your financial institutions and change passwords immediately',
         category: 'Finance',
         difficulty: 'medium'
+    },
+    {
+        _id: 'dq6',
+        question: 'What is ransomware?',
+        options: [
+            'Software that helps you organize files',
+            'Malware that encrypts files and demands payment for decryption',
+            'A type of antivirus program',
+            'A secure file storage system'
+        ],
+        correctAnswer: 'Malware that encrypts files and demands payment for decryption',
+        category: 'Security',
+        difficulty: 'medium'
+    },
+    {
+        _id: 'dq7',
+        question: 'Which practice helps protect against identity theft?',
+        options: [
+            'Sharing personal information freely online',
+            'Using the same password for all accounts',
+            'Regularly monitoring your credit reports',
+            'Posting your full birthdate on social media'
+        ],
+        correctAnswer: 'Regularly monitoring your credit reports',
+        category: 'Fraud',
+        difficulty: 'easy'
+    },
+    {
+        _id: 'dq8',
+        question: 'What is a VPN primarily used for?',
+        options: [
+            'Making your internet faster',
+            'Creating secure, encrypted connections over public networks',
+            'Downloading files more quickly',
+            'Organizing your bookmarks'
+        ],
+        correctAnswer: 'Creating secure, encrypted connections over public networks',
+        category: 'Security',
+        difficulty: 'medium'
+    },
+    {
+        _id: 'dq9',
+        question: 'What should you do when using public WiFi?',
+        options: [
+            'Access all your accounts normally',
+            'Avoid accessing sensitive information or use a VPN',
+            'Share the password with everyone nearby',
+            'Download as much as possible since it\'s free'
+        ],
+        correctAnswer: 'Avoid accessing sensitive information or use a VPN',
+        category: 'Security',
+        difficulty: 'easy'
+    },
+    {
+        _id: 'dq10',
+        question: 'What is social engineering in cybersecurity?',
+        options: [
+            'Building social networks for companies',
+            'Manipulating people to divulge confidential information',
+            'Creating social media accounts',
+            'Engineering social interactions'
+        ],
+        correctAnswer: 'Manipulating people to divulge confidential information',
+        category: 'Security',
+        difficulty: 'hard'
+    },
+    {
+        _id: 'dq11',
+        question: 'Which email practice is most secure?',
+        options: [
+            'Opening all attachments to see what they contain',
+            'Clicking links to verify they work',
+            'Verifying sender identity before opening attachments or clicking links',
+            'Forwarding suspicious emails to friends for their opinion'
+        ],
+        correctAnswer: 'Verifying sender identity before opening attachments or clicking links',
+        category: 'Security',
+        difficulty: 'easy'
+    },
+    {
+        _id: 'dq12',
+        question: 'What is cryptocurrency fraud?',
+        options: [
+            'Legal trading of digital currencies',
+            'Scams involving fake investments or theft of digital assets',
+            'The process of mining cryptocurrency',
+            'Converting cryptocurrency to regular money'
+        ],
+        correctAnswer: 'Scams involving fake investments or theft of digital assets',
+        category: 'Finance',
+        difficulty: 'medium'
+    },
+    {
+        _id: 'dq13',
+        question: 'How often should you update your software?',
+        options: [
+            'Never, if it works fine',
+            'Only when you buy a new device',
+            'Regularly, when security updates are available',
+            'Once a year during spring cleaning'
+        ],
+        correctAnswer: 'Regularly, when security updates are available',
+        category: 'Security',
+        difficulty: 'easy'
+    },
+    {
+        _id: 'dq14',
+        question: 'What is a data breach?',
+        options: [
+            'When you accidentally delete your files',
+            'Unauthorized access to confidential data',
+            'When your internet connection is slow',
+            'When you run out of storage space'
+        ],
+        correctAnswer: 'Unauthorized access to confidential data',
+        category: 'Security',
+        difficulty: 'easy'
+    },
+    {
+        _id: 'dq15',
+        question: 'Which is a red flag for online shopping scams?',
+        options: [
+            'Secure payment options',
+            'Customer reviews and ratings',
+            'Prices significantly below market value',
+            'Clear return policies'
+        ],
+        correctAnswer: 'Prices significantly below market value',
+        category: 'Finance',
+        difficulty: 'medium'
+    },
+    {
+        _id: 'dq16',
+        question: 'What is the safest way to dispose of old financial documents?',
+        options: [
+            'Throw them in regular trash',
+            'Recycle them normally',
+            'Shred them before disposal',
+            'Burn them in your backyard'
+        ],
+        correctAnswer: 'Shred them before disposal',
+        category: 'Finance',
+        difficulty: 'easy'
+    },
+    {
+        _id: 'dq17',
+        question: 'What is spear phishing?',
+        options: [
+            'Fishing with a spear',
+            'Targeted phishing attacks aimed at specific individuals',
+            'A type of antivirus software',
+            'A secure email protocol'
+        ],
+        correctAnswer: 'Targeted phishing attacks aimed at specific individuals',
+        category: 'Security',
+        difficulty: 'hard'
+    },
+    {
+        _id: 'dq18',
+        question: 'How can you verify a website is secure for transactions?',
+        options: [
+            'Check if the URL starts with https:// and has a lock icon',
+            'See if it has colorful graphics',
+            'Check if it loads quickly',
+            'Look for lots of advertisements'
+        ],
+        correctAnswer: 'Check if the URL starts with https:// and has a lock icon',
+        category: 'Security',
+        difficulty: 'easy'
+    },
+    {
+        _id: 'dq19',
+        question: 'What should you do if you receive a suspicious text message?',
+        options: [
+            'Reply asking for more information',
+            'Click any links to investigate',
+            'Delete it and report it as spam',
+            'Forward it to all your contacts'
+        ],
+        correctAnswer: 'Delete it and report it as spam',
+        category: 'Security',
+        difficulty: 'easy'
+    },
+    {
+        _id: 'dq20',
+        question: 'What is the purpose of a firewall?',
+        options: [
+            'To make your computer run faster',
+            'To block unauthorized access to your network',
+            'To organize your files',
+            'To backup your data'
+        ],
+        correctAnswer: 'To block unauthorized access to your network',
+        category: 'Security',
+        difficulty: 'medium'
     }
 ];
+
+// Function to get daily questions (5 questions that rotate daily)
+const getDailyQuestions = (): Question[] => {
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Use day of year as seed for consistent daily rotation
+    const startIndex = (dayOfYear * 3) % DAILY_QUIZ_QUESTIONS.length; // Multiply by 3 for more variation
+    const selectedQuestions = [];
+    
+    // Select 5 questions starting from the calculated index, wrapping around if needed
+    for (let i = 0; i < 5; i++) {
+        const questionIndex = (startIndex + i) % DAILY_QUIZ_QUESTIONS.length;
+        selectedQuestions.push(DAILY_QUIZ_QUESTIONS[questionIndex]);
+    }
+    
+    return selectedQuestions;
+};
 
 // Custom Modal Component for Quiz Results
 const ResultModal = ({
@@ -169,21 +382,11 @@ export default function DailyQuizScreen() {
 
     const fetchQuestions = useCallback(async () => {
         try {
-            setQuizQuestions(DAILY_QUIZ_QUESTIONS);
-            
-            let count = 3;
-            const timer = setInterval(() => {
-                setCountdown(count);
-                count -= 1;
-                
-                if (count < 0) {
-                    clearInterval(timer);
-                    setCountdown(0);
-                }
-            }, 1000);
+            // Use the daily rotation function to get today's questions
+            setQuizQuestions(getDailyQuestions());
         } catch (e) {
             console.error("Error setting up quiz:", e);
-            setError("Failed to set up quiz questions");
+            setError("Failed to set up daily questions");
         } finally {
             setLoading(false);
         }

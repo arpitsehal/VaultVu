@@ -2,7 +2,7 @@ import { AntDesign, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -294,6 +294,11 @@ export default function LevelsScreen() {
     }, [])
   );
 
+  // Force refresh when component mounts or updates
+  useEffect(() => {
+    fetchUserLevels();
+  }, []);
+
   const fetchUserLevels = async () => {
     try {
       setLoading(true);
@@ -406,7 +411,16 @@ export default function LevelsScreen() {
         })
       });
       
-      const data = await response.json();
+      const responseText = await response.text();
+      
+      // Check if response is HTML (error page) instead of JSON
+      if (responseText.trim().startsWith('<')) {
+        console.error('Received HTML response instead of JSON:', responseText.substring(0, 200));
+        Alert.alert('Error', 'Server error. Please try again later.');
+        return;
+      }
+      
+      const data = JSON.parse(responseText);
       
       if (!response.ok) {
         Alert.alert('Error', data.message || 'Failed to unlock level');

@@ -756,13 +756,36 @@ export default function QuizLevelScreen() {
         throw new Error('Failed to submit level completion');
       }
       
-      const data = await response.json();
+      const responseText = await response.text();
+      
+      // Check if response is HTML (error page) instead of JSON
+      if (responseText.trim().startsWith('<')) {
+        console.error('Received HTML response instead of JSON:', responseText.substring(0, 200));
+        throw new Error('Server error. Please try again later.');
+      }
+      
+      const data = JSON.parse(responseText);
       console.log("✅ Level completion submitted:", data);
       
       // Update completion status from backend response
       setCoinsEarned(data.coinsEarned || 0);
       setLevelCompleted(data.completed || false);
       setCompletionPercentage(data.percentage || Math.round((finalScore / quizQuestions.length) * 100));
+      
+      // Update AsyncStorage with new user data including completion status
+      try {
+        const userDataStr = await AsyncStorage.getItem('user');
+        if (userDataStr) {
+          const userData = JSON.parse(userDataStr);
+          userData.coins = data.coins;
+          userData.points = data.points;
+          await AsyncStorage.setItem('user', JSON.stringify(userData));
+          await AsyncStorage.setItem('coins', data.coins.toString());
+          console.log("✅ AsyncStorage updated with completion data");
+        }
+      } catch (storageError) {
+        console.error("Error updating AsyncStorage:", storageError);
+      }
       
       // Show results modal
       setShowResultModal(true);
