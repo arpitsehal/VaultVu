@@ -727,16 +727,29 @@ export default function QuizLevelScreen() {
     setCoinsEarned(earnedCoins);
     
     try {
-      // Get user token from AsyncStorage
+      // Get user token from AsyncStorage with fallback
       const userDataStr = await AsyncStorage.getItem('user');
       const userData = userDataStr ? JSON.parse(userDataStr) : {};
-      const token = userData.token;
+      let token = userData.token;
+      
+      // Fallback token retrieval from separate AsyncStorage
+      if (!token) {
+        token = await AsyncStorage.getItem('token');
+      }
       
       if (!token) {
         console.error("No auth token found");
         setShowResultModal(true);
         return;
       }
+      
+      console.log("🔑 Using token for level completion:", token ? "Token found" : "No token");
+      console.log("📊 Submitting level completion:", {
+        levelId: parseInt(levelId as string),
+        score: finalScore,
+        totalQuestions: quizQuestions.length,
+        percentage: Math.round((finalScore / quizQuestions.length) * 100)
+      });
       
       // Submit level completion to API
       const response = await fetch(`${USER_API_URL}/quiz-levels/complete`, {
@@ -752,8 +765,12 @@ export default function QuizLevelScreen() {
         }),
       });
       
+      console.log("📡 API Response status:", response.status, response.statusText);
+      
       if (!response.ok) {
-        throw new Error('Failed to submit level completion');
+        const errorText = await response.text();
+        console.error("❌ API Error Response:", errorText);
+        throw new Error(`Failed to submit level completion: ${response.status} ${response.statusText}`);
       }
       
       const responseText = await response.text();
@@ -782,6 +799,7 @@ export default function QuizLevelScreen() {
           await AsyncStorage.setItem('user', JSON.stringify(userData));
           await AsyncStorage.setItem('coins', data.coins.toString());
           console.log("✅ AsyncStorage updated with completion data");
+          console.log("💰 Updated coins:", data.coins, "Coins earned:", data.coinsEarned);
         }
       } catch (storageError) {
         console.error("Error updating AsyncStorage:", storageError);
@@ -791,6 +809,30 @@ export default function QuizLevelScreen() {
       setShowResultModal(true);
     } catch (error) {
       console.error("⚠ Error while updating user data:", error);
+      
+      // Fallback: Update local coins and completion status even if API fails
+      try {
+        const userDataStr = await AsyncStorage.getItem('user');
+        if (userDataStr) {
+          const userData = JSON.parse(userDataStr);
+          const currentCoins = userData.coins || 0;
+          const newCoins = currentCoins + earnedCoins;
+          userData.coins = newCoins;
+          await AsyncStorage.setItem('user', JSON.stringify(userData));
+          await AsyncStorage.setItem('coins', newCoins.toString());
+          console.log("💰 Fallback: Updated coins locally:", newCoins);
+          
+          // Set completion status locally
+          const percentage = Math.round((finalScore / quizQuestions.length) * 100);
+          setCoinsEarned(earnedCoins);
+          setLevelCompleted(percentage >= 75);
+          setCompletionPercentage(percentage);
+          console.log("✅ Fallback: Level completion set locally:", percentage >= 75);
+        }
+      } catch (fallbackError) {
+        console.error("Error in fallback update:", fallbackError);
+      }
+      
       // Still show results even if API call fails
       setShowResultModal(true);
     }

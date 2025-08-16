@@ -174,7 +174,17 @@ router.post(
     }
 
     // Find the level in user's quizLevels
-    const levelIndex = user.quizLevels.findIndex(level => level.levelId === levelId);
+    let levelIndex = user.quizLevels.findIndex(level => level.levelId === levelId);
+    
+    // If level not found and it's level 1 (free level), auto-add it
+    if (levelIndex === -1 && levelId === 1) {
+      user.quizLevels.push({
+        levelId: 1,
+        completed: false,
+        score: 0
+      });
+      levelIndex = user.quizLevels.length - 1;
+    }
     
     if (levelIndex === -1) {
       res.status(400);
