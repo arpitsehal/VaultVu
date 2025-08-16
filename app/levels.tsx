@@ -247,8 +247,12 @@ const LevelCard = ({
             <AntDesign name="lock" size={16} color="#F0F4F8" />
           </View>
         ) : level.completed ? (
-          <View style={styles.scoreContainer}>
-            <Text style={styles.scoreText}>Score: {level.score} ✓</Text>
+          <View style={styles.completedContainer}>
+            <View style={styles.completedBadge}>
+              <AntDesign name="checkcircle" size={16} color="#4CAF50" />
+              <Text style={styles.completedText}>COMPLETED</Text>
+            </View>
+            <Text style={styles.scoreText}>Score: {level.score}/5</Text>
             <Text style={styles.replayText}>Tap to replay</Text>
           </View>
         ) : (
@@ -346,16 +350,33 @@ export default function LevelsScreen() {
       const userCoins = data.coins || 0;
       
       // Combine predefined levels with user's progress
-      const combinedLevels = QUIZ_LEVELS.map(level => {
+      const combinedLevels = await Promise.all(QUIZ_LEVELS.map(async (level) => {
         const userLevel = userQuizLevels.find(ul => ul.levelId === level.id);
+        
+        // Check local completion status as fallback
+        let isCompleted = userLevel ? userLevel.completed : false;
+        let levelScore = userLevel ? userLevel.score : 0;
+        
+        if (!isCompleted) {
+          const completionKey = `level_${level.id}_completed`;
+          const scoreKey = `level_${level.id}_score`;
+          const localCompleted = await AsyncStorage.getItem(completionKey);
+          const localScore = await AsyncStorage.getItem(scoreKey);
+          
+          if (localCompleted === 'true') {
+            isCompleted = true;
+            levelScore = parseInt(localScore || '0');
+            console.log(`📋 Found local completion for level ${level.id}`);
+          }
+        }
         
         return {
           ...level,
           isLocked: !userLevel && level.unlockCost > 0,
-          completed: userLevel ? userLevel.completed : false,
-          score: userLevel ? userLevel.score : 0
+          completed: isCompleted,
+          score: levelScore
         };
-      });
+      }));
       
       setLevels(combinedLevels);
       setUserCoins(userCoins);
@@ -658,6 +679,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#F0F4F8',
     marginRight: 4,
+  },
+  completedContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+  },
+  completedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+  completedText: {
+    fontSize: 10,
+    color: '#4CAF50',
+    fontWeight: 'bold',
+    marginLeft: 4,
   },
   loadingContainer: {
     flex: 1,

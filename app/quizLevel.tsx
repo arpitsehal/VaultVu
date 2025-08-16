@@ -824,10 +824,20 @@ export default function QuizLevelScreen() {
           
           // Set completion status locally
           const percentage = Math.round((finalScore / quizQuestions.length) * 100);
+          const isCompleted = percentage >= 75;
           setCoinsEarned(earnedCoins);
-          setLevelCompleted(percentage >= 75);
+          setLevelCompleted(isCompleted);
           setCompletionPercentage(percentage);
-          console.log("✅ Fallback: Level completion set locally:", percentage >= 75);
+          console.log("✅ Fallback: Level completion set locally:", isCompleted);
+          
+          // Store completion status in AsyncStorage for persistence
+          if (isCompleted) {
+            const completionKey = `level_${levelId}_completed`;
+            const scoreKey = `level_${levelId}_score`;
+            await AsyncStorage.setItem(completionKey, 'true');
+            await AsyncStorage.setItem(scoreKey, finalScore.toString());
+            console.log("💾 Stored completion status for level", levelId);
+          }
         }
       } catch (fallbackError) {
         console.error("Error in fallback update:", fallbackError);
