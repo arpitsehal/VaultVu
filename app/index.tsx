@@ -2,16 +2,18 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function LandingPage() {
   const router = useRouter();
+  const { translations } = useLanguage();
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1A213B" />
 
       <Text style={styles.welcomeText}>
-        Welcome to <Text style={styles.vaultVuTextHighlight}>VaultVu</Text>
+        {translations.welcomeTo} <Text style={styles.vaultVuTextHighlight}>{translations.appName}</Text>
       </Text>
 
       <View style={styles.logoContainer}>
@@ -22,19 +24,18 @@ export default function LandingPage() {
         />
       </View>
       
-      {/* New line added below the logo with a larger font size */}
       <Text style={styles.poweredByText}>
-        Powered by Punjab and Sindh Bank in collaboration with IKGPTU
+        {translations.poweredByText}
       </Text>
 
       <TouchableOpacity
         style={styles.startButton}
         onPress={() => router.push('/getstarted')}
       >
-        <Text style={styles.startButtonText}>CONTINUE</Text>
+        <Text style={styles.startButtonText}>{translations.continueButtonText}</Text>
       </TouchableOpacity>
 
-      <Text style={styles.copyright}>Copyright © 2025 Punjab and Sind Bank</Text>
+      <Text style={styles.copyright}>{translations.copyright}</Text>
     </SafeAreaView>
   );
 }
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
   },
   poweredByText: {
     color: '#A8C3D1',
-    fontSize: 16, // Increased font size
+    fontSize: 16,
     marginTop: -20,
     marginBottom: 20,
     textAlign: 'center',

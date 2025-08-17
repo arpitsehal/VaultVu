@@ -13,6 +13,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -23,45 +24,19 @@ interface Message {
   timestamp: Date;
 }
 
-// Banking fraud knowledge base
-const FRAUD_KNOWLEDGE_BASE = {
-  phishing: {
-    keywords: ['phishing', 'fake email', 'suspicious email', 'email scam'],
-    response: "🎣 **Phishing** is when scammers send fake emails, texts, or calls pretending to be from legitimate organizations like banks.\n\n**Warning signs:**\n• Urgent requests for personal info\n• Suspicious sender addresses\n• Poor grammar/spelling\n• Generic greetings\n\n**Stay safe:** Never click suspicious links, verify sender through official channels, and report phishing attempts."
-  },
-  atm: {
-    keywords: ['atm', 'card skimming', 'atm fraud', 'card reader'],
-    response: "🏧 **ATM Fraud** includes card skimming, shoulder surfing, and fake ATMs.\n\n**Protection tips:**\n• Cover your PIN when entering\n• Check for loose card readers\n• Use ATMs in well-lit, busy areas\n• Monitor your account regularly\n• Report suspicious devices immediately\n\n**If compromised:** Contact your bank immediately and change your PIN."
-  },
-  identity: {
-    keywords: ['identity theft', 'personal information', 'ssn', 'social security'],
-    response: "🆔 **Identity Theft** occurs when criminals steal your personal information to commit fraud.\n\n**Prevention:**\n• Secure personal documents\n• Monitor credit reports\n• Use strong, unique passwords\n• Be cautious sharing info online\n• Shred sensitive documents\n\n**If affected:** File police report, contact credit bureaus, and monitor accounts closely."
-  },
-  online: {
-    keywords: ['online banking', 'internet banking', 'digital fraud', 'cybersecurity'],
-    response: "💻 **Online Banking Security** is crucial in today's digital world.\n\n**Best practices:**\n• Use official bank apps/websites\n• Enable two-factor authentication\n• Never bank on public WiFi\n• Log out completely after sessions\n• Keep devices updated\n\n**Red flags:** Unexpected login alerts, unfamiliar transactions, or requests for credentials."
-  },
-  investment: {
-    keywords: ['investment scam', 'ponzi scheme', 'fake investment', 'get rich quick'],
-    response: "📈 **Investment Scams** promise unrealistic returns with little risk.\n\n**Warning signs:**\n• Guaranteed high returns\n• Pressure to invest quickly\n• Unlicensed sellers\n• Complex strategies you don't understand\n\n**Protection:** Research thoroughly, verify credentials, be skeptical of 'too good to be true' offers, and consult financial advisors."
-  },
-  mobile: {
-    keywords: ['mobile banking', 'app security', 'smartphone fraud', 'mobile scam'],
-    response: "📱 **Mobile Banking Security** requires extra vigilance.\n\n**Safety measures:**\n• Download apps from official stores\n• Use device lock screens\n• Enable app-specific PINs\n• Avoid banking on public networks\n• Keep apps updated\n\n**Threats:** Fake banking apps, SMS phishing, and malware targeting mobile devices."
-  }
-};
-
-const GENERAL_RESPONSES = [
-  "I'm here to help you learn about banking fraud prevention! Ask me about phishing, ATM safety, identity theft, online banking security, investment scams, or mobile banking.",
-  "Banking security is important! I can provide information about various fraud types and how to protect yourself. What specific topic interests you?",
-  "Let me help you stay safe from financial fraud. You can ask about common scams, prevention tips, or what to do if you've been targeted.",
-];
-
 export default function ChatbotScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { translations } = useLanguage();
+
+  // The knowledge base is now retrieved from the translations object
+  const FRAUD_KNOWLEDGE_BASE = translations.fraudKnowledgeBase;
+  const GENERAL_RESPONSES = translations.generalResponses;
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "👋 Hello! I'm VaultVu AI, your banking fraud prevention assistant. I'm here to help you learn about financial security and protect yourself from scams. What would you like to know?",
+      text: translations.chatInitialMessage,
       isUser: false,
       timestamp: new Date(),
     }
@@ -69,8 +44,6 @@ export default function ChatbotScreen() {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
 
   const generateResponse = (userMessage: string): string => {
     const lowerMessage = userMessage.toLowerCase();
@@ -83,18 +56,18 @@ export default function ChatbotScreen() {
     }
     
     // Check for greetings
-    if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
-      return "👋 Hello! I'm here to help you learn about banking fraud prevention. What specific topic would you like to explore?";
+    if (lowerMessage.includes(translations.keywordHello) || lowerMessage.includes(translations.keywordHi) || lowerMessage.includes(translations.keywordHey)) {
+      return translations.responseHello;
     }
     
     // Check for help requests
-    if (lowerMessage.includes('help') || lowerMessage.includes('assist')) {
-      return "🤝 I can help you with:\n\n• **Phishing** - Email and message scams\n• **ATM Safety** - Card skimming and ATM fraud\n• **Identity Theft** - Personal information protection\n• **Online Banking** - Digital security best practices\n• **Investment Scams** - Fraudulent investment schemes\n• **Mobile Banking** - Smartphone security\n\nJust ask about any of these topics!";
+    if (lowerMessage.includes(translations.keywordHelp) || lowerMessage.includes(translations.keywordAssist)) {
+      return translations.responseHelp;
     }
     
     // Check for thanks
-    if (lowerMessage.includes('thank') || lowerMessage.includes('thanks')) {
-      return "😊 You're welcome! Stay vigilant and keep learning about fraud prevention. Is there anything else you'd like to know?";
+    if (lowerMessage.includes(translations.keywordThank)) {
+      return translations.responseThanks;
     }
     
     // Default responses
@@ -116,7 +89,6 @@ export default function ChatbotScreen() {
     setInputText('');
     setIsTyping(true);
 
-    // Simulate AI thinking time
     setTimeout(() => {
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -127,7 +99,7 @@ export default function ChatbotScreen() {
 
       setMessages(prev => [...prev, aiResponse]);
       setIsTyping(false);
-    }, 1000 + Math.random() * 1000); // 1-2 seconds delay
+    }, 1000 + Math.random() * 1000);
   };
 
   const scrollToBottom = () => {
@@ -191,8 +163,8 @@ export default function ChatbotScreen() {
           <Ionicons name="arrow-back" size={24} color="#F0F4F8" />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
-          <Text style={styles.headerTitle}>VaultVu AI Assistant</Text>
-          <Text style={styles.headerSubtitle}>Banking Fraud Prevention</Text>
+          <Text style={styles.headerTitle}>{translations.aiAssistantTitle}</Text>
+          <Text style={styles.headerSubtitle}>{translations.aiAssistantSubtitle}</Text>
         </View>
         <View style={styles.statusIndicator}>
           <View style={styles.onlineIndicator} />
@@ -213,7 +185,6 @@ export default function ChatbotScreen() {
         >
           {messages.map(renderMessage)}
           
-          {/* Typing indicator */}
           {isTyping && (
             <View style={[styles.messageContainer, styles.aiMessage]}>
               <View style={styles.aiAvatar}>
@@ -236,7 +207,7 @@ export default function ChatbotScreen() {
             style={styles.textInput}
             value={inputText}
             onChangeText={setInputText}
-            placeholder="Ask about banking fraud prevention..."
+            placeholder={translations.chatInputPlaceholder}
             placeholderTextColor="#A8C3D1"
             multiline
             maxLength={500}

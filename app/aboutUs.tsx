@@ -12,57 +12,55 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useLanguage } from '../contexts/LanguageContext';
-
+import { useLanguage } from '../contexts/LanguageContext'; // Ensure this path is correct
 
 export default function AboutUsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { translations } = useLanguage();
 
-  // Team members data
-  const teamMembers = [
+  const teamMembersData = [
     {
       id: 1,
-      name: 'Arpit Kumar',
-      role: 'Lead Developer',
-      bio: 'Experienced developer with expertise in MERN stack.',
-      // Use a placeholder image or add actual team member images to your assets folder
       image: require('../assets/images/vaultvu-logo.jpg'),
+      name: 'Arpit Kumar',
+      roleKey: 'roleArpit',
+      bioKey: 'bioArpit'
     },
     {
       id: 2,
-      name: 'Mehakpreet Kaur Cheema',
-      role: 'UI/UX Designer and Frontend Developer',
-      bio: 'Creative designer focused on creating intuitive and secure user interfaces. Proficient in React Native and JavaScript.',
       image: require('../assets/images/vaultvu-logo.jpg'),
+      name: 'Mehakpreet Kaur Cheema',
+      roleKey: 'roleMehakpreet',
+      bioKey: 'bioMehakpreet'
     },
     {
       id: 3,
-      name: 'Bisman Kaur',
-      role: 'Backend Developer',
-      bio: 'Experienced backend developer with expertise in Node.js, Express.js, and MongoDB.',
       image: require('../assets/images/vaultvu-logo.jpg'),
+      name: 'Bisman Kaur',
+      roleKey: 'roleBisman',
+      bioKey: 'bioBisman'
     },
     {
       id: 4,
-      name: 'Ananya Sawhney',
-      role: 'Frontend Developer',
-      bio: 'Experienced frontend developer with expertise in React Native and JavaScript.',
       image: require('../assets/images/vaultvu-logo.jpg'),
+      name: 'Ananya Sawhney',
+      roleKey: 'roleAnanya',
+      bioKey: 'bioAnanya'
     },
   ];
 
   const handleContactUs = () => {
-    Linking.openURL('2005sehalarpit@gmail.com');
+    Linking.openURL('mailto:2005sehalarpit@gmail.com');
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>←</Text>
+          <Ionicons name="arrow-back" size={24} color="#A8C3D1" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>About Us</Text>
+        <Text style={styles.headerTitle}>{translations.aboutUsTitle}</Text>
         <View style={styles.backButton} />
       </View>
 
@@ -75,33 +73,33 @@ export default function AboutUsScreen() {
           />
         </View>
         
-        <Text style={styles.appName}>VaultVu</Text>
-        <Text style={styles.appVersion}>Version 1.0.0</Text>
+        <Text style={styles.appName}>{translations.appName}</Text>
+        <Text style={styles.appVersion}>{translations.appVersionText}</Text>
         
         <Text style={styles.description}>
-          VaultVu is a comprehensive security application designed to protect users from various types of financial frauds and scams. Our mission is to empower users with knowledge and tools to stay safe in the digital world. This is the official project of Punjab and Sindh Bank in collaboration with IK Gujral Punjab Technical University.
+          {translations.aboutUsDescription}
         </Text>
         
-        <Text style={styles.sectionTitle}>Our Team</Text>
+        <Text style={styles.sectionTitle}>{translations.ourTeamTitle}</Text>
         
-        {teamMembers.map((member) => (
+        {teamMembersData.map((member) => (
           <View key={member.id} style={styles.teamMemberCard}>
             <Image source={member.image} style={styles.memberImage} />
             <View style={styles.memberInfo}>
               <Text style={styles.memberName}>{member.name}</Text>
-              <Text style={styles.memberRole}>{member.role}</Text>
-              <Text style={styles.memberBio}>{member.bio}</Text>
+              <Text style={styles.memberRole}>{translations[member.roleKey]}</Text>
+              <Text style={styles.memberBio}>{translations[member.bioKey]}</Text>
             </View>
           </View>
         ))}
         
         <TouchableOpacity style={styles.contactButton} onPress={handleContactUs}>
           <Ionicons name="mail" size={20} color="#1A213B" style={styles.contactIcon} />
-          <Text style={styles.contactButtonText}>Contact Us</Text>
+          <Text style={styles.contactButtonText}>{translations.contactUsButton}</Text>
         </TouchableOpacity>
         
         <Text style={styles.copyright}>
-          © {new Date().getFullYear()} VaultVu. All rights reserved.
+          {translations.aboutUsCopyright.replace('{year}', new Date().getFullYear())}
         </Text>
       </ScrollView>
     </SafeAreaView>
