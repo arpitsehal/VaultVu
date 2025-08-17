@@ -1,152 +1,114 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  StyleSheet, 
-  Alert, 
-  TextInput, 
-  Text, 
-  TouchableHighlight,
+import {
+  StyleSheet,
+  Text,
+  View,
   TouchableOpacity,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView
+  StatusBar,
+  Image,
+  TextInput,
+  ScrollView,         // <--- ADDED for responsiveness
+  KeyboardAvoidingView, // <--- ADDED for responsiveness
+  Platform,             // <--- ADDED for OS specific logic
+  Dimensions,           // <--- ADDED for responsive sizing
+  Alert                 // <--- ADDED for user feedback
 } from 'react-native';
-import { requestPasswordReset, resetPassword } from '../services/authService';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; // <--- ADDED useSafeAreaInsets
 import { useRouter } from 'expo-router';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const { width: screenWidth } = Dimensions.get('window'); // Get screen width for responsive image sizing
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [step, setStep] = useState(1); // 1: Request OTP, 2: Enter OTP & New Password
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets(); // Call the hook to get safe area insets
 
-  const handleRequestOTP = async () => {
-    if (!email) {
-      Alert.alert('Error', 'Please enter your email');
-      return;
-    }
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState(''); // State for email validation error
 
-    console.log('Sending request to:', `${process.env.EXPO_PUBLIC_API_URL || 'https://vaultvu.onrender.com'}/api/auth/request-password-reset`);
-    console.log('Request body:', { email });
-    
-    setLoading(true);
-    try {
-      const response = await requestPasswordReset(email);
-      console.log('Response:', response);
-      
-      if (response.success) {
-        Alert.alert('Success', 'OTP has been sent to your email');
-        setStep(2);
-      } else {
-        Alert.alert('Error', response.message || 'Failed to send OTP');
-      }
-    } catch (error) {
-      console.error('Error in handleRequestOTP:', error);
-      Alert.alert('Error', 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
+  // Basic email validation
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
-  const handleResetPassword = async () => {
-    if (!otp || !newPassword) {
-      Alert.alert('Error', 'Please enter OTP and new password');
+  // Placeholder for handling continue button press
+  const handleContinue = () => {
+    setEmailError(''); // Clear previous error
+
+    if (!email.trim()) {
+      setEmailError('Email address is required');
+      Alert.alert('Error', 'Please enter your email address.');
+      return;
+    }
+    if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email address');
+      Alert.alert('Error', 'Please enter a valid email address.');
       return;
     }
 
-    if (newPassword.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters long');
-      return;
-    }
-
-    setLoading(true);
-    const response = await resetPassword(email, otp, newPassword);
-    setLoading(false);
-
-    if (response.success) {
-      Alert.alert('Success', 'Password has been reset successfully');
-      router.back();
-    } else {
-      Alert.alert('Error', response.message || 'Failed to reset password');
-    }
+    console.log('Requesting OTP for email:', email);
+    // Implement logic to send OTP (e.g., API call), then navigate
+    Alert.alert('Success', 'OTP sent to your email!', [
+      { text: 'OK', onPress: () => router.push('/otpvarification') } // Navigate to otp-verification.tsx
+    ]);
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea}> {/* Use safeArea for overall container */}
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" /> {/* Dark content on light background */}
+
+      {/* Back Arrow - Positioned dynamically using safe area insets */}
+      <TouchableOpacity
+        style={[styles.backButton, { top: insets.top + 20 }]} // Use insets.top for accurate positioning
+        onPress={() => router.back()}
+      >
+        <Text style={styles.backButtonText}>←</Text>
+      </TouchableOpacity>
+
+      {/* KeyboardAvoidingView to handle keyboard overlap */}
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior for iOS/Android
       >
+        {/* ScrollView for content that might exceed screen height */}
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          <Text style={styles.title}>Reset Password</Text>
-          
-          {step === 1 ? (
-            <>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                style={styles.input}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                placeholder="Enter your email"
-                placeholderTextColor="#999"
-              />
-              <TouchableHighlight
-                style={[styles.button, loading ? styles.buttonDisabled : null]}
-                onPress={handleRequestOTP}
-                disabled={loading}
-                underlayColor="#1a73e8"
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Send OTP</Text>
-                )}
-              </TouchableHighlight>
-            </>
-          ) : (
-            <>
-              <Text style={styles.label}>OTP</Text>
-              <TextInput
-                value={otp}
-                onChangeText={setOtp}
-                style={styles.input}
-                keyboardType="number-pad"
-                placeholder="Enter OTP"
-                placeholderTextColor="#999"
-              />
-              <Text style={styles.label}>New Password</Text>
-              <TextInput
-                value={newPassword}
-                onChangeText={setNewPassword}
-                secureTextEntry
-                style={styles.input}
-                placeholder="Enter new password"
-                placeholderTextColor="#999"
-              />
-              <TouchableHighlight
-                style={[styles.button, loading ? styles.buttonDisabled : null]}
-                onPress={handleResetPassword}
-                disabled={loading}
-                underlayColor="#1a73e8"
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Reset Password</Text>
-                )}
-              </TouchableHighlight>
-            </>
-          )}
-          
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.backToLogin}>Back to Login</Text>
+          {/* Robot Image */}
+          <View style={styles.robotImageContainer}>
+            <Image
+              source={require('../assets/images/vaultvu-logo.jpg')} // Ensure path is correct
+              style={styles.robotImage}
+              resizeMode="contain"
+            />
+          </View>
+
+          {/* Forgot Password Header */}
+          <Text style={styles.headerText}>
+            Forgot <Text style={styles.highlightText}>Password</Text>
+          </Text>
+
+          {/* Description Text */}
+          <Text style={styles.descriptionText}>
+            Enter your email address to get an OTP code to reset your password.
+          </Text>
+
+          {/* Email Input Field */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Email</Text>
+            <TextInput
+              style={[styles.input, emailError ? styles.inputError : null]} // Apply error style
+              placeholder="john@beyondlogic.ai"
+              placeholderTextColor="#A8C3D1"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
+            />
+            {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null} {/* Display error */}
+          </View>
+
+          {/* CONTINUE Button */}
+          <TouchableOpacity style={styles.continueButton} onPress={() => router.push('/otpvarification')}>
+            <Text style={styles.continueButtonText}>CONTINUE</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -155,34 +117,66 @@ export default function ForgotPasswordPage() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  safeArea: { // New style for SafeAreaView
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#FFFFFF',
   },
-  keyboardAvoidingView: { 
+  keyboardAvoidingView: { // New style to make KeyboardAvoidingView take full space
     flex: 1,
     width: '100%',
-    flexGrow: 1,
+  },
+  scrollViewContent: { // New style for ScrollView content container
+    flexGrow: 1, // Allows content to grow and push elements
     alignItems: 'center',
-    paddingTop: 20,
+    paddingTop: 20, // Adjusted padding for content inside scroll view
     paddingHorizontal: 20,
-    paddingBottom: 40,
-    justifyContent: 'center',
+    paddingBottom: 40, // Ensure space at bottom for buttons
+    justifyContent: 'center', // Center content vertically when it fits
   },
-  scrollViewContent: {
-    flexGrow: 1,
-    padding: 20,
-    justifyContent: 'center',
-    width: '100%',
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    zIndex: 1,
+    padding: 10,
   },
-  title: {
+  backButtonText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 30,
     color: '#1A213B',
   },
-  label: {
+  robotImageContainer: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  robotImage: {
+    width: screenWidth * 0.4, // Responsive width (40% of screen width)
+    height: screenWidth * 0.4, // Keep aspect ratio
+    maxWidth: 150, // Max size to prevent it from getting too large on tablets
+    maxHeight: 150,
+  },
+  headerText: {
+    fontSize: 28,
+    fontWeight: 'normal',
+    color: '#1A213B',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  highlightText: {
+    color: '#1A213B',
+    fontWeight: '900',
+  },
+  descriptionText: {
+    color: '#1A213B',
+    fontSize: 16,
+    textAlign: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 30,
+    lineHeight: 24,
+  },
+  inputGroup: {
+    width: '100%',
+    marginBottom: 40,
+  },
+  inputLabel: {
     fontSize: 16,
     color: '#1A213B',
     marginBottom: 8,
@@ -191,36 +185,35 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 50,
-    borderColor: '#ddd',
+    borderColor: '#1A213B',
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 15,
-    marginBottom: 20,
-    backgroundColor: '#fff',
     fontSize: 16,
     color: '#1A213B',
   },
-  button: {
+  inputError: {
+    borderColor: 'red',
+    borderWidth: 2,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 5,
+    marginLeft: 5,
+  },
+  continueButton: {
     backgroundColor: '#1A213B',
-    padding: 15,
+    paddingVertical: 14,
+    paddingHorizontal: 45,
     borderRadius: 25,
+    marginBottom: 20, // Adjusted for responsiveness with ScrollView
+    width: '80%',
     alignItems: 'center',
-    marginTop: 10,
-    width: '100%',
   },
-  buttonDisabled: {
-    backgroundColor: '#8ab4f8',
-  },
-  buttonText: {
-    color: '#fff',
+  continueButtonText: {
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
-  },
-  backToLogin: {
-    marginTop: 20,
-    textAlign: 'center',
-    color: '#1a73e8',
-    fontSize: 16,
-    textDecorationLine: 'underline',
+    fontWeight: 'bold',
   },
 });
