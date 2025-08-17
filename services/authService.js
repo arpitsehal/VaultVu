@@ -1,10 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiConfig } from './apiConfig';
 
-const { baseURL } = apiConfig;
-
-// To this
-const API_URL = 'https://vaultvu.onrender.com/api/auth';
+const API_URL = `${apiConfig.baseURL}/api/auth`;
 
 export async function login(emailOrUsername, password) {
   try {

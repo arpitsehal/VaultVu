@@ -31,15 +31,25 @@ export default function ForgotPasswordPage() {
       return;
     }
 
+    console.log('Sending request to:', `${process.env.EXPO_PUBLIC_API_URL || 'https://vaultvu.onrender.com'}/api/auth/request-password-reset`);
+    console.log('Request body:', { email });
+    
     setLoading(true);
-    const response = await requestPasswordReset(email);
-    setLoading(false);
-
-    if (response.success) {
-      Alert.alert('Success', 'OTP has been sent to your email');
-      setStep(2);
-    } else {
-      Alert.alert('Error', response.message || 'Failed to send OTP');
+    try {
+      const response = await requestPasswordReset(email);
+      console.log('Response:', response);
+      
+      if (response.success) {
+        Alert.alert('Success', 'OTP has been sent to your email');
+        setStep(2);
+      } else {
+        Alert.alert('Error', response.message || 'Failed to send OTP');
+      }
+    } catch (error) {
+      console.error('Error in handleRequestOTP:', error);
+      Alert.alert('Error', 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 

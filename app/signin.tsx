@@ -145,13 +145,11 @@ export default function SignInPage() {
               </View>
               <Text style={styles.checkboxText}>{translations.rememberMe || 'Remember me'}</Text>
             </TouchableOpacity>
-            <Link href="/forgetpass" asChild>
-              <TouchableOpacity>
-                <Text style={styles.forgotPasswordText}>
-                  {translations.forgotPassword || 'Forgot Password?'}
-                </Text>
-              </TouchableOpacity>
-            </Link>
+            <TouchableOpacity onPress={() => router.push('/forgetpass')}>
+              <Text style={styles.forgotPasswordText}>
+                {translations.forgotPassword || 'Forgot Password?'}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           <TouchableOpacity style={styles.signInMainButton} onPress={handleSignIn}>
