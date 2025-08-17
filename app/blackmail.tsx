@@ -3,22 +3,31 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function BlackmailScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { translations } = useLanguage();
 
-  const scamDetails = {
-    title: 'Blackmail Scams',
-    description: 'A blackmailer’s mission is to scare you into sending them money by threatening to distribute private content—from your computer or phone, or shared with them over an email, text, or social media—that could embarrass you. They might ask you to wire them money, or send it using a mobile app, a gift card, or cryptocurrency. Sometimes these scammers are complete strangers and other times they might be someone you met online and thought you could trust.',
-    whatToDo: [
+  const title = translations.scamProtectionTitle_blackmail || 'Blackmail Scams';
+  const description =
+    translations.scamBlackmail_description ||
+    'A blackmailer’s mission is to scare you into sending them money by threatening to distribute private content—from your computer or phone, or shared with them over an email, text, or social media—that could embarrass you. They might ask you to wire them money, or send it using a mobile app, a gift card, or cryptocurrency. Sometimes these scammers are complete strangers and other times they might be someone you met online and thought you could trust.';
+
+  const whatToDoTitle = translations.scamBlackmail_whatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.scamBlackmail_tip1 ||
       'Try to stay calm in spite of blackmailers’ intimidation and high-pressure tactics. Stop communicating with them and don’t pay them. Keep all messages as evidence to help law enforcement. Keep in mind that you don’t need to deal with this alone.',
+    translations.scamBlackmail_tip2 ||
       'Do NOT comply with demands for money, personal details, OTPs, or to install apps.',
+    translations.scamBlackmail_tip3 ||
       'End the call immediately—do not press keys, share information, or click on any links.',
+    translations.scamBlackmail_tip4 ||
       'Do not panic. Impersonators typically aim to create fear and urgency to push you into action',
-      'File a complaint on the National Cybercrime Reporting Portal:  cybercrime.gov.in or call the toll‑free helpline 1930'
-    ],
-  };
+    translations.scamBlackmail_tip5 ||
+      'File a complaint on the National Cybercrime Reporting Portal:  cybercrime.gov.in or call the toll‑free helpline 1930',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -29,17 +38,17 @@ export default function BlackmailScamScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{scamDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         {/* Spacer to balance header title */}
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{scamDetails.description}</Text>
+          <Text style={styles.descriptionText}>{description}</Text>
 
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {scamDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

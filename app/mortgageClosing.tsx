@@ -3,22 +3,23 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function MortgageClosingScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-
-  const scamDetails = {
-    title: 'Mortgage Closing Scams',
-    description: 'A mortgage closing scam is a sophisticated type of fraud that targets home buyers and sellers. Scammers often hack into a real estate agent’s or title company’s email account and monitor the communication. Just before the closing date, the scammer sends a fake email to the buyer, pretending to be from the agent or title company. This email provides fraudulent wire transfer instructions for the down payment or closing costs. The buyer, believing the instructions are legitimate, sends the money to the scammer’s account, and the funds are stolen.',
-    whatToDo: [
-      "Confirm all wire transfer instructions in person or over a verified phone number before sending any money. Do not use phone numbers or email addresses provided in the suspicious email.",
-      "Be wary of any last-minute changes to wiring instructions. This is a major red flag. Legitimate instructions rarely change at the last minute.",
-      "Check the email address carefully. Scammers often use an email address that looks very similar to the real one, with a slight change like a single letter or a different domain name.",
-      "Always call your real estate agent or a known contact at the title company directly to verify any wire transfer requests or changes to closing procedures.",
-      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll-free helpline 1930. Inform your bank and the title company immediately if you have sent money to a fraudulent account.'
-    ],
-  };
+  const { translations } = useLanguage();
+  const title = translations.scamProtectionTitle_mortgageClosing || 'Mortgage Closing Scams';
+  const description =
+    translations.scamMortgageClosing_description ||
+    'A mortgage closing scam is a sophisticated type of fraud that targets home buyers and sellers. Scammers often hack into a real estate agent’s or title company’s email account and monitor the communication. Just before the closing date, the scammer sends a fake email to the buyer, pretending to be from the agent or title company. This email provides fraudulent wire transfer instructions for the down payment or closing costs. The buyer, believing the instructions are legitimate, sends the money to the scammer’s account, and the funds are stolen.';
+  const whatToDoTitle = translations.scamMortgageClosing_whatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.scamMortgageClosing_tip1 || 'Confirm all wire transfer instructions in person or over a verified phone number before sending any money. Do not use phone numbers or email addresses provided in the suspicious email.',
+    translations.scamMortgageClosing_tip2 || 'Be wary of any last-minute changes to wiring instructions. This is a major red flag. Legitimate instructions rarely change at the last minute.',
+    translations.scamMortgageClosing_tip3 || 'Check the email address carefully. Scammers often use an email address that looks very similar to the real one, with a slight change like a single letter or a different domain name.',
+    translations.scamMortgageClosing_tip4 || 'Always call your real estate agent or a known contact at the title company directly to verify any wire transfer requests or changes to closing procedures.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -29,16 +30,16 @@ export default function MortgageClosingScamScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{scamDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} /> {/* Spacer to balance header title */}
       </View>
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{scamDetails.description}</Text>
+          <Text style={styles.descriptionText}>{description}</Text>
 
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {scamDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

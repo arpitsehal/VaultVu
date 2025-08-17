@@ -3,22 +3,26 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function LotteryPrizeScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
-  const scamDetails = {
-    title: 'Lottery or Prize Scams',
-    description: 'In a lottery or prize scam, you receive an unexpected notification—by phone, email, text, or mail—that you have won a large sum of money, a new car, or an expensive vacation. The catch is that to receive your winnings, you must first pay a fee for "taxes," "processing," or "insurance." Scammers will pressure you to pay this fee quickly, often by wire transfer, gift cards, or cryptocurrency, which are difficult to trace. Remember, if you didn\'t enter a lottery, you can\'t win one.',
-    whatToDo: [
-      "Be skeptical of any unexpected notification that you've won a prize. If you didn't enter a contest or lottery, it's a scam.",
-      "Never pay a fee to collect your 'winnings.' Legitimate lotteries or sweepstakes do not require you to pay money upfront to receive a prize.",
-      "Do not provide any personal or financial information, such as your bank account details or social security number, to claim a prize.",
-      "If you receive a suspicious call or email, do not respond. Delete the message and block the sender. Do not click on any links in the email, as they may lead to malicious websites.",
-      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll-free helpline 1930.'
-    ],
-  };
+  const { translations } = useLanguage();
+
+  const title = translations.scamProtectionTitle_lottery || 'Lottery or Prize Scams';
+  const description =
+    translations.scamLottery_description ||
+    "You are told you won a lottery or prize but must pay a fee, tax, or share personal details to claim it—this is a common scam.";
+
+  const whatToDoTitle = translations.scamLottery_whatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.scamLottery_tip1 || 'If you did not enter, you did not win—ignore such messages.',
+    translations.scamLottery_tip2 || 'Never pay upfront fees or taxes to receive a prize.',
+    translations.scamLottery_tip3 || 'Do not share personal/financial details to claim prizes.',
+    translations.scamLottery_tip4 || 'Report phone numbers, emails, or WhatsApp IDs used for the scam.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -29,16 +33,16 @@ export default function LotteryPrizeScamScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{scamDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} /> {/* Spacer to balance header title */}
       </View>
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{scamDetails.description}</Text>
+          <Text style={styles.descriptionText}>{description}</Text>
 
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {scamDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

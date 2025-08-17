@@ -101,7 +101,11 @@ export default function FraudMessageCheckerScreen() {
       }
     } catch (error) {
       console.error('Error checking message:', error);
-      showModal(translations.apiError || 'API Error', translations.messageApiErrorMessage || 'Could not check the message. Please try again.', 'error');
+      showModal(
+        translations.apiError || 'API Error',
+        translations.apiConnectionError || 'Could not check the message. Please try again.',
+        'error'
+      );
     } finally {
       setLoading(false);
     }
@@ -194,7 +198,9 @@ export default function FraudMessageCheckerScreen() {
     return (
       <View style={[styles.resultCard, { borderColor }]}>
         <Text style={[styles.resultTitle, { color: resultColor }]}>
-          {isGenuine ? translations.messageGenuine || 'Message appears genuine' : translations.potentialFraudDetected || 'Potential fraud detected'}
+          {isGenuine
+            ? translations.messageGenuine || 'Message appears genuine'
+            : translations.potentialFraud || 'Potential fraud detected'}
         </Text>
         
         <View style={styles.scoreContainer}>

@@ -1,25 +1,34 @@
-// BlackmailScamScreen.js
+// CharityScamScreen.tsx
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../contexts/LanguageContext';
 
-export default function BlackmailScamScreen() {
+export default function CharityScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { translations } = useLanguage();
 
-  const scamDetails = {
-    title: 'Charity Scams',
-    description: 'A charity scam is when a thief poses as a real charity or makes up the name of a charity that sounds real to get money from you.',
-    whatToDo: [
+  const title = translations.scamProtectionTitle_charity || 'Charity Scams';
+  const description =
+    translations.scamCharity_description ||
+    'A charity scam is when a thief poses as a real charity or makes up the name of a charity that sounds real to get money from you.';
+  const whatToDoTitle = translations.scamCharity_whatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.scamCharity_tip1 ||
       'Pause and question the urgency. Legitimate charities allow you to take time to verify—pressure tactics are red flags.',
+    translations.scamCharity_tip2 ||
       'Never click links or download attachments from unsolicited messages—they may contain phishing or malware.',
+    translations.scamCharity_tip3 ||
       'Do not share sensitive information (like PAN, bank accounts, UPI, Aadhaar, credit card details). Scammers may seek both money and identity theft.',
+    translations.scamCharity_tip4 ||
       'Avoid paying by gift card, cash, wire transfer, or cryptocurrency. Use credit card or reputable payment gateways for better fraud protection.',
+    translations.scamCharity_tip5 ||
       'File a complaint on the National Cybercrime Reporting Portal:  cybercrime.gov.in or call the toll‑free helpline 1930',
-      'Additionally, report to the bank or payment platform used, requesting they freeze the transaction or account if possible.'
-    ],
-  };
+    translations.scamCharity_tip6 ||
+      'Additionally, report to the bank or payment platform used, requesting they freeze the transaction or account if possible.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -30,17 +39,17 @@ export default function BlackmailScamScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{scamDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         {/* Spacer to balance header title */}
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{scamDetails.description}</Text>
+          <Text style={styles.descriptionText}>{description}</Text>
 
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {scamDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

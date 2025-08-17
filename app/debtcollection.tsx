@@ -1,23 +1,28 @@
-// BlackmailScamScreen.js
+// DebtCollectionScamScreen
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../contexts/LanguageContext';
 
-export default function BlackmailScamScreen() {
+export default function DebtCollectionScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { translations } = useLanguage();
 
-  const scamDetails = {
-    title: 'Debt Collection Scams',
-    description: 'Debt collectors might contact you to collect on legitimate debts you owe. But there are scammers who pose as debt collectors to get you to pay for debts you don\'t owe.',
-    whatToDo: [
-      'If you\'re contacted unexpectedly by someone demanding money, pressuring for immediate payment, or requesting personal financial data—disconnect and cut contact.',
+  const title = translations.scamProtectionTitle_debtCollection || 'Debt Collection Scams';
+  const description =
+    translations.scamDebtCollection_description ||
+    "Debt collectors might contact you to collect on legitimate debts you owe. But there are scammers who pose as debt collectors to get you to pay for debts you don't owe.";
+  const whatToDoTitle = translations.scamDebtCollection_whatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.scamDebtCollection_tip1 ||
+      "If you're contacted unexpectedly by someone demanding money, pressuring for immediate payment, or requesting personal financial data—disconnect and cut contact.",
+    translations.scamDebtCollection_tip2 ||
       'Verify the identity of collectors. If someone visits your home or calls: Request an official ID card and authorization letter from the bank or NBFC.',
-      'Ask for written proof and details.',
-      'File a complaint on : debtreliefindia.com or services.india.gov.in'
-    ],
-  };
+    translations.scamDebtCollection_tip3 || 'Ask for written proof and details.',
+    translations.scamDebtCollection_tip4 || 'File a complaint on : debtreliefindia.com or services.india.gov.in',
+  ].filter(Boolean);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -28,17 +33,17 @@ export default function BlackmailScamScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{scamDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         {/* Spacer to balance header title */}
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{scamDetails.description}</Text>
+          <Text style={styles.descriptionText}>{description}</Text>
 
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {scamDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

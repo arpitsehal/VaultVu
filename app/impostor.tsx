@@ -3,22 +3,26 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function ImposterScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
-  const scamDetails = {
-    title: 'Imposter Scams',
-    description: 'In an imposter scam, a scammer pretends to be someone you know and trust, like a family member, a government official, a bank representative, or a tech support agent. They might claim there is a problem that requires your immediate attention, like a security breach on your account, a fine that needs to be paid, or a family emergency. The goal is to create fear and urgency to pressure you into sending money, providing personal information, or giving them remote access to your devices.',
-    whatToDo: [
-      "Do NOT panic. Impersonators typically aim to create fear and urgency to push you into action without thinking. Stop communicating with the person immediately.",
-      "Verify the identity of the person or organization. If they claim to be from a bank or government agency, hang up and call them back using the official number from their website or your records, not a number they provided.",
-      "Never share personal details, OTPs, or financial information like bank passwords or credit card numbers. Legitimate organizations will never ask for this information over the phone or in an unsolicited message.",
-      "Do NOT comply with demands for money or to install apps. Be extremely cautious of requests to wire money, send gift cards, or pay with cryptocurrency.",
-      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll‑free helpline 1930.'
-    ],
-  };
+  const { translations } = useLanguage();
+
+  const title = translations.scamProtectionTitle_impostor || 'Impostor Scams';
+  const description =
+    translations.scamImpostor_description ||
+    'In an imposter scam, a scammer pretends to be someone you know and trust, like a family member, a government official, a bank representative, or a tech support agent. They might claim there is a problem that requires your immediate attention, like a security breach on your account, a fine that needs to be paid, or a family emergency. The goal is to create fear and urgency to pressure you into sending money, providing personal information, or giving them remote access to your devices.';
+
+  const whatToDoTitle = translations.scamImpostor_whatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.scamImpostor_tip1 || "Independently verify identities using official websites or numbers—do not trust caller ID or links.",
+    translations.scamImpostor_tip2 || 'Do not share OTPs, CVV, PINs, or click unknown links.',
+    translations.scamImpostor_tip3 || 'Refuse urgency and pressure tactics; real organizations allow time to verify.',
+    translations.scamImpostor_tip4 || 'Report to the appropriate authority and cybercrime portal with evidence (screenshots, numbers).',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -29,16 +33,16 @@ export default function ImposterScamScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{scamDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} /> {/* Spacer to balance header title */}
       </View>
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{scamDetails.description}</Text>
+          <Text style={styles.descriptionText}>{description}</Text>
 
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {scamDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

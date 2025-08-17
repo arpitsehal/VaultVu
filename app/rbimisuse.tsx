@@ -1,24 +1,32 @@
-// BlackmailScamScreen.js
+// RbiMisuseScamScreen
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../contexts/LanguageContext';
 
-export default function BlackmailScamScreen() {
+export default function RbiMisuseScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { translations } = useLanguage();
 
-  const scamDetails = {
-    title: 'RBI logo misuse',
-    description: 'The RBI logo is displayed on buildings, websites, advertisements, and other materials from its member banks. Sometimes, a scammer displays the RBI logo, or says its accounts are insured or regulated by the RBI, to try to assure you that your money is safe when it isn’t. Some of these scams could be related to cryptocurrencies.',
-    whatToDo: [
+  const title = translations.scamProtectionTitle_rbiMisuse || 'RBI Logo Misuse';
+  const description =
+    translations.scamRbiMisuse_description ||
+    'The RBI logo is displayed on buildings, websites, advertisements, and other materials from its member banks. Sometimes, a scammer displays the RBI logo, or says its accounts are insured or regulated by the RBI, to try to assure you that your money is safe when it isn’t. Some of these scams could be related to cryptocurrencies.';
+  const whatToDoTitle = translations.scamRbiMisuse_whatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.scamRbiMisuse_tip1 ||
       'Never click links or open attachments from emails or messages claiming to be from RBI.',
+    translations.scamRbiMisuse_tip2 ||
       'Do not respond or call back via any number or email address included in suspicious messages.',
+    translations.scamRbiMisuse_tip3 ||
       'Report Immediately on National Cyber Crime Reporting Portal: File a complaint through cybercrime.gov.in or call 1930.',
+    translations.scamRbiMisuse_tip4 ||
       'Inform Financial Institutions : Contact your bank or payment provider immediately if any financial or personal data might have been compromised.',
-      'File a complaint on the National Cybercrime Reporting Portal:  cybercrime.gov.in or call the toll‑free helpline 1930'
-    ],
-  };
+    translations.scamRbiMisuse_tip5 ||
+      'File a complaint on the National Cybercrime Reporting Portal:  cybercrime.gov.in or call the toll‑free helpline 1930',
+  ].filter(Boolean);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -29,16 +37,16 @@ export default function BlackmailScamScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{scamDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} /> {/* Spacer to balance header title */}
       </View>
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{scamDetails.description}</Text>
+          <Text style={styles.descriptionText}>{description}</Text>
 
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {scamDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

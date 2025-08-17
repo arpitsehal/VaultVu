@@ -2,22 +2,28 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function KycFraudScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
-  const fraudDetails = {
-    title: 'KYC Update Fraud',
-    description: 'KYC update frauds involve scammers contacting individuals under the pretext of updating their Know Your Customer (KYC) details. Victims are tricked into sharing sensitive information or clicking malicious links, leading to unauthorized access to their bank accounts.',
-    whatToDo: [
-      'Never share your account details, OTP, or passwords with anyone over phone, SMS, or email.',
-      'Banks and RBI never ask for KYC updates through links sent via SMS or email.',
-      'Update KYC only through official bank branches or apps.',
-      'Be cautious of urgent messages threatening account suspension.',
-      'Report KYC fraud attempts to your bank and the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930.'
-    ],
-  };
+  const { translations } = useLanguage();
+
+  const title = translations.kycFraudTitle || 'KYC Update Fraud';
+  const description =
+    translations.kycFraudDescription ||
+    'KYC update frauds involve scammers contacting individuals under the pretext of updating their Know Your Customer (KYC) details. Victims are tricked into sharing sensitive information or clicking malicious links, leading to unauthorized access to their bank accounts.';
+
+  const whatToDoTitle = translations.kycFraudWhatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.kycFraudTip1 || 'Never share your account details, OTP, or passwords with anyone over phone, SMS, or email.',
+    translations.kycFraudTip2 || 'Banks and RBI never ask for KYC updates through links sent via SMS or email.',
+    translations.kycFraudTip3 || 'Update KYC only through official bank branches or apps.',
+    translations.kycFraudTip4 || 'Be cautious of urgent messages threatening account suspension.',
+    translations.kycFraudTip5 ||
+      'Report KYC fraud attempts to your bank and the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -26,14 +32,15 @@ export default function KycFraudScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{fraudDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
+
         <View style={{ width: 40 }} />
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{fraudDetails.description}</Text>
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {fraudDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.descriptionText}>{description}</Text>
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

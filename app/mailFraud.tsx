@@ -3,22 +3,26 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function MailFraudScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
-  const scamDetails = {
-    title: 'Mail Fraud',
-    description: 'Mail fraud involves scams that are carried out using the postal service. This can include fake lotteries or sweepstakes, "get rich quick" schemes, fraudulent inheritance letters, or requests for donations to fake charities. Scammers may send official-looking letters to trick you into sending money or personal information. They often use high-pressure language and urgent deadlines to get you to act quickly before you have a chance to think or verify the offer.',
-    whatToDo: [
-      "Be suspicious of unsolicited mail promising large sums of money, prizes, or lucrative investment opportunities.",
-      "Never send money, personal information, or a check to cover 'taxes' or 'fees' for a prize you supposedly won.",
-      "Research the sender. A legitimate company or charity will have a verifiable address, phone number, and online presence. If the information is difficult to find or seems generic, it's likely a scam.",
-      "Do not reply to the mail, and never use the provided return envelope. This confirms your address is active and can lead to more scam attempts.",
-      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll-free helpline 1930. You can also report it to your postal service.'
-    ],
-  };
+  const { translations } = useLanguage();
+
+  const title = translations.scamProtectionTitle_mailFraud || 'Mail Fraud';
+  const description =
+    translations.scamMail_description ||
+    'Mail fraud involves scams that are carried out using the postal service. This can include fake lotteries or sweepstakes, "get rich quick" schemes, fraudulent inheritance letters, or requests for donations to fake charities. Scammers may send official-looking letters to trick you into sending money or personal information. They often use high-pressure language and urgent deadlines to get you to act quickly before you have a chance to think or verify the offer.';
+
+  const whatToDoTitle = translations.scamMail_whatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.scamMail_tip1 || 'Be suspicious of unsolicited mail promising large sums of money, prizes, or lucrative investment opportunities.',
+    translations.scamMail_tip2 || 'Never send money, personal information, or a check to cover "taxes" or "fees" for a prize you supposedly won.',
+    translations.scamMail_tip3 || "Research the sender. A legitimate company or charity will have a verifiable address, phone number, and online presence. If the information is difficult to find or seems generic, it's likely a scam.",
+    translations.scamMail_tip4 || 'Do not reply to the mail, and never use the provided return envelope. This confirms your address is active and can lead to more scam attempts.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -29,16 +33,16 @@ export default function MailFraudScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{scamDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} /> {/* Spacer to balance header title */}
       </View>
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{scamDetails.description}</Text>
+          <Text style={styles.descriptionText}>{description}</Text>
 
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {scamDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

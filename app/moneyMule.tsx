@@ -3,22 +3,23 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function MoneyMuleScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-
-  const scamDetails = {
-    title: 'Money Mule Scams',
-    description: "In a money mule scam, you're recruited by criminals to receive and move stolen money. The scammer might pose as an employer offering a work-from-home job, a love interest you met online, or a lottery official. They'll ask you to receive money into your bank account and then transfer it to someone else, often through wire transfers, cryptocurrency, or gift cards. You might be told to keep a percentage as your 'commission.' Unknowingly, you are participating in money laundering, and using your bank account to move illegal funds can lead to serious legal and financial consequences.",
-    whatToDo: [
-      "Be wary of job offers that involve transferring money. Legitimate companies will not ask you to use your personal bank account to handle their funds.",
-      "Never agree to receive and transfer money for someone you've only met online, especially if the relationship is new. This is a common tactic in romance scams.",
-      "Question any request to send money using hard-to-trace methods like wire transfers, gift cards, or cryptocurrency. These are red flags for scams and illegal activities.",
-      "If an offer seems too good to be true, it probably is. Be skeptical of high-paying jobs with minimal effort or unexpected windfalls that require you to move money.",
-      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll-free helpline 1930. Inform your bank immediately if you suspect you’ve been involved in a money mule scheme.'
-    ],
-  };
+  const { translations } = useLanguage();
+  const title = translations.scamProtectionTitle_moneyMule || 'Money Mule Scams';
+  const description =
+    translations.scamMoneyMule_description ||
+    "Criminals recruit people to receive and move stolen money via their bank accounts, often posing as employers, online partners, or lottery officials.";
+  const whatToDoTitle = translations.scamMoneyMule_whatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.scamMoneyMule_tip1 || 'Reject job offers that ask you to use your personal bank account to move funds.',
+    translations.scamMoneyMule_tip2 || "Never agree to receive/forward money for someone you've only met online.",
+    translations.scamMoneyMule_tip3 || 'Be wary of requests to use wire transfers, gift cards, or crypto—common in illegal schemes.',
+    translations.scamMoneyMule_tip4 || 'If involved, stop immediately, inform your bank, and report to cybercrime authorities.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -29,16 +30,16 @@ export default function MoneyMuleScamScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{scamDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} /> {/* Spacer to balance header title */}
       </View>
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{scamDetails.description}</Text>
+          <Text style={styles.descriptionText}>{description}</Text>
 
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {scamDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

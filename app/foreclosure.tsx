@@ -3,22 +3,27 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function BlackmailScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
-  const scamDetails = {
-    title: 'Foreclosure relief or mortgage loan modification scams',
-    description: 'Foreclosure relief or mortgage loan modification scams are schemes to take your money or your house, often by making a false promise of saving you from foreclosure. Scammers might ask you to pay upfront fees for their service, guarantee a loan modification, ask you to sign over the title of your property, or ask you to sign paperwork you don’t understand.',
-    whatToDo: [
-      'Try to stay calm in spite of blackmailers’ intimidation and high-pressure tactics. Stop communicating with them and don’t pay them. Keep all messages as evidence to help law enforcement. Keep in mind that you don’t need to deal with this alone.',
-      'Do NOT comply with demands for money, personal details, OTPs, or to install apps.',
-      'End the call immediately—do not press keys, share information, or click on any links.',
-      'Do not panic. Impersonators typically aim to create fear and urgency to push you into action',
-      'File a complaint on the National Cybercrime Reporting Portal:  cybercrime.gov.in or call the toll‑free helpline 1930'
-    ],
-  };
+  const { translations } = useLanguage();
+
+  const title = translations.scamProtectionTitle_foreclosureRelief || 'Foreclosure Relief or Mortgage Loan Modification Scams';
+  const description =
+    translations.scamForeclosure_description ||
+    'Scammers promise to stop foreclosure, modify your loan, or save your home for an upfront fee, but provide no real help and may steal your money or home.';
+
+  const whatToDoTitle = translations.scamForeclosure_whatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.scamForeclosure_tip1 || 'Never pay upfront fees for mortgage assistance—this is illegal in many places.',
+    translations.scamForeclosure_tip2 ||
+      'Work directly with your lender/servicer; use official numbers from their website, not those in unsolicited messages.',
+    translations.scamForeclosure_tip3 || 'Beware of anyone asking you to transfer your deed or make payments to a third party.',
+    translations.scamForeclosure_tip4 || 'Consult a HUD-approved housing counselor for free or low-cost help (hud.gov).',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -29,17 +34,17 @@ export default function BlackmailScamScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{scamDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         {/* Spacer to balance header title */}
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{scamDetails.description}</Text>
+          <Text style={styles.descriptionText}>{description}</Text>
 
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {scamDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

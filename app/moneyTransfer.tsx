@@ -3,22 +3,23 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function MoneyTransferScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-
-  const scamDetails = {
-    title: 'Money Transfer & Mobile Payment Fraud',
-    description: "These scams happen when criminals trick you into sending them money through mobile payment apps like UPI, Google Pay, or through other money transfer services. They often impersonate a bank representative, a government official, or even a family member in an emergency. The scammer's goal is to get you to authorize a transaction or share a One-Time Password (OTP) that they can use to steal from your account. They might send a fake payment request or a QR code, claiming it's to 'receive' money, but it actually authorizes a payment from you to them.",
-    whatToDo: [
-      "Be highly skeptical of any urgent request for money, especially from someone you don’t know or a family member you haven’t spoken to directly in a while. Always verify the request by calling the person on a trusted phone number.",
-      "Never share your OTP, PIN, or password. A legitimate bank or mobile payment service will never ask for this information to 'verify' your account or a transaction.",
-      "Do not scan QR codes or approve payment requests from unknown contacts. Remember, to receive money, you do not need to enter your PIN or scan a QR code.",
-      "Enable multi-factor authentication (MFA) on your payment apps and bank accounts to add an extra layer of security.",
-      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll-free helpline 1930. Inform your bank and the payment service provider immediately if you\'ve been scammed.'
-    ],
-  };
+  const { translations } = useLanguage();
+  const title = translations.scamProtectionTitle_moneyTransfer || 'Money Transfer or Mobile Payment Services Fraud';
+  const description =
+    translations.scamMoneyTransfer_description ||
+    'Scammers impersonate banks/officials or family to trick you into authorizing payments via UPI or other apps.';
+  const whatToDoTitle = translations.scamMoneyTransfer_whatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.scamMoneyTransfer_tip1 || 'Verify urgent money requests via a known phone number before acting.',
+    translations.scamMoneyTransfer_tip2 || 'Never share OTP, PIN, or passwords. Legitimate services do not ask.',
+    translations.scamMoneyTransfer_tip3 || 'Do not scan unknown QR codes or approve unexpected requests.',
+    translations.scamMoneyTransfer_tip4 || 'Enable MFA and contact your bank immediately if scammed.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -29,16 +30,16 @@ export default function MoneyTransferScamScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{scamDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} /> {/* Spacer to balance header title */}
       </View>
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{scamDetails.description}</Text>
+          <Text style={styles.descriptionText}>{description}</Text>
 
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {scamDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

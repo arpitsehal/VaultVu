@@ -2,22 +2,29 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function PhishingFraudScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
-  const fraudDetails = {
-    title: 'Phishing Fraud',
-    description: 'Phishing fraud involves tricking individuals into revealing sensitive information such as passwords, OTPs, or bank details by pretending to be a legitimate entity (like RBI, banks, or government agencies). These scams often use fake emails, SMS, or websites that look official.',
-    whatToDo: [
-      'Never click on suspicious links or download attachments from unknown sources.',
-      'Always check the sender’s email address or phone number for authenticity.',
+  const { translations } = useLanguage();
+
+  const title = translations.phishingFraudTitle || 'Phishing Fraud';
+  const description =
+    translations.phishingFraudDescription ||
+    'Phishing fraud involves tricking individuals into revealing sensitive information such as passwords, OTPs, or bank details by pretending to be a legitimate entity (like RBI, banks, or government agencies). These scams often use fake emails, SMS, or websites that look official.';
+
+  const whatToDoTitle = translations.phishingWhatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.phishingTip1 || 'Never click on suspicious links or download attachments from unknown sources.',
+    translations.phishingTip2 || 'Always check the sender’s email address or phone number for authenticity.',
+    translations.phishingTip3 ||
       'Do not share your OTP, PIN, or passwords with anyone, even if they claim to be from RBI or your bank.',
-      'Access official websites by typing the URL directly, not through links in messages.',
-      'Report phishing attempts to your bank and the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930.'
-    ],
-  };
+    translations.phishingTip4 || 'Access official websites by typing the URL directly, not through links in messages.',
+    translations.phishingTip5 ||
+      'Report phishing attempts to your bank and the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -26,14 +33,14 @@ export default function PhishingFraudScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{fraudDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{fraudDetails.description}</Text>
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {fraudDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.descriptionText}>{description}</Text>
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

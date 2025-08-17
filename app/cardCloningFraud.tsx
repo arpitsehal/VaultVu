@@ -2,22 +2,27 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function CardCloningFraudScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
-  const fraudDetails = {
-    title: 'Card Cloning/Skimming Fraud',
-    description: 'Card cloning or skimming fraud occurs when criminals use devices to copy information from your debit or credit card’s magnetic stripe, often at ATMs or point-of-sale terminals. This data is then used to create duplicate cards and withdraw money fraudulently.',
-    whatToDo: [
-      'Inspect ATMs and card readers for unusual attachments or loose parts before use.',
-      'Cover the keypad while entering your PIN.',
-      'Enable transaction alerts for your cards to monitor unauthorized activity.',
-      'Report lost or stolen cards to your bank immediately.',
-      'Notify your bank and the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930 if you suspect skimming.'
-    ],
-  };
+  const { translations } = useLanguage();
+
+  const title = translations.cardCloningFraudTitle || 'Card Cloning/Skimming Fraud';
+  const description =
+    translations.cardCloningFraudDescription ||
+    'Card cloning or skimming fraud occurs when criminals use devices to copy information from your debit or credit card’s magnetic stripe, often at ATMs or point-of-sale terminals. This data is then used to create duplicate cards and withdraw money fraudulently.';
+  const whatToDoTitle = translations.cardCloningWhatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.cardCloningTip1 || 'Inspect ATMs and card readers for unusual attachments or loose parts before use.',
+    translations.cardCloningTip2 || 'Cover the keypad while entering your PIN.',
+    translations.cardCloningTip3 || 'Enable transaction alerts for your cards to monitor unauthorized activity.',
+    translations.cardCloningTip4 || 'Report lost or stolen cards to your bank immediately.',
+    translations.cardCloningTip5 ||
+      'Notify your bank and the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930 if you suspect skimming.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -26,14 +31,15 @@ export default function CardCloningFraudScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{fraudDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
+
         <View style={{ width: 40 }} />
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{fraudDetails.description}</Text>
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {fraudDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.descriptionText}>{description}</Text>
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

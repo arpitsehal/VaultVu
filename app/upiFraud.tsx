@@ -2,22 +2,28 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function UpiFraudScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
-  const fraudDetails = {
-    title: 'UPI/Internet Banking Fraud',
-    description: 'UPI and internet banking frauds involve tricking users into sharing their UPI PIN, OTP, or login credentials, or luring them into authorizing fraudulent transactions. Scammers may impersonate bank officials or send fake payment requests.',
-    whatToDo: [
-      'Never share your UPI PIN, OTP, or internet banking credentials with anyone.',
-      'Do not approve unknown or suspicious payment requests.',
-      'Always verify the identity of callers claiming to be from your bank or RBI.',
-      'Use official banking apps and avoid clicking on links in unsolicited messages.',
-      'Report unauthorized transactions to your bank and the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930.'
-    ],
-  };
+  const { translations } = useLanguage();
+
+  const title = translations.upiFraudTitle || 'UPI/Internet Banking Fraud';
+  const description =
+    translations.upiFraudDescription ||
+    'UPI and internet banking frauds involve tricking users into sharing their UPI PIN, OTP, or login credentials, or luring them into authorizing fraudulent transactions. Scammers may impersonate bank officials or send fake payment requests.';
+
+  const whatToDoTitle = translations.upiFraudWhatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.upiFraudTip1 || 'Never share your UPI PIN, OTP, or internet banking credentials with anyone.',
+    translations.upiFraudTip2 || 'Do not approve unknown or suspicious payment requests.',
+    translations.upiFraudTip3 || 'Always verify the identity of callers claiming to be from your bank or RBI.',
+    translations.upiFraudTip4 || 'Use official banking apps and avoid clicking on links in unsolicited messages.',
+    translations.upiFraudTip5 ||
+      'Report unauthorized transactions to your bank and the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -26,14 +32,15 @@ export default function UpiFraudScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{fraudDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
+
         <View style={{ width: 40 }} />
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{fraudDetails.description}</Text>
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {fraudDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.descriptionText}>{description}</Text>
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

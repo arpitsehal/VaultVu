@@ -3,22 +3,26 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function GrandparentScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
-  const scamDetails = {
-    title: 'Grandparent Scams',
-    description: "In a 'grandparent scam,' a scammer poses as a desperate grandchild in trouble. You might receive a call, text, or social media message claiming they've been in an accident, arrested, or are stranded in another country. The scammer creates a sense of urgency, asking you to wire money, send gift cards, or use a mobile app to pay for bail, hospital bills, or travel expenses. They'll often beg you not to tell their parents, which isolates you and keeps the scam going.",
-    whatToDo: [
-      "Stay calm and don't act immediately. If you get a call, hang up and try to contact your grandchild directly using a phone number you know is theirs, not the one provided by the caller.",
-      "Ask the caller personal questions that only your real grandchild would know, like a pet's name or a special family memory. If they can't answer, it's a scam.",
-      "Never send money, gift cards, or personal information in response to an urgent, unexpected request. Scammers often pressure you to act fast so you don't have time to think or verify their story.",
-      "Tell a trusted family member or friend about the call. A second opinion can help you realize it's a scam.",
-      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll-free helpline 1930.'
-    ],
-  };
+  const { translations } = useLanguage();
+
+  const title = translations.scamProtectionTitle_grandparent || 'Grandparent Scams';
+  const description =
+    translations.scamGrandparent_description ||
+    "Fraudsters pose as grandchildren or relatives in distress, urgently asking for money or gift cards and demanding secrecy.";
+
+  const whatToDoTitle = translations.scamGrandparent_whatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.scamGrandparent_tip1 || 'Slow down and verify through another trusted family member or by calling the person on a known number.',
+    translations.scamGrandparent_tip2 || 'Never send gift cards, wire transfers, or cryptocurrency to resolve emergencies.',
+    translations.scamGrandparent_tip3 || 'Ask questions only the real person would know.',
+    translations.scamGrandparent_tip4 || 'Report to local authorities and the cybercrime portal if money was sent.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -29,16 +33,16 @@ export default function GrandparentScamScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{scamDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} /> {/* Spacer to balance header title */}
       </View>
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{scamDetails.description}</Text>
+          <Text style={styles.descriptionText}>{description}</Text>
 
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {scamDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

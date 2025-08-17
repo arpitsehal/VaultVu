@@ -3,22 +3,23 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function RomanceScamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-
-  const scamDetails = {
-    title: 'Romance Scams',
-    description: "In a romance scam, a criminal creates a fake online identity to gain a victim's trust and affection. They often use dating apps, social media, or email to form a relationship, then leverage the emotional connection to manipulate and steal from the victim. Scammers will invent compelling stories, such as a family emergency, a business opportunity, or a medical crisis, to explain why they suddenly need money. They may also claim to be a soldier stationed overseas or working on an oil rig, making it impossible to meet in person and creating an excuse for their requests for money.",
-    whatToDo: [
-      "Be cautious when someone you've only met online and never seen in person asks for money. This is a significant red flag.",
-      "Never send money, especially through wire transfers, gift cards, or cryptocurrency, to an online love interest. These payment methods are difficult to trace and recover.",
-      "Check the person's story. Scammers often use photos they've stolen from someone else's social media. You can do a reverse image search to see if the profile picture is used elsewhere online.",
-      "If you're in a relationship with someone who is always giving excuses for not meeting in person, be skeptical. A legitimate relationship will naturally progress to meeting face-to-face.",
-      'File a complaint on the National Cybercrime Reporting Portal: cybercrime.gov.in or call the toll-free helpline 1930. The sooner you report, the better.'
-    ],
-  };
+  const { translations } = useLanguage();
+  const title = translations.scamProtectionTitle_romance || 'Romance Scams';
+  const description =
+    translations.scamRomance_description ||
+    "Scammers build fake online relationships to exploit trust and request money with elaborate stories.";
+  const whatToDoTitle = translations.scamRomance_whatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.scamRomance_tip1 || "Be cautious if someone you've never met in person asks for money—this is a big red flag.",
+    translations.scamRomance_tip2 || 'Never send money via wire, gift cards, or crypto to an online love interest.',
+    translations.scamRomance_tip3 || 'Do reverse image searches to detect stolen photos used across profiles.',
+    translations.scamRomance_tip4 || 'Be skeptical of repeated excuses to avoid meeting; healthy relationships progress offline.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -29,16 +30,16 @@ export default function RomanceScamScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{scamDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} /> {/* Spacer to balance header title */}
       </View>
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{scamDetails.description}</Text>
+          <Text style={styles.descriptionText}>{description}</Text>
 
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {scamDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>
