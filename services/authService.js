@@ -1,4 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiConfig } from './apiConfig';
+
+const { baseURL } = apiConfig;
 
 // To this
 const API_URL = 'https://vaultvu.onrender.com/api/auth';
@@ -67,3 +70,15 @@ export async function logout() {
     return { success: false, message: 'Logout error' };
   }
 }
+
+export const authService = {
+  login: async (credentials) => {
+    const response = await fetch(`${baseURL}/auth/login`, {
+      method: 'POST',
+      headers: apiConfig.headers,
+      body: JSON.stringify(credentials),
+    });
+    return response.json();
+  },
+  // ...existing code...
+};

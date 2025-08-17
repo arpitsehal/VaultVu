@@ -215,18 +215,6 @@ export default function CreateAccountPage() {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.orText}>{translations.or_signup || 'or'}</Text>
-
-          <View style={styles.socialButtonsContainer}>
-            <TouchableOpacity style={styles.socialButton}>
-              <Image
-                source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png' }}
-                style={styles.socialIcon}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          </View>
-
           <TouchableOpacity style={styles.createAccountButton} onPress={handleCreateAccount}>
             <Text style={styles.createAccountButtonText}>{translations.createAccountButton || 'CREATE ACCOUNT'}</Text>
           </TouchableOpacity>

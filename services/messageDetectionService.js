@@ -1,4 +1,5 @@
 import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
+import { apiConfig } from './apiConfig';
 import { handleIncomingMessage } from './callMessageDetectionService';
 
 // This is a simplified implementation as full SMS interception requires native modules
@@ -44,7 +45,19 @@ const cleanupMessageDetection = () => {
   }
 };
 
+const { baseURL } = apiConfig;
+
+export const messageDetectionService = {
+    analyzeMessage: async (messageData) => {
+        const response = await fetch(`${baseURL}/messages/analyze`, {
+            method: 'POST',
+            headers: apiConfig.headers,
+            body: JSON.stringify(messageData)
+        });
+        return response.json();
+    },
+};
+
 export {
-  setupMessageDetection,
-  cleanupMessageDetection,
+  cleanupMessageDetection, setupMessageDetection
 };

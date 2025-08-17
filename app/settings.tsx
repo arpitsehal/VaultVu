@@ -23,8 +23,6 @@ export default function SettingsScreen() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const { currentLanguage, translations, changeLanguage } = useLanguage();
-  const [callDetectionEnabled, setCallDetectionEnabled] = useState(true);
-  const [messageDetectionEnabled, setMessageDetectionEnabled] = useState(true);
 
   useEffect(() => {
     // Load user data from AsyncStorage and backend
@@ -72,18 +70,6 @@ export default function SettingsScreen() {
           changeLanguage(savedLanguage);
         }
         
-        // Load call and message detection settings
-        const callDetection = await AsyncStorage.getItem('callDetectionEnabled');
-        const messageDetection = await AsyncStorage.getItem('messageDetectionEnabled');
-        
-        if (callDetection !== null) {
-          setCallDetectionEnabled(callDetection === 'true');
-        }
-        
-        if (messageDetection !== null) {
-          setMessageDetectionEnabled(messageDetection === 'true');
-        }
-        
         setLoading(false);
       } catch (error) {
         console.error('Error loading user data:', error);
@@ -102,20 +88,6 @@ export default function SettingsScreen() {
 
     loadUserData();
   }, []);
-
-  // Toggle call detection
-  const toggleCallDetection = async (value: boolean) => {
-
-    setCallDetectionEnabled(value);
-    await AsyncStorage.setItem('callDetectionEnabled', value.toString());
-  };
-
-  // Toggle message detection
-  const toggleMessageDetection = async (value: boolean) => {
-
-    setMessageDetectionEnabled(value);
-    await AsyncStorage.setItem('messageDetectionEnabled', value.toString());
-  };
 
   const handleLogout = async () => {
     Alert.alert(
@@ -185,40 +157,6 @@ export default function SettingsScreen() {
         <View style={styles.settingsSection}>
           <Text style={styles.sectionTitle}>{translations.preferences}</Text>
           
-          {/* 🔽 ADD CALL/MESSAGE DETECTION TOGGLES 🔽 */}
-          <View style={styles.settingItem}>
-            <View style={styles.settingIconContainer}>
-              <Ionicons name="call" size={24} color="#A8C3D1" />
-            </View>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Call Fraud Detection</Text>
-              <Text style={styles.settingSubtitle}>Get alerts for suspicious calls</Text>
-            </View>
-            <Switch
-              value={callDetectionEnabled}
-              onValueChange={toggleCallDetection}
-              trackColor={{ false: '#767577', true: '#81b0ff' }}
-              thumbColor={callDetectionEnabled ? '#f5dd4b' : '#f4f3f4'}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <View style={styles.settingIconContainer}>
-              <Ionicons name="chatbubble" size={24} color="#A8C3D1" />
-            </View>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>Message Fraud Detection</Text>
-              <Text style={styles.settingSubtitle}>Get alerts for suspicious messages</Text>
-            </View>
-            <Switch
-              value={messageDetectionEnabled}
-              onValueChange={toggleMessageDetection}
-              trackColor={{ false: '#767577', true: '#81b0ff' }}
-              thumbColor={messageDetectionEnabled ? '#f5dd4b' : '#f4f3f4'}
-            />
-          </View>
-          {/* 🔼 END OF TOGGLE SECTION 🔼 */}
-          
           {/* Language Option */}
           <TouchableOpacity 
             style={styles.settingItem}
@@ -231,8 +169,8 @@ export default function SettingsScreen() {
               <Text style={styles.settingTitle}>{translations.language}</Text>
               <Text style={styles.settingValue}>
                 {currentLanguage === 'english' ? 'English' : 
-                 currentLanguage === 'hindi' ? 'हिंदी' : 
-                 currentLanguage === 'punjabi' ? 'ਪੰਜਾਬੀ' : 'English'}
+                  currentLanguage === 'hindi' ? 'हिंदी' : 
+                  currentLanguage === 'punjabi' ? 'ਪੰਜਾਬੀ' : 'English'}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={24} color="#A8C3D1" />

@@ -18,7 +18,6 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { login } from '../services/authService';
 import { useLanguage } from '../contexts/LanguageContext';
-import { AntDesign } from '@expo/vector-icons'; // Import AntDesign for the back button
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -84,11 +83,6 @@ export default function SignInPage() {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    console.log('Signing in with Google');
-    Alert.alert(translations.googleSignInTitle || 'Google Sign-in', translations.googleSignInMessage || 'Initiating Google sign-in process...');
-  };
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -97,7 +91,7 @@ export default function SignInPage() {
         style={[styles.backButton, { top: insets.top + 20 }]}
         onPress={() => router.back()}
       >
-        <AntDesign name="arrowleft" size={24} color="#1A213B" />
+        <Text style={styles.backButtonText}>←</Text>
       </TouchableOpacity>
 
       <KeyboardAvoidingView
@@ -155,17 +149,6 @@ export default function SignInPage() {
               <Text style={styles.forgotPasswordText}>{translations.forgotPassword || 'Forgot Password?'}</Text>
             </TouchableOpacity>
           </View>
-
-          <Text style={styles.orText}>{translations.or || 'or'}</Text>
-
-          <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
-            <Image
-              source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png' }}
-              style={styles.googleLogo}
-              resizeMode="contain"
-            />
-            <Text style={styles.googleButtonText}>{translations.signInWithGoogle || 'Sign in with Google'}</Text>
-          </TouchableOpacity>
 
           <TouchableOpacity style={styles.signInMainButton} onPress={handleSignIn}>
             <Text style={styles.signInMainButtonText}>{translations.signInMainButton || 'SIGN IN'}</Text>

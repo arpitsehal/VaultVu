@@ -1,4 +1,6 @@
 import { Platform } from 'react-native';
+import { apiConfig } from './apiConfig';
+
 let RNCallKeep;
 
 // Safely import RNCallKeep
@@ -83,6 +85,19 @@ const cleanupCallKeep = () => {
 };
 
 export {
-  setupCallKeep,
-  cleanupCallKeep,
+  cleanupCallKeep, setupCallKeep
+};
+
+const { baseURL } = apiConfig;
+
+export const callDetectionService = {
+    analyzeCall: async (callData) => {
+        const response = await fetch(`${baseURL}/calls/analyze`, {
+            method: 'POST',
+            headers: apiConfig.headers,
+            body: JSON.stringify(callData)
+        });
+        return response.json();
+    },
+    // ...existing code...
 };
