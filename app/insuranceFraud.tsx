@@ -2,22 +2,28 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function InsuranceFraudScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
-  const fraudDetails = {
-    title: 'Insurance Fraud',
-    description: 'Insurance frauds involve fake agents or companies selling non-existent or unauthorized insurance policies, or making false claims. Victims may lose their premiums or face claim rejections.',
-    whatToDo: [
-      'Verify the credentials of insurance agents and companies with IRDAI or RBI.',
-      'Do not make payments in cash or to personal accounts of agents.',
-      'Read policy documents carefully and keep all receipts.',
-      'Report suspicious insurance offers to your insurer and authorities.',
-      'File complaints about insurance fraud on the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930.'
-    ],
-  };
+  const { translations } = useLanguage();
+
+  const title = translations.insuranceFraudTitle || 'Insurance Fraud';
+  const description =
+    translations.insuranceFraudDescription ||
+    'Insurance frauds involve fake agents or companies selling non-existent or unauthorized insurance policies, or making false claims. Victims may lose their premiums or face claim rejections.';
+
+  const whatToDoTitle = translations.insuranceFraudWhatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.insuranceFraudTip1 || 'Verify the credentials of insurance agents and companies with IRDAI or RBI.',
+    translations.insuranceFraudTip2 || 'Do not make payments in cash or to personal accounts of agents.',
+    translations.insuranceFraudTip3 || 'Read policy documents carefully and keep all receipts.',
+    translations.insuranceFraudTip4 || 'Report suspicious insurance offers to your insurer and authorities.',
+    translations.insuranceFraudTip5 ||
+      'File complaints about insurance fraud on the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -26,14 +32,14 @@ export default function InsuranceFraudScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{fraudDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{fraudDetails.description}</Text>
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {fraudDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.descriptionText}>{description}</Text>
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

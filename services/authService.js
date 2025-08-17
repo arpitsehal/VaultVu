@@ -71,6 +71,34 @@ export async function logout() {
   }
 }
 
+// Request password reset OTP
+export async function requestPasswordReset(email) {
+  try {
+    const response = await fetch(`${API_URL}/request-password-reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Network error' };
+  }
+}
+
+// Reset password with OTP
+export async function resetPassword(email, otp, newPassword) {
+  try {
+    const response = await fetch(`${API_URL}/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, otp, newPassword }),
+    });
+    return await response.json();
+  } catch (error) {
+    return { success: false, message: 'Network error' };
+  }
+}
+
 export const authService = {
   login: async (credentials) => {
     const response = await fetch(`${baseURL}/auth/login`, {
@@ -80,5 +108,6 @@ export const authService = {
     });
     return response.json();
   },
-  // ...existing code...
+  requestPasswordReset,
+  resetPassword,
 };

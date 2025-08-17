@@ -2,22 +2,28 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function InvestmentFraudScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
-  const fraudDetails = {
-    title: 'Investment & Ponzi Schemes',
-    description: 'Investment and Ponzi scheme frauds promise high returns with little or no risk. Scammers may use fake documents, websites, or endorsements to lure victims into investing in non-existent or unsustainable schemes.',
-    whatToDo: [
-      'Be skeptical of investment opportunities promising guaranteed or unusually high returns.',
-      'Verify the registration of investment companies with RBI or SEBI.',
-      'Do not invest based on pressure tactics or limited-time offers.',
-      'Research thoroughly and consult financial advisors before investing.',
-      'Report suspected Ponzi or investment fraud to authorities and the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930.'
-    ],
-  };
+  const { translations } = useLanguage();
+
+  const title = translations.investmentFraudTitle || 'Investment & Ponzi Schemes';
+  const description =
+    translations.investmentFraudDescription ||
+    'Investment and Ponzi scheme frauds promise high returns with little or no risk. Scammers may use fake documents, websites, or endorsements to lure victims into investing in non-existent or unsustainable schemes.';
+
+  const whatToDoTitle = translations.investmentFraudWhatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.investmentFraudTip1 || 'Be skeptical of investment opportunities promising guaranteed or unusually high returns.',
+    translations.investmentFraudTip2 || 'Verify the registration of investment companies with RBI or SEBI.',
+    translations.investmentFraudTip3 || 'Do not invest based on pressure tactics or limited-time offers.',
+    translations.investmentFraudTip4 || 'Research thoroughly and consult financial advisors before investing.',
+    translations.investmentFraudTip5 ||
+      'Report suspected Ponzi or investment fraud to authorities and the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -26,14 +32,14 @@ export default function InvestmentFraudScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{fraudDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{fraudDetails.description}</Text>
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {fraudDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.descriptionText}>{description}</Text>
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

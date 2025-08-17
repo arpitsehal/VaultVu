@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -145,9 +145,13 @@ export default function SignInPage() {
               </View>
               <Text style={styles.checkboxText}>{translations.rememberMe || 'Remember me'}</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/forgetpass')}>
-              <Text style={styles.forgotPasswordText}>{translations.forgotPassword || 'Forgot Password?'}</Text>
-            </TouchableOpacity>
+            <Link href="/forgetpass" asChild>
+              <TouchableOpacity>
+                <Text style={styles.forgotPasswordText}>
+                  {translations.forgotPassword || 'Forgot Password?'}
+                </Text>
+              </TouchableOpacity>
+            </Link>
           </View>
 
           <TouchableOpacity style={styles.signInMainButton} onPress={handleSignIn}>

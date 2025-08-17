@@ -2,22 +2,28 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function IdentityTheftFraudScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
-  const fraudDetails = {
-    title: 'Identity Theft',
-    description: 'Identity theft frauds occur when criminals use stolen personal information (like Aadhaar, PAN, or bank details) to open accounts, obtain loans, or commit crimes in your name. Victims may face financial loss and legal trouble.',
-    whatToDo: [
-      'Keep your personal documents and information secure and do not share them unnecessarily.',
-      'Monitor your bank statements and credit reports regularly.',
-      'Report lost or stolen documents to authorities and your bank immediately.',
-      'Be cautious of sharing personal details online or over the phone.',
-      'Report identity theft to the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930.'
-    ],
-  };
+  const { translations } = useLanguage();
+
+  const title = translations.identityTheftTitle || 'Identity Theft';
+  const description =
+    translations.identityTheftDescription ||
+    'Identity theft frauds occur when criminals use stolen personal information (like Aadhaar, PAN, or bank details) to open accounts, obtain loans, or commit crimes in your name. Victims may face financial loss and legal trouble.';
+
+  const whatToDoTitle = translations.identityTheftWhatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.identityTheftTip1 || 'Keep your personal documents and information secure and do not share them unnecessarily.',
+    translations.identityTheftTip2 || 'Monitor your bank statements and credit reports regularly.',
+    translations.identityTheftTip3 || 'Report lost or stolen documents to authorities and your bank immediately.',
+    translations.identityTheftTip4 || 'Be cautious of sharing personal details online or over the phone.',
+    translations.identityTheftTip5 ||
+      'Report identity theft to the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -26,14 +32,14 @@ export default function IdentityTheftFraudScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{fraudDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{fraudDetails.description}</Text>
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {fraudDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.descriptionText}>{description}</Text>
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

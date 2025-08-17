@@ -2,22 +2,28 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function FakeCustomerCareFraudScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
-  const fraudDetails = {
-    title: 'Fake Customer Care',
-    description: 'Fake customer care frauds involve scammers posing as bank or service provider representatives. They trick victims into sharing sensitive information or installing remote access apps, leading to financial loss.',
-    whatToDo: [
-      'Always use official customer care numbers from your bank’s website or RBI.',
-      'Never share your OTP, PIN, or passwords with anyone over the phone.',
-      'Do not install apps or software at the request of unknown callers.',
-      'Be cautious of unsolicited calls claiming to resolve account or transaction issues.',
-      'Report fake customer care scams to your bank and the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930.'
-    ],
-  };
+  const { translations } = useLanguage();
+
+  const title = translations.fakeCustomerCareTitle || 'Fake Customer Care';
+  const description =
+    translations.fakeCustomerCareDescription ||
+    'Fake customer care frauds involve scammers posing as bank or service provider representatives. They trick victims into sharing sensitive information or installing remote access apps, leading to financial loss.';
+
+  const whatToDoTitle = translations.fakeCustomerCareWhatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.fakeCustomerCareTip1 || 'Always use official customer care numbers from your bank’s website or RBI.',
+    translations.fakeCustomerCareTip2 || 'Never share your OTP, PIN, or passwords with anyone over the phone.',
+    translations.fakeCustomerCareTip3 || 'Do not install apps or software at the request of unknown callers.',
+    translations.fakeCustomerCareTip4 || 'Be cautious of unsolicited calls claiming to resolve account or transaction issues.',
+    translations.fakeCustomerCareTip5 ||
+      'Report fake customer care scams to your bank and the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -26,14 +32,14 @@ export default function FakeCustomerCareFraudScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{fraudDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{fraudDetails.description}</Text>
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {fraudDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.descriptionText}>{description}</Text>
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>

@@ -2,22 +2,28 @@ import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function AtmFraudScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
-  const fraudDetails = {
-    title: 'ATM Fraud',
-    description: 'ATM frauds include card skimming, shoulder surfing, and trapping devices that steal card information or cash. Criminals may also use fake help or distraction tactics at ATMs to obtain your PIN or card.',
-    whatToDo: [
-      'Inspect the ATM for unusual devices or attachments before use.',
-      'Cover the keypad while entering your PIN.',
-      'Do not accept help from strangers at ATMs.',
-      'Report lost or stolen cards to your bank immediately.',
-      'Notify your bank and the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930 if you suspect ATM fraud.'
-    ],
-  };
+  const { translations } = useLanguage();
+
+  const title = translations.atmFraudTitle || 'ATM Fraud';
+  const description =
+    translations.atmFraudDescription ||
+    'ATM frauds include card skimming, shoulder surfing, and trapping devices that steal card information or cash. Criminals may also use fake help or distraction tactics at ATMs to obtain your PIN or card.';
+
+  const whatToDoTitle = translations.atmFraudWhatToDoTitle || "What to do if you're targeted:";
+  const tips = [
+    translations.atmFraudTip1 || 'Inspect the ATM for unusual devices or attachments before use.',
+    translations.atmFraudTip2 || 'Cover the keypad while entering your PIN.',
+    translations.atmFraudTip3 || 'Do not accept help from strangers at ATMs.',
+    translations.atmFraudTip4 || 'Report lost or stolen cards to your bank immediately.',
+    translations.atmFraudTip5 ||
+      'Notify your bank and the National Cybercrime Reporting Portal: cybercrime.gov.in or call 1930 if you suspect ATM fraud.',
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -26,14 +32,14 @@ export default function AtmFraudScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{fraudDetails.title}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{fraudDetails.description}</Text>
-          <Text style={styles.whatToDoTitle}>What to do if you're targeted:</Text>
-          {fraudDetails.whatToDo.map((tip, index) => (
+          <Text style={styles.descriptionText}>{description}</Text>
+          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
+          {tips.map((tip, index) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipBullet}>•</Text>
               <Text style={styles.tipText}>{tip}</Text>
