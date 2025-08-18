@@ -8,7 +8,7 @@ export async function geminiChat(message, history = [], options = {}) {
   const timeoutMs = options.timeoutMs || 15000;
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(`${baseURL}/gemini/chat`, {
+    const res = await fetch(`${baseURL}/api/gemini/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
