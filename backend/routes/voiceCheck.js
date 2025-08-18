@@ -8,7 +8,6 @@ const { v4: uuidv4 } = require('uuid');
 // You can get an API key from a voice analysis service
 // For example: AssemblyAI, Google Speech-to-Text, etc.
 const VOICE_ANALYSIS_API_KEY = process.env.VOICE_ANALYSIS_API_KEY || 'cefd9ec0b1354bbb8365faeab5e4c8d1';
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 // Common voice fraud indicators
 const fraudIndicators = [
@@ -36,7 +35,6 @@ router.post('/', async (req, res) => {
     let isGenuine = true;
     let riskScore = 0;
     const reasons = [];
-    let gemini = null;
     
     try {
       // Save the audio file temporarily
@@ -74,7 +72,6 @@ router.post('/', async (req, res) => {
       
       // Add voice analysis results
       const voiceAnalysis = simulateVoiceAnalysis();
-      
       if (voiceAnalysis.deepfakeScore > 0.6) {
         isGenuine = false;
         riskScore = Math.max(riskScore, 8);
@@ -86,60 +83,6 @@ router.post('/', async (req, res) => {
         reasons.push('Voice tone indicates emotional manipulation tactics');
       }
       
-      // Gemini analysis as an additional layer (if configured)
-      if (GEMINI_API_KEY) {
-        try {
-          const prompt = {
-            contents: [
-              {
-                role: 'user',
-                parts: [
-                  {
-                    text:
-                      'You are a security analyst. Given a call transcript and simple acoustic risk cues, assess scam/fraud risk. Return ONLY strict JSON with keys: isGenuine (boolean), riskScore (0-10 integer), category ("Scam"|"Legitimate"|"Suspicious"|"Phishing"), reasons (string[]). Be concise.'
-                  },
-                  { text: `\n\nTranscript:\n${transcription}` },
-                  { text: `\nDeepfakeScore: ${voiceAnalysis.deepfakeScore}` },
-                  { text: `\nEmotionalManipulation: ${voiceAnalysis.emotionalManipulation}` },
-                ],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.2,
-              topP: 0.9,
-              topK: 40,
-              maxOutputTokens: 256,
-              responseMimeType: 'application/json',
-            },
-          };
-
-          const gemRes = await axios.post(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
-            prompt,
-            { headers: { 'Content-Type': 'application/json' } }
-          );
-
-          const text = gemRes.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          gemini = safeParseGeminiJSON(text);
-
-          if (gemini) {
-            if (typeof gemini.isGenuine === 'boolean') {
-              isGenuine = isGenuine && gemini.isGenuine;
-            } else if (typeof gemini.isSafe === 'boolean') {
-              isGenuine = isGenuine && gemini.isSafe;
-            }
-            if (Number.isFinite(gemini.riskScore)) {
-              riskScore = Math.min(10, riskScore + Math.max(0, Math.min(10, Math.round(gemini.riskScore))));
-            }
-            if (Array.isArray(gemini.reasons)) {
-              reasons.push(...gemini.reasons);
-            }
-          }
-        } catch (gerr) {
-          console.error('Gemini voice analysis failed:', gerr?.response?.data || gerr?.message);
-        }
-      }
-
       // Clean up the temporary file
       fs.unlinkSync(tempFilePath);
       
@@ -181,20 +124,6 @@ function simulateVoiceAnalysis() {
     emotionalManipulation: Math.random(),  // 0-1 score, higher means more emotional manipulation
     confidence: 0.7 + (Math.random() * 0.3)  // 0.7-1.0 confidence score
   };
-}
-
-// Safe parser for Gemini JSON responses
-function safeParseGeminiJSON(text) {
-  if (!text) return null;
-  try {
-    return JSON.parse(text);
-  } catch (_) {
-    const m = text.match(/\{[\s\S]*\}/);
-    if (m) {
-      try { return JSON.parse(m[0]); } catch (_) {}
-    }
-  }
-  return null;
 }
 
 module.exports = router;

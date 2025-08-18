@@ -40,8 +40,6 @@ const MESSAGE_TEST_EXAMPLES = [
   }
 ];
 
-type ModalType = 'success' | 'error' | 'warning' | 'info';
-
 export default function FraudMessageCheckerScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -52,13 +50,13 @@ export default function FraudMessageCheckerScreen() {
 
   // State for the custom modal
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalContent, setModalContent] = useState<{ title: string; message: string; type: ModalType }>({ title: '', message: '', type: 'success' });
+  const [modalContent, setModalContent] = useState({ title: '', message: '', type: 'success' });
   
   // Use the useLanguage hook to get translations
   const { translations } = useLanguage();
 
   // Function to show the custom modal
-  const showModal = (title: string, message: string, type: ModalType = 'success') => {
+  const showModal = (title, message, type = 'success') => {
     setModalContent({ title, message, type });
     setModalVisible(true);
   };
@@ -193,51 +191,28 @@ export default function FraudMessageCheckerScreen() {
   const renderResult = () => {
     if (!result) return null;
 
-    const { isGenuine, riskScore, combinedRiskScore, reasons, category, isOfflineAnalysis, localAnalysis } = result as any;
-    const displayRisk = typeof combinedRiskScore === 'number' ? combinedRiskScore : riskScore;
+    const { isGenuine, riskScore, reasons } = result;
     const resultColor = isGenuine ? '#5cb85c' : '#d9534f'; // Green for genuine, Red for fraud
     const borderColor = isGenuine ? '#5cb85c' : '#d9534f'; // Border color matches result status
     
     return (
       <View style={[styles.resultCard, { borderColor }]}>
-        {isOfflineAnalysis && (
-          <View style={styles.offlineIndicator}>
-            <Ionicons name="wifi-outline" size={16} color="#f0ad4e" />
-            <Text style={styles.offlineText}>Offline Analysis</Text>
-          </View>
-        )}
-
         <Text style={[styles.resultTitle, { color: resultColor }]}>
           {isGenuine
             ? translations.messageGenuine || 'Message appears genuine'
             : translations.potentialFraud || 'Potential fraud detected'}
         </Text>
-
-        {category && (
-          <View style={styles.categoryBadgeRow}>
-            <Text style={styles.resultCategoryBadgeText}>{String(category)}</Text>
-          </View>
-        )}
         
         <View style={styles.scoreContainer}>
           <Text style={styles.scoreLabel}>{translations.riskScore || 'Risk Score'}:</Text>
-          <Text style={[styles.resultScore, { color: resultColor }]}>{displayRisk}/10</Text>
+          <Text style={[styles.resultScore, { color: resultColor }]}>{riskScore}/10</Text>
         </View>
         
         {reasons && reasons.length > 0 && (
           <View style={styles.reasonsContainer}>
             <Text style={styles.reasonsTitle}>{translations.reasonsTitle || 'Reasons for the score:'}</Text>
-            {reasons.map((reason: string, index: number) => (
+            {reasons.map((reason, index) => (
               <Text key={index} style={styles.reasonText}>• {reason}</Text>
-            ))}
-          </View>
-        )}
-
-        {localAnalysis && (localAnalysis.patterns || localAnalysis.indicators) && (
-          <View style={styles.localAnalysisContainer}>
-            <Text style={styles.localAnalysisTitle}>Local Analysis Highlights</Text>
-            {(localAnalysis.patterns || localAnalysis.indicators || []).slice(0, 5).map((it: string, idx: number) => (
-              <Text key={idx} style={styles.localAnalysisItem}>• {it}</Text>
             ))}
           </View>
         )}
@@ -252,7 +227,7 @@ export default function FraudMessageCheckerScreen() {
   };
 
   // Helper function to get the appropriate icon for the modal
-  const getModalIcon = (type: ModalType) => {
+  const getModalIcon = (type) => {
     switch (type) {
       case 'success':
         return <AntDesign name="checkcircle" size={50} color="#5cb85c" />;
@@ -460,42 +435,11 @@ const styles = StyleSheet.create({
     width: '100%',
     borderWidth: 2,
   },
-  offlineIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(240, 173, 78, 0.1)',
-    borderColor: '#f0ad4e',
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    marginBottom: 8,
-  },
-  offlineText: {
-    color: '#f0ad4e',
-    marginLeft: 6,
-    fontSize: 12,
-    fontWeight: '600',
-  },
   resultTitle: {
     fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
-  },
-  categoryBadgeRow: {
-    alignSelf: 'center',
-    backgroundColor: '#2A3B5C',
-    borderRadius: 12,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    marginBottom: 8,
-  },
-  resultCategoryBadgeText: {
-    color: '#A8C3D1',
-    fontSize: 12,
-    fontWeight: '600',
   },
   scoreContainer: {
     flexDirection: 'row',
@@ -533,23 +477,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     fontWeight: 'bold',
-  },
-  localAnalysisContainer: {
-    marginTop: 12,
-    paddingTop: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  localAnalysisTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#A8C3D1',
-    marginBottom: 6,
-  },
-  localAnalysisItem: {
-    fontSize: 13,
-    color: '#A8C3D1',
-    marginBottom: 4,
   },
   centeredView: {
     flex: 1,
