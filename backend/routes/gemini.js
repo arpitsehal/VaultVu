@@ -42,6 +42,7 @@ router.post('/chat', async (req, res) => {
           topK: 40,
           topP: 0.95,
           maxOutputTokens: 1024,
+          responseMimeType: 'text/plain',
         },
         safetySettings: [
           { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
