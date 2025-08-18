@@ -13,6 +13,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { geminiChat } from '../../services/geminiService';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -339,10 +340,29 @@ export default function ChatbotScreen() {
     setInputText('');
     setIsTyping(true);
 
-    // Simulate AI thinking time
-    setTimeout(() => {
+    try {
+      // Prepare brief history for better context
+      const history = messages.slice(-6).map(m => ({
+        role: m.isUser ? 'user' : 'model',
+        text: m.text,
+      }));
+
+      const geminiText = await geminiChat(userMessage.text, history);
+      const { followUps, detectedTopics } = generateResponse(userMessage.text);
+
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: geminiText && geminiText.trim().length > 0 ? geminiText : GENERIC_FALLBACK,
+        isUser: false,
+        timestamp: new Date(),
+        context: detectedTopics,
+        followUpSuggestions: followUps,
+      };
+
+      setMessages(prev => [...prev, aiResponse]);
+    } catch (e) {
+      // Fallback to local generator
       const { response, followUps, detectedTopics } = generateResponse(userMessage.text);
-      
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         text: response,
@@ -351,10 +371,10 @@ export default function ChatbotScreen() {
         context: detectedTopics,
         followUpSuggestions: followUps,
       };
-
       setMessages(prev => [...prev, aiResponse]);
+    } finally {
       setIsTyping(false);
-    }, 1000 + Math.random() * 1000); // 1-2 seconds delay
+    }
   };
 
   const scrollToBottom = () => {
@@ -367,38 +387,56 @@ export default function ChatbotScreen() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleFollowUpPress = (followUpText: string) => {
+  const handleFollowUpPress = async (followUpText: string) => {
     setInputText(followUpText);
     // Auto-send the follow-up question
-    setTimeout(() => {
-      const userMessage: Message = {
-        id: Date.now().toString(),
-        text: followUpText,
-        isUser: true,
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: followUpText,
+      isUser: true,
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputText('');
+    setIsTyping(true);
+
+    try {
+      const history = messages.slice(-6).map(m => ({
+        role: m.isUser ? 'user' : 'model',
+        text: m.text,
+      }));
+
+      const geminiText = await geminiChat(followUpText, history);
+      const { followUps, detectedTopics } = generateResponse(followUpText);
+
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: geminiText && geminiText.trim().length > 0 ? geminiText : GENERIC_FALLBACK,
+        isUser: false,
         timestamp: new Date(),
+        context: detectedTopics,
+        followUpSuggestions: followUps,
       };
 
-      setMessages(prev => [...prev, userMessage]);
-      setInputText('');
-      setIsTyping(true);
-
-      setTimeout(() => {
-        const { response, followUps, detectedTopics } = generateResponse(followUpText);
-        
-        const aiResponse: Message = {
-          id: (Date.now() + 1).toString(),
-          text: response,
-          isUser: false,
-          timestamp: new Date(),
-          context: detectedTopics,
-          followUpSuggestions: followUps,
-        };
-
-        setMessages(prev => [...prev, aiResponse]);
-        setIsTyping(false);
-      }, 1000 + Math.random() * 1000);
-    }, 100);
+      setMessages(prev => [...prev, aiResponse]);
+    } catch (e) {
+      const { response, followUps, detectedTopics } = generateResponse(followUpText);
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: response,
+        isUser: false,
+        timestamp: new Date(),
+        context: detectedTopics,
+        followUpSuggestions: followUps,
+      };
+      setMessages(prev => [...prev, aiResponse]);
+    } finally {
+      setIsTyping(false);
+    }
   };
+
+  const GENERIC_FALLBACK = "I'm here to help with fraud prevention. Could you rephrase or provide more details?";
 
   const renderMessage = (message: Message) => (
     <View key={message.id}>

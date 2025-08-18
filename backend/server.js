@@ -10,6 +10,7 @@ const messageCheckRoutes = require('./routes/messageCheck');
 const voiceCheckRoutes = require('./routes/voiceCheck');
 const budgetRoutes = require('./routes/budgetRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes');
+const geminiRoutes = require('./routes/gemini');
 const connectDB = require('./config/db');
 
 const app = express();
@@ -46,6 +47,7 @@ app.use('/api/message-check', messageCheckRoutes);
 app.use('/api/voice-check', voiceCheckRoutes);
 app.use('/api/budget', budgetRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/gemini', geminiRoutes);
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}. Accessible via localhost or your network IP.`);
