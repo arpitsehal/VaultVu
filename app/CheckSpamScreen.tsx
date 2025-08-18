@@ -6,6 +6,8 @@ import { useNavigation } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 import { useLanguage } from '../contexts/LanguageContext'; // Import the useLanguage hook
 
+type ModalType = 'success' | 'error' | 'warning' | 'info';
+
 export default function CheckSpamScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -15,13 +17,13 @@ export default function CheckSpamScreen() {
   
   // State for the custom modal
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalContent, setModalContent] = useState({ title: '', message: '', type: 'success' });
+  const [modalContent, setModalContent] = useState<{ title: string; message: string; type: ModalType }>({ title: '', message: '', type: 'success' });
   
   // Use the useLanguage hook to get translations
   const { translations } = useLanguage();
 
   // Function to show the custom modal
-  const showModal = (title, message, type = 'success') => {
+  const showModal = (title: string, message: string, type: ModalType = 'success') => {
     setModalContent({ title, message, type });
     setModalVisible(true);
   };
@@ -68,30 +70,42 @@ export default function CheckSpamScreen() {
   const renderResult = () => {
     if (!result) return null;
 
-    const { isGenuine, riskScore, reasons, carrierInfo, location, lineType } = result;
+    const { isGenuine, riskScore, combinedRiskScore, reasons, carrierInfo, location, lineType, category, isOfflineAnalysis, localAnalysis } = result as any;
+    const displayRisk = typeof combinedRiskScore === 'number' ? combinedRiskScore : riskScore;
     const resultColor = isGenuine ? '#5cb85c' : '#d9534f';
     const borderColor = isGenuine ? '#5cb85c' : '#d9534f';
     
     return (
       <View style={[styles.resultCard, { borderColor }]}>
+        {isOfflineAnalysis && (
+          <View style={styles.offlineIndicator}>
+            <AntDesign name="wifi" size={16} color="#f0ad4e" />
+            <Text style={styles.offlineText}>Offline Analysis</Text>
+          </View>
+        )}
         <Text style={[styles.resultTitle, { color: resultColor }]}>
           {isGenuine ? translations.numberGenuine || 'Number appears genuine' : translations.numberSuspicious || 'Suspicious number detected'}
         </Text>
+        {category && (
+          <View style={styles.categoryBadgeRow}>
+            <Text style={styles.resultCategoryBadgeText}>{String(category)}</Text>
+          </View>
+        )}
         
         <View style={styles.scoreContainer}>
           <Text style={styles.scoreLabel}>{translations.riskScore || 'Risk Score'}:</Text>
-          <Text style={[styles.resultScore, { color: resultColor }]}>{riskScore}/10</Text>
+          <Text style={[styles.resultScore, { color: resultColor }]}>{displayRisk}/10</Text>
         </View>
         
         {reasons && reasons.length > 0 && (
           <View style={styles.reasonsContainer}>
             <Text style={styles.reasonsTitle}>{translations.reasonsTitle || 'Reasons for the score:'}</Text>
-            {reasons.map((reason, index) => (
+            {reasons.map((reason: string, index: number) => (
               <Text key={index} style={styles.reasonText}>• {reason}</Text>
             ))}
           </View>
         )}
-        
+
         <View style={styles.detailsContainer}>
           <Text style={styles.detailsTitle}>{translations.additionalDetails || 'Additional Details'}:</Text>
           {carrierInfo && (
@@ -105,6 +119,16 @@ export default function CheckSpamScreen() {
           )}
         </View>
 
+        {localAnalysis && (localAnalysis.patterns || localAnalysis.indicators) && (
+          <View style={styles.localAnalysisContainer}>
+            <Text style={styles.localAnalysisTitle}>Local Analysis Highlights</Text>
+            {(localAnalysis.patterns || localAnalysis.indicators || []).slice(0, 5).map((it: string, idx: number) => (
+              <Text key={idx} style={styles.localAnalysisItem}>• {it}</Text>
+            ))}
+          </View>
+        )}
+        
+
         {!isGenuine && (
           <Text style={styles.warningText}>
             {translations.spamWarningText || 'Be cautious! This number shows signs of potential spam or fraud.'}
@@ -115,7 +139,7 @@ export default function CheckSpamScreen() {
   };
 
   // Helper function to get the appropriate icon for the modal
-  const getModalIcon = (type) => {
+  const getModalIcon = (type: ModalType) => {
     switch (type) {
       case 'success':
         return <AntDesign name="checkcircle" size={50} color="#5cb85c" />;
@@ -301,11 +325,42 @@ const styles = StyleSheet.create({
     width: '100%',
     borderWidth: 2,
   },
+  offlineIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(240, 173, 78, 0.1)',
+    borderColor: '#f0ad4e',
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    marginBottom: 8,
+  },
+  offlineText: {
+    color: '#f0ad4e',
+    marginLeft: 6,
+    fontSize: 12,
+    fontWeight: '600',
+  },
   resultTitle: {
     fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
+  },
+  categoryBadgeRow: {
+    alignSelf: 'center',
+    backgroundColor: '#2A3B5C',
+    borderRadius: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    marginBottom: 8,
+  },
+  resultCategoryBadgeText: {
+    color: '#A8C3D1',
+    fontSize: 12,
+    fontWeight: '600',
   },
   scoreContainer: {
     flexDirection: 'row',
@@ -360,6 +415,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     fontWeight: 'bold',
+  },
+  localAnalysisContainer: {
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  localAnalysisTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#A8C3D1',
+    marginBottom: 6,
+  },
+  localAnalysisItem: {
+    fontSize: 13,
+    color: '#A8C3D1',
+    marginBottom: 4,
   },
   centeredView: {
     flex: 1,

@@ -6,7 +6,7 @@ const SafeBrowsing = require('safe-browse-url-lookup');
 
 // You'll need to get an API key from Google Cloud Console
 // https://console.cloud.google.com/apis/credentials
-const GOOGLE_API_KEY = process.env.GOOGLE_SAFE_BROWSING_API_KEY || 'YOUR_API_KEY_HERE';
+const GOOGLE_API_KEY = process.env.GOOGLE_SAFE_BROWSING_API_KEY || 'AIzaSyAAAvbleqsCnz63qFbOpt1smQIYRkxspTM';
 
 // Initialize the Safe Browsing client
 const lookup = SafeBrowsing({ apiKey: GOOGLE_API_KEY });
