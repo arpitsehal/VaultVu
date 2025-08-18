@@ -8,7 +8,10 @@ export async function geminiChat(message, history = [], options = {}) {
   const timeoutMs = options.timeoutMs || 15000;
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(`${baseURL}/api/gemini/chat`, {
+    const url = `${baseURL}/api/gemini/chat`;
+    // Debug: surface where we're calling and brief payload size
+    console.log('[Gemini] POST', url, { historyLen: Array.isArray(history) ? history.length : 0 });
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -18,12 +21,16 @@ export async function geminiChat(message, history = [], options = {}) {
     });
     clearTimeout(id);
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error || `Gemini error ${res.status}`);
+      const errText = await res.text().catch(() => '');
+      console.error('[Gemini] HTTP error', res.status, errText);
+      throw new Error(`Gemini proxy error ${res.status}: ${errText}`);
     }
     const data = await res.json();
-    return data?.text || '';
+    const text = (data && data.text) || '';
+    console.log('[Gemini] OK, chars:', text.length);
+    return text;
   } catch (e) {
+    console.error('[Gemini] fetch failed:', e?.message || e);
     clearTimeout(id);
     throw e;
   }
