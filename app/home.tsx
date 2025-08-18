@@ -105,7 +105,7 @@ export default function DashboardScreen() {
       title: translations.aiAssistant || 'AI Fraud Assistant',
       icon: '🤖',
       description: translations.aiAssistantDesc || 'Get instant help with banking fraud prevention!',
-      route: '/(tabs)/chatbot',
+      route: '/chatbot',
       cardColor: '#4CAF50',
       textColor: '#FFFFFF',
     },
