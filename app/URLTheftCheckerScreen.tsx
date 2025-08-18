@@ -15,7 +15,8 @@ const URL_PATTERNS = {
     domains: ['.tk', '.ml', '.ga', '.cf', '.pw', '.top', '.click', '.download']
   },
   malware: {
-    extensions: ['.exe', '.scr', '.bat', '.com', '.pif', '.vbs', '.jar'],
+    // Note: '.com' is a TLD, not an executable. Removed to avoid false positives like google.com
+    extensions: ['.exe', '.scr', '.bat', '.pif', '.vbs', '.jar', '.cmd'],
     keywords: ['download', 'install', 'update', 'urgent', 'security', 'virus', 'antivirus'],
     suspiciousPaths: ['/download/', '/install/', '/update/', '/security/']
   },

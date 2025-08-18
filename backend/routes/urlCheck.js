@@ -11,17 +11,8 @@ const GOOGLE_API_KEY = process.env.GOOGLE_SAFE_BROWSING_API_KEY || 'YOUR_API_KEY
 // Initialize the Safe Browsing client
 const lookup = SafeBrowsing({ apiKey: GOOGLE_API_KEY });
 
-// Common phishing indicators (keeping your existing patterns as a fallback)
+// Generic indicators (brand-specific checks are handled via hostname logic below)
 const phishingIndicators = [
-  { pattern: /paypal.*\.(?!paypal\.com)/i, reason: 'Suspicious PayPal domain' },
-  { pattern: /apple.*\.(?!apple\.com)/i, reason: 'Suspicious Apple domain' },
-  { pattern: /amazon.*\.(?!amazon\.(com|co\.uk|ca|de|fr))/i, reason: 'Suspicious Amazon domain' },
-  { pattern: /microsoft.*\.(?!microsoft\.com)/i, reason: 'Suspicious Microsoft domain' },
-  { pattern: /google.*\.(?!google\.com)/i, reason: 'Suspicious Google domain' },
-  { pattern: /facebook.*\.(?!facebook\.com)/i, reason: 'Suspicious Facebook domain' },
-  { pattern: /instagram.*\.(?!instagram\.com)/i, reason: 'Suspicious Instagram domain' },
-  { pattern: /twitter.*\.(?!twitter\.com)/i, reason: 'Suspicious Twitter domain' },
-  { pattern: /netflix.*\.(?!netflix\.com)/i, reason: 'Suspicious Netflix domain' },
   { pattern: /login|signin|verify|secure|account|password|update|confirm/i, reason: 'Contains sensitive keywords' },
   { pattern: /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/, reason: 'Contains IP address instead of domain name' },
   { pattern: /bit\.ly|tinyurl\.com|goo\.gl|t\.co|is\.gd|buff\.ly|ow\.ly|j\.mp/i, reason: 'Uses URL shortener service' },
@@ -53,8 +44,41 @@ router.post('/', async (req, res) => {
         reasons.push('URL identified as unsafe by Google Safe Browsing');
       } else {
         // If Google says it's safe, still check our custom patterns as a second layer
-        // Check for phishing indicators
-        phishingIndicators.forEach(indicator => {
+        // Extract hostname for brand checks
+        let hostname = '';
+        try {
+          const parsed = new URL(url.startsWith('http') ? url : `https://${url}`);
+          hostname = parsed.hostname.toLowerCase();
+        } catch (_) {
+          // ignore parse errors
+        }
+
+        // Brand rules: if hostname legitimately ends with brand domain, do NOT flag as suspicious brand
+        const brands = [
+          { name: 'google', domain: 'google.com' },
+          { name: 'paypal', domain: 'paypal.com' },
+          { name: 'apple', domain: 'apple.com' },
+          { name: 'amazon', domain: 'amazon.com' },
+          { name: 'microsoft', domain: 'microsoft.com' },
+          { name: 'facebook', domain: 'facebook.com' },
+          { name: 'instagram', domain: 'instagram.com' },
+          { name: 'twitter', domain: 'twitter.com' },
+          { name: 'netflix', domain: 'netflix.com' },
+        ];
+
+        brands.forEach(({ name, domain }) => {
+          if (!hostname) return;
+          const containsBrand = hostname.includes(name);
+          const legit = hostname === domain || hostname.endsWith(`.${domain}`);
+          if (containsBrand && !legit) {
+            isSafe = false;
+            riskScore += 2;
+            reasons.push(`Suspicious ${name} domain`);
+          }
+        });
+
+        // Generic regex indicators
+        phishingIndicators.forEach((indicator) => {
           if (indicator.pattern.test(url)) {
             isSafe = false;
             riskScore += 2; // Increase risk score for each match
@@ -81,26 +105,26 @@ router.post('/', async (req, res) => {
             riskScore += 1;
           }
         }
+        
+        // If no indicators were found, the URL is likely safe
+        if (reasons.length === 0) {
+          reasons.push('No suspicious patterns detected');
+        } else {
+          isSafe = false;
+        }
+        
+        res.json({
+          url,
+          isSafe,
+          riskScore,
+          reasons,
+        });
       }
-      
-      // If no indicators were found, the URL is likely safe
-      if (reasons.length === 0) {
-        reasons.push('No suspicious patterns detected');
-      } else {
-        isSafe = false;
-      }
-      
-      res.json({
-        url,
-        isSafe,
-        riskScore,
-        reasons,
-      });
     } catch (apiError) {
       console.error('Google Safe Browsing API error:', apiError);
       
       // Fallback to local checks if Google API fails
-      phishingIndicators.forEach(indicator => {
+      phishingIndicators.forEach((indicator) => {
         if (indicator.pattern.test(url)) {
           isSafe = false;
           riskScore += 2;
