@@ -76,6 +76,13 @@ interface URLResult {
   isOfflineAnalysis?: boolean;
 }
 
+type ModalType = 'success' | 'error' | 'warning' | 'info';
+interface ModalContent {
+  title: string;
+  message: string;
+  type: ModalType;
+}
+
 export default function URLTheftCheckerScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -83,14 +90,14 @@ export default function URLTheftCheckerScreen() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<URLResult | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalContent, setModalContent] = useState({ title: '', message: '', type: 'success' });
+  const [modalContent, setModalContent] = useState<ModalContent>({ title: '', message: '', type: 'success' });
   const [showExamples, setShowExamples] = useState(false);
   const [analysisDetails, setAnalysisDetails] = useState<AnalysisDetails | null>(null);
   
   // Use the useLanguage hook to get translations
   const { translations } = useLanguage();
 
-  const showModal = (title, message, type = 'success') => {
+  const showModal = (title: string, message: string, type: ModalType = 'success') => {
     setModalContent({ title, message, type });
     setModalVisible(true);
   };
@@ -173,13 +180,13 @@ export default function URLTheftCheckerScreen() {
 
   const handleCheckUrl = async () => {
     if (!url) {
-      showModal(translations.inputRequired || 'Input Required', translations.enterUrlMessage || 'Please enter a website URL to check.', 'error');
+      showModal(translations.inputRequired || 'Input Required', (translations as any)['enterUrlMessage'] || 'Please enter a website URL to check.', 'error');
       return;
     }
 
     const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
     if (!urlRegex.test(url)) {
-      showModal(translations.invalidUrl || 'Invalid URL', translations.invalidUrlMessage || 'Please enter a valid website URL.', 'error');
+      showModal(translations.invalidUrl || 'Invalid URL', (translations as any)['invalidUrlMessage'] || 'Please enter a valid website URL.', 'error');
       return;
     }
 
@@ -191,30 +198,75 @@ export default function URLTheftCheckerScreen() {
     setAnalysisDetails(patternAnalysis);
 
     try {
-      const apiUrl = 'https://vaultvu.onrender.com/api/url-check';
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url, patternAnalysis }),
-      });
+      // Call existing backend URL check and Gemini URL analysis in parallel
+      const classicUrl = 'https://vaultvu.onrender.com/api/url-check';
+      const geminiUrl = 'https://vaultvu.onrender.com/api/gemini/url-analyze';
 
-      const data = await response.json();
-      
-      // Combine API results with local analysis
+      const [classicRes, geminiRes] = await Promise.allSettled([
+        fetch(classicUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, patternAnalysis }),
+        }),
+        fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ urlToCheck: url, patternAnalysis }),
+        }),
+      ]);
+
+      // Parse results if fulfilled
+      const classicData =
+        classicRes.status === 'fulfilled'
+          ? await classicRes.value.json().catch(() => null)
+          : null;
+      const geminiData =
+        geminiRes.status === 'fulfilled' && geminiRes.value.ok
+          ? await geminiRes.value.json().catch(() => null)
+          : null;
+
+      // Derive aggregate fields
+      const classicRisk = classicData?.riskScore || 0;
+      const geminiRisk = geminiData?.riskScore || 0;
+      const apiIsSafe = classicData?.isSafe !== undefined ? classicData.isSafe : geminiData?.isSafe;
+
+      const combinedReasons = [
+        ...(classicData?.reasons || []),
+        ...(geminiData?.reasons || []),
+      ];
+
+      const combinedCategory = geminiData?.category || classicData?.category;
+
+      const combinedRiskScore = Math.min(
+        10,
+        (classicRisk || 0) + (geminiRisk || 0) + Math.min(5, patternAnalysis.riskScore)
+      );
+
+      const combinedIsSafe = apiIsSafe !== undefined ? apiIsSafe : patternAnalysis.riskScore < 3;
+
       const combinedResult = {
-        ...data,
+        isSafe: combinedIsSafe,
+        riskScore: Math.max(classicRisk, geminiRisk),
+        category: combinedCategory,
+        reasons: combinedReasons.length > 0 ? combinedReasons : undefined,
         localAnalysis: patternAnalysis,
-        combinedRiskScore: Math.min(10, (data.riskScore || 0) + Math.min(5, patternAnalysis.riskScore))
-      };
-      
+        combinedRiskScore,
+      } as URLResult;
+
       setResult(combinedResult);
-      
+
       if (combinedResult.isSafe && patternAnalysis.riskScore < 3) {
-        showModal(translations.checkComplete || 'Check Complete', translations.urlSafe || 'The URL appears safe to visit.', 'success');
+        showModal(
+          translations.checkComplete || 'Check Complete',
+          translations.urlSafe || 'The URL appears safe to visit.',
+          'success'
+        );
       } else {
-        showModal(translations.checkComplete || 'Check Complete', translations.potentialRisk || 'Potential risk detected. Exercise caution!', 'warning');
+        showModal(
+          translations.checkComplete || 'Check Complete',
+          translations.potentialRisk || 'Potential risk detected. Exercise caution!',
+          'warning'
+        );
       }
 
     } catch (error) {
@@ -424,7 +476,7 @@ export default function URLTheftCheckerScreen() {
     );
   };
   
-  const getModalIcon = (type) => {
+  const getModalIcon = (type: ModalType) => {
     switch (type) {
       case 'success':
         return <AntDesign name="checkcircle" size={50} color="#5cb85c" />;
