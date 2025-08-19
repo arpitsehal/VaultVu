@@ -73,7 +73,7 @@ export async function logout() {
 
 export const authService = {
   login: async (credentials) => {
-    const response = await fetch(`${baseURL}/auth/login`, {
+    const response = await fetch(`${baseURL}/api/auth/login`, {
       method: 'POST',
       headers: apiConfig.headers,
       body: JSON.stringify(credentials),
@@ -82,7 +82,7 @@ export const authService = {
   },
   // ...existing code...
   requestPasswordReset: async (email) => {
-    const response = await fetch(`${baseURL}/auth/request-password-reset`, {
+    const response = await fetch(`${baseURL}/api/auth/request-password-reset`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
@@ -90,7 +90,7 @@ export const authService = {
     return response.json();
   },
   verifyResetOtp: async (email, otp) => {
-    const response = await fetch(`${baseURL}/auth/verify-reset-otp`, {
+    const response = await fetch(`${baseURL}/api/auth/verify-reset-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, otp }),
@@ -98,7 +98,7 @@ export const authService = {
     return response.json();
   },
   resetPassword: async (email, otp, newPassword) => {
-    const response = await fetch(`${baseURL}/auth/reset-password`, {
+    const response = await fetch(`${baseURL}/api/auth/reset-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, otp, newPassword }),
