@@ -1,6 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { sendMail } = require('../config/mailer');
 const User = require('../models/User');
 const router = express.Router();
 
@@ -225,3 +227,108 @@ router.put('/profile', async (req, res) => {
 });
 
 module.exports = router;
+
+// =====================
+// Password Reset (OTP)
+// =====================
+
+/**
+ * POST /auth/request-password-reset
+ * body: { email }
+ */
+router.post('/request-password-reset', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(200).json({ success: true, message: 'If the email exists, an OTP has been sent' });
+
+    // Generate 6-digit OTP
+    const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
+    const hashedOtp = await bcrypt.hash(otp, 10);
+    user.resetOtp = hashedOtp;
+    user.resetOtpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    await user.save();
+
+    const appName = process.env.APP_NAME || 'VaultVu';
+    const subject = `${appName} Password Reset OTP`;
+    const html = `
+      <p>Hello,</p>
+      <p>Your OTP for password reset is: <strong>${otp}</strong></p>
+      <p>This code will expire in 15 minutes. If you did not request this, please ignore this email.</p>
+      <p>— ${appName} Team</p>
+    `;
+
+    await sendMail({ to: email, subject, html, text: `Your OTP is ${otp}` });
+
+    return res.json({ success: true, message: 'OTP sent to email' });
+  } catch (err) {
+    console.error('request-password-reset error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * POST /auth/verify-reset-otp
+ * body: { email, otp }
+ */
+router.post('/verify-reset-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ success: false, message: 'Email and OTP are required' });
+
+    const user = await User.findOne({ email });
+    if (!user || !user.resetOtp || !user.resetOtpExpires) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+    }
+    if (user.resetOtpExpires.getTime() < Date.now()) {
+      return res.status(400).json({ success: false, message: 'OTP expired' });
+    }
+
+    const match = await bcrypt.compare(otp, user.resetOtp);
+    if (!match) return res.status(400).json({ success: false, message: 'Invalid OTP' });
+
+    return res.json({ success: true, message: 'OTP verified' });
+  } catch (err) {
+    console.error('verify-reset-otp error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * POST /auth/reset-password
+ * body: { email, otp, newPassword }
+ */
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Email, OTP, and newPassword are required' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user || !user.resetOtp || !user.resetOtpExpires) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+    }
+    if (user.resetOtpExpires.getTime() < Date.now()) {
+      return res.status(400).json({ success: false, message: 'OTP expired' });
+    }
+
+    const match = await bcrypt.compare(otp, user.resetOtp);
+    if (!match) return res.status(400).json({ success: false, message: 'Invalid OTP' });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    user.resetOtp = undefined;
+    user.resetOtpExpires = undefined;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    return res.json({ success: true, message: 'Password reset successful' });
+  } catch (err) {
+    console.error('reset-password error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});

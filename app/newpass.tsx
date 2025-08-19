@@ -14,11 +14,14 @@ import {
   ActivityIndicator 
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { authService } from '@/services/authService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CreateNewPasswordPage() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+
   const insets = useSafeAreaInsets();
 
   const [newPassword, setNewPassword] = useState('');
@@ -27,31 +30,20 @@ export default function CreateNewPasswordPage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [resetToken, setResetToken] = useState('');
 
   // State for validation errors
   const [newPasswordError, setNewPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
-  // Load reset token from AsyncStorage
+  // Ensure we have required params
   useEffect(() => {
-    const loadResetToken = async () => {
-      try {
-        const token = await AsyncStorage.getItem('resetToken');
-        if (token) {
-          setResetToken(token);
-        } else {
-          // If no token is found, go back to forgot password page
-          Alert.alert('Error', 'Reset token not found. Please try again.');
-          router.replace('/forgetpass');
-        }
-      } catch (error) {
-        console.error('Error loading reset token:', error);
-      }
-    };
-
-    loadResetToken();
-  }, []);
+    const otpParam = typeof params.otp === 'string' ? params.otp : undefined;
+    const emailParam = typeof params.email === 'string' ? params.email : undefined;
+    if (!otpParam || !emailParam) {
+      Alert.alert('Error', 'Missing verification info. Please re-enter OTP.');
+      router.replace('/otpvarification');
+    }
+  }, [params]);
 
   // Password validation function
   const validatePassword = (password: string) => {
@@ -101,35 +93,28 @@ export default function CreateNewPasswordPage() {
     setIsLoading(true);
 
     try {
-      // Call API to reset password
-      const response = await fetch('http://192.168.1.7:5000/api/auth/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ resetToken, newPassword }),
-      });
+      const email = (typeof params.email === 'string' ? params.email : undefined) || (await AsyncStorage.getItem('resetEmail')) || '';
+      const otp = typeof params.otp === 'string' ? params.otp : '';
+      if (!email || !otp) {
+        Alert.alert('Error', 'Missing verification info. Please re-enter OTP.');
+        return router.replace('/otpvarification');
+      }
 
-      const data = await response.json();
+      const data = await authService.resetPassword(email, otp, newPassword);
 
-      if (data.success) {
+      if (data?.success) {
+        // If remember me is checked, store the email for login BEFORE clearing
+        if (rememberMe && email) {
+          await AsyncStorage.setItem('rememberedEmail', email);
+        }
         // Clear reset data
         await AsyncStorage.removeItem('resetEmail');
-        await AsyncStorage.removeItem('resetToken');
-        
-        // If remember me is checked, store the email for login
-        if (rememberMe) {
-          const email = await AsyncStorage.getItem('resetEmail');
-          if (email) {
-            await AsyncStorage.setItem('rememberedEmail', email);
-          }
-        }
 
         Alert.alert('Success', 'Password reset successfully!', [
           { text: 'OK', onPress: () => router.push('/signin') }
         ]);
       } else {
-        Alert.alert('Error', data.message || 'Failed to reset password. Please try again.');
+        Alert.alert('Error', data?.message || 'Failed to reset password. Please try again.');
       }
     } catch (error) {
       console.error('Error resetting password:', error);

@@ -12,26 +12,36 @@ import {
   KeyboardAvoidingView,
   Platform,
   Dimensions,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; // Keep useSafeAreaInsets imported
-import { useRouter } from 'expo-router';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authService } from '@/services/authService';
 
 const { width: screenWidth } = Dimensions.get('window'); // Get screen width for dynamic sizing
 
 export default function OtpVerificationPage() {
   const router = useRouter();
   const insets = useSafeAreaInsets(); // <--- Access insets here, inside the component
+  const params = useLocalSearchParams();
+  const emailParam = typeof params.email === 'string' ? params.email : undefined;
 
-  const [otp, setOtp] = useState(['', '', '', '']); // State for 4 OTP digits
+  const [otp, setOtp] = useState(['', '', '', '', '', '']); // 6-digit OTP
   const otpInputRefs = [
+    useRef<TextInput>(null),
+    useRef<TextInput>(null),
     useRef<TextInput>(null),
     useRef<TextInput>(null),
     useRef<TextInput>(null),
     useRef<TextInput>(null)
   ];
+
   const [resendTimer, setResendTimer] = useState(55);
   const [canResend, setCanResend] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   // Focus on the first input when the component mounts
   useEffect(() => {
@@ -102,24 +112,51 @@ export default function OtpVerificationPage() {
     }
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     const fullOtp = otp.join('');
-    if (fullOtp.length === 4) {
-      console.log('Confirming OTP:', fullOtp);
-      Alert.alert('Success', 'OTP verified successfully!', [
-        { text: 'OK', onPress: () => router.push('/newpass') }
-      ]);
-    } else {
-      Alert.alert('Error', 'Please enter the complete OTP.');
+    const email = emailParam || (await AsyncStorage.getItem('resetEmail')) || '';
+    if (!email) {
+      Alert.alert('Error', 'Missing email. Please start again.');
+      return router.replace('/forgetpass');
+    }
+    if (fullOtp.length !== 6) {
+      return Alert.alert('Error', 'Please enter the 6-digit OTP.');
+    }
+    try {
+      setIsVerifying(true);
+      const res = await authService.verifyResetOtp(email, fullOtp);
+      if (res?.success) {
+        router.push({ pathname: '/newpass', params: { email, otp: fullOtp } });
+      } else {
+        Alert.alert('Error', res?.message || 'Invalid OTP.');
+      }
+    } catch (e) {
+      Alert.alert('Error', 'Network error. Please try again.');
+    } finally {
+      setIsVerifying(false);
     }
   };
 
-  const handleResendCode = () => {
-    if (canResend) {
-      setResendTimer(55);
-      setCanResend(false);
-      console.log('Resending OTP code...');
-      Alert.alert('Success', 'OTP resend request sent!');
+  const handleResendCode = async () => {
+    if (!canResend) return;
+    const email = emailParam || (await AsyncStorage.getItem('resetEmail')) || '';
+    if (!email) {
+      return Alert.alert('Error', 'Missing email. Please start again.');
+    }
+    try {
+      setIsResending(true);
+      const res = await authService.requestPasswordReset(email);
+      if (res?.success) {
+        setResendTimer(55);
+        setCanResend(false);
+        Alert.alert('Success', res?.message || 'OTP resent to your email.');
+      } else {
+        Alert.alert('Error', res?.message || 'Failed to resend OTP.');
+      }
+    } catch (e) {
+      Alert.alert('Error', 'Network error. Please try again.');
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -179,16 +216,20 @@ export default function OtpVerificationPage() {
           {/* Resend Code */}
           <View style={styles.resendContainer}>
             <Text style={styles.resendText}>Didn't receive email?</Text>
-            <TouchableOpacity onPress={handleResendCode} disabled={!canResend}>
-              <Text style={[styles.resendLink, !canResend && styles.resendLinkDisabled]}>
-                {canResend ? 'Resend code' : `You can resend code in ${resendTimer} s`}
+            <TouchableOpacity onPress={handleResendCode} disabled={!canResend || isResending}>
+              <Text style={[styles.resendLink, (!canResend || isResending) && styles.resendLinkDisabled]}>
+                {isResending ? 'Resending…' : (canResend ? 'Resend code' : `You can resend code in ${resendTimer} s`)}
               </Text>
             </TouchableOpacity>
           </View>
 
           {/* CONFIRM Button */}
-          <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
-            <Text style={styles.confirmButtonText}>CONFIRM</Text>
+          <TouchableOpacity style={[styles.confirmButton, (isVerifying) && styles.confirmButtonDisabled]} onPress={handleConfirm} disabled={isVerifying}>
+            {isVerifying ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text style={styles.confirmButtonText}>CONFIRM</Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -324,6 +365,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     width: '80%',
     alignItems: 'center',
+  },
+  confirmButtonDisabled: {
+    opacity: 0.7,
   },
   confirmButtonText: {
     color: '#FFFFFF',

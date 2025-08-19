@@ -8,15 +8,69 @@ import {
   ScrollView,
   Dimensions,
   Platform,
-  Image
+  Animated
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../contexts/LanguageContext';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+
+// Define a consistent color palette
+const Colors = {
+  background: '#121212', // A very dark gray, almost black
+  cardBackground: '#1E1E1E', // Slightly lighter for cards
+  primary: '#5B86E5', // A vibrant blue for key elements
+  secondary: '#FFC107', // A warm gold for accents
+  textPrimary: '#E0E0E0', // Light gray for main text
+  textSecondary: '#A8C3D1', // The specified text color
+  cardText: '#FAFAFA', // White for text on cards
+  headerText: '#FFFFFF', // Pure white for the main app name
+  indicator: '#5B86E5',
+  border: 'rgba(255, 255, 255, 0.1)',
+};
+
+// Modern card component with press animation
+const ModernCard = ({ children, style, onPress, gradient, ...props }) => {
+  const scaleValue = new Animated.Value(1);
+
+  const handlePressIn = () => {
+    Animated.spring(scaleValue, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleValue, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const CardWrapper = gradient ? LinearGradient : View;
+  const cardProps = gradient ? { colors: gradient, start: { x: 0, y: 0 }, end: { x: 1, y: 1 } } : { style: { backgroundColor: Colors.cardBackground } };
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      activeOpacity={1}
+      {...props}
+    >
+      <Animated.View style={[{ transform: [{ scale: scaleValue }] }]}>
+        <CardWrapper {...cardProps} style={[styles.modernCard, style]}>
+          {children}
+        </CardWrapper>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+};
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -27,489 +81,633 @@ export default function DashboardScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      // Access the daily tips array from the translations object
       if (translations.dailyTips && translations.dailyTips.length > 0) {
         const randomIndex = Math.floor(Math.random() * translations.dailyTips.length);
         setDailyTip(translations.dailyTips[randomIndex]);
       }
-    }, [translations]) // Added translations to the dependency array to re-run when language changes
+    }, [translations])
   );
 
-  // Define module data here so it can use the translations object
   const quickAccessModules = [
-    {
-      id: 'voiceFraudChecker',
-      title: translations.voiceFraudChecker || 'Voice Fraud Checker',
-      icon: '🔊',
-      description: translations.voiceFraudCheckerDesc || 'Check if the voice is fraudulent or not.',
-      route: '/VoiceTheftCheckerScreen',
-      cardColor: '#1A213B',
-      textColor: '#A8C3D1',
-    },
-    {
-      id: 'checkSpam',
-      title: translations.checkSpam || 'Check Spam',
-      icon: '👤',
-      description: translations.checkSpamDesc || 'Protect you from spam and phishing attempts.',
-      route: '/CheckSpamScreen',
-      cardColor: '#A8C3D1',
-      textColor: '#1A213B',
-    },
-    {
-      id: 'urlFraudChecker',
-      title: translations.urlFraudChecker || 'URL Fraud Checker',
-      icon: '📊',
-      description: translations.urlFraudCheckerDesc || 'Help you to identify if a given URL is genuine or not.',
-      route: '/URLTheftCheckerScreen',
-      cardColor: '#A8C3D1',
-      textColor: '#1A213B',
-    },
-    {
-      id: 'fraudMessageChecker',
-      title: translations.fraudMessageChecker || 'Fraud Message Checker',
-      icon: '🕵️',
-      description: translations.fraudMessageCheckerDesc || 'Check if the message is fraudulent or not.',
-      route: '/FraudMessageCheckerScreen',
-      cardColor: '#1A213B',
-      textColor: '#A8C3D1',
-    },
-  ];
+  {
+    id: 'voiceFraudChecker',
+    title: translations.voiceFraudChecker || 'Voice Fraud Checker',
+    icon: 'mic-outline',
+    description:
+      translations.voiceFraudCheckerDesc || 'Check if the voice is fraudulent or not.',
+    route: '/VoiceTheftCheckerScreen',
+    gradient: ['#4C6EF5', '#1A213B'], // Blue into deep navy
+  },
+  {
+    id: 'checkSpam',
+    title: translations.checkSpam || 'Check Spam',
+    icon: 'shield-checkmark-outline',
+    description:
+      translations.checkSpamDesc || 'Protect you from spam and phishing attempts.',
+    route: '/CheckSpamScreen',
+    gradient: ['#00C9A7', '#1A213B'], // Teal into dark navy
+  },
+  {
+    id: 'urlFraudChecker',
+    title: translations.urlFraudChecker || 'URL Fraud Checker',
+    icon: 'link-outline',
+    description:
+      translations.urlFraudCheckerDesc || 'Help you to identify if a given URL is genuine or not.',
+    route: '/URLTheftCheckerScreen',
+    gradient: ['#FFB74D', '#1A213B'], // Gold into dark navy
+  },
+  {
+    id: 'fraudMessageChecker',
+    title: translations.fraudMessageChecker || 'Fraud Message Checker',
+    icon: 'chatbubble-ellipses-outline',
+    description:
+      translations.fraudMessageCheckerDesc || 'Check if the message is fraudulent or not.',
+    route: '/FraudMessageCheckerScreen',
+    gradient: ['#E63946', '#1A213B'], // Alert red into dark navy
+  },
+];
 
   const learningModules = [
-    {
-      id: 'scamProtection',
-      title: translations.scamProtection || 'Scam Protection',
-      icon: '🚨',
-      description: translations.scamProtectionDesc || 'Identify and avoid common scams and phishing attempts.',
-      route: 'ScamProtectionScreen',
-    },
-    {
-      id: 'fraudProtection',
-      title: translations.fraudProtection || 'Fraud Protection',
-      icon: '💳',
-      description: translations.fraudProtectionDesc || 'Safeguard your bank accounts and financial transactions.',
-      route: 'FraudProtectionScreen',
-    },
-    {
-      id: 'budgetManager',
-      title: translations.budgetManager || 'Budget Manager',
-      icon: '💰',
-      description: translations.budgetManagerDesc || 'Manage your budgets, EMIs, SIPs and other financial tools.',
-      route: 'BudgetManagerScreen',
-    },
-  ];
+  {
+    id: 'scamProtection',
+    title: translations.scamProtection || 'Scam Protection',
+    icon: 'warning-outline',
+    description:
+      translations.scamProtectionDesc ||
+      'Identify and avoid common scams and phishing attempts.',
+    route: 'ScamProtectionScreen',
+    color: '#E63946', // Strong red for danger/scam
+  },
+  {
+    id: 'fraudProtection',
+    title: translations.fraudProtection || 'Fraud Protection',
+    icon: 'card-outline',
+    description:
+      translations.fraudProtectionDesc ||
+      'Safeguard your bank accounts and financial transactions.',
+    route: 'FraudProtectionScreen',
+    color: '#00C9A7', // Teal for trust/safety
+  },
+  {
+    id: 'budgetManager',
+    title: translations.budgetManager || 'Budget Manager',
+    icon: 'wallet-outline',
+    description:
+      translations.budgetManagerDesc ||
+      'Manage your budgets, EMIs, SIPs and other financial tools.',
+    route: 'BudgetManagerScreen',
+    color: '#4C6EF5', // Theme’s primary blue for finance
+  },
+];
 
-  const aiAssistantModules = [
-    {
-      id: 'aiAssistant',
-      title: translations.aiAssistant || 'AI Fraud Assistant',
-      icon: '🤖',
-      description: translations.aiAssistantDesc || 'Get instant help with banking fraud prevention!',
-      route: '/(tabs)/chatbot',
-      cardColor: '#4CAF50',
-      textColor: '#FFFFFF',
-    },
-  ];
-
-  const gamificationModules = [
-    {
-      id: 'financialLiteracyQuiz',
-      title: translations.financialLiteracyQuiz || 'Financial Literacy Quiz',
-      icon: '🧠',
-      description: translations.financialLiteracyQuizDesc || 'Test your knowledge and improve your financial IQ!',
-      route: '/quizscreen',
-      cardColor: '#A8C3D1',
-      textColor: '#1A213B',
-    },
-    {
-      id: 'leaderboard',
-      title: translations.leaderboard || 'Leaderboard',
-      icon: '🏆',
-      description: translations.leaderboardDesc || 'See how you rank among other security champions!',
-      route: '/leaderboard',
-      cardColor: '#1A213B',
-      textColor: '#A8C3D1',
-    },
-  ];
-
-  const reportModules = [
-    {
-      id: 'reportIssue',
-      title: translations.reportAnIssue || 'Report an Issue',
-      icon: '⚠️',
-      description: translations.reportAnIssueDesc || 'Quickly report any suspicious activity or security concerns.',
-      route: '/report',
-      cardColor: '#A8C3D1',
-      textColor: '#1A213B',
-    },
-  ];
+const gamificationModules = [
+  {
+    id: 'financialLiteracyQuiz',
+    title: translations.financialLiteracyQuiz || 'Financial Literacy Quiz',
+    icon: 'school-outline',
+    description:
+      translations.financialLiteracyQuizDesc ||
+      'Test your knowledge and improve your financial IQ!',
+    route: '/quizscreen',
+    gradient: ['#4C6EF5', '#1A213B'], // Vibrant blue into deep navy
+  },
+  {
+    id: 'leaderboard',
+    title: translations.leaderboard || 'Leaderboard',
+    icon: 'trophy-outline',
+    description:
+      translations.leaderboardDesc ||
+      'See how you rank among other security champions!',
+    route: '/leaderboard',
+    gradient: ['#FFB74D', '#1A213B'], // Warm gold into dark navy
+  },
+];
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#1A213B" />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+      
+      {/* Background Gradient */}
+      <LinearGradient
+        colors={['#1A213B', '#1E2A3A']}
+        style={styles.backgroundGradient}
+      />
 
-      <ScrollView
-        style={styles.mainScrollView}
-        contentContainerStyle={styles.mainContentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
-          <View style={styles.headerTitleContainer}>
-            <Text style={styles.appName}>{translations.appName || "VaultVu"}</Text>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={true}
+        >
+          {/* Modern Header */}
+          <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? insets.top + 10 : 10 }]}>
+            <View style={styles.headerContent}>
+              <View>
+                <Text style={styles.appName}>{translations.appName || "VaultVu"}</Text>
+                <Text style={styles.tagline}>{translations.yourShieldInDigitalWorld || "Your Shield in the Digital World"}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.settingsButton}
+                onPress={() => router.push('/settings')}
+              >
+                <BlurView intensity={20} tint="dark" style={styles.settingsBlur}>
+                  <Ionicons name="settings-outline" size={24} color={Colors.textPrimary} />
+                </BlurView>
+              </TouchableOpacity>
+            </View>
           </View>
-          <TouchableOpacity
-            style={styles.settingsButton}
-            onPress={() => router.push('/settings')}
-          >
-            <Ionicons name="settings-outline" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
 
-        <Text style={styles.welcomeText}>{translations.yourShieldInDigitalWorld || "Your Shield in the Digital World"}</Text>
-
-        <View style={styles.dailyTipCard}>
-          <Text style={styles.dailyTipHeading}>{translations.tipOfTheDay || "Tip of the Day"}</Text>
-          <Text style={styles.dailyTipText}>{dailyTip}</Text>
-        </View>
-        {/* Quick Access Section */}
-        <Text style={styles.sectionTitle}>{translations.quickAccessModules || "Quick Access"}</Text>
-
-        <View style={styles.featuredCardsContainer}>
-          {quickAccessModules.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[
-                styles.featuredCard,
-                { backgroundColor: item.cardColor },
-                (item.id === 'voiceFraudChecker' || item.id === 'fraudMessageChecker') && styles.featuredCardBorder
-              ]}
-              onPress={() => router.push(item.route)}
-            >
-              <Text style={[styles.featuredIcon, { color: item.textColor }]}>{item.icon}</Text>
-              <Text style={[styles.featuredTitle, { color: item.textColor }]}>{item.title}</Text>
-              <Text style={[styles.featuredDescription, { color: item.textColor }]}>{item.description}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* AI Assistant Section */}
-        <Text style={styles.sectionTitle}>{translations.aiAssistant || "AI Assistant"}</Text>
-        <View style={styles.aiAssistantContainer}>
-          {aiAssistantModules.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[
-                styles.aiAssistantCard,
-                { backgroundColor: item.cardColor }
-              ]}
-              onPress={() => router.push(item.route)}
-            >
-              <Text style={[styles.aiAssistantIcon, { color: item.textColor }]}>{item.icon}</Text>
-              <View style={styles.aiAssistantTextContainer}>
-                <Text style={[styles.aiAssistantTitle, { color: item.textColor }]}>{item.title}</Text>
-                <Text style={[styles.aiAssistantDescription, { color: item.textColor }]}>{item.description}</Text>
+          {/* Daily Tip Card with Glassmorphism */}
+          <View style={styles.tipContainer}>
+            <BlurView intensity={40} tint="dark" style={styles.tipCard}>
+              <View style={styles.tipHeader}>
+                <Ionicons name="bulb-outline" size={24} color={Colors.secondary} />
+                <Text style={styles.tipHeading}>{translations.tipOfTheDay || "Tip of the Day"}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={24} color={item.textColor} />
-            </TouchableOpacity>
-          ))}
-        </View>
+              <Text style={styles.tipText}>{dailyTip}</Text>
+            </BlurView>
+          </View>
 
-        {/* Gamification Section */}
-        <Text style={styles.sectionTitle}>{translations.testYourKnowledge || "Test Your Knowledge"}</Text>
-        <View style={styles.gamificationCardsContainer}>
-          {gamificationModules.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[
-                styles.featuredCard,
-                { backgroundColor: item.cardColor },
-                (item.id === 'leaderboard') && styles.featuredCardBorder
-              ]}
-              onPress={() => router.push(item.route)}
+          {/* Quick Access Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{translations.quickAccessModules || "Quick Access"}</Text>
+              <View style={styles.sectionIndicator} />
+            </View>
+
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalScroll}
             >
-              <Text style={[styles.featuredIcon, { color: item.textColor }]}>{item.icon}</Text>
-              <Text style={[styles.featuredTitle, { color: item.textColor }]}>{item.title}</Text>
-              <Text style={[styles.featuredDescription, { color: item.textColor }]}>{item.description}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+              {quickAccessModules.map((item, index) => (
+                <ModernCard
+                  key={item.id}
+                  gradient={item.gradient}
+                  style={[
+                    styles.quickAccessCard,
+                    index === 0 && styles.firstCard,
+                    item.featured && styles.featuredCard
+                  ]}
+                  onPress={() => router.push(item.route)}
+                >
+                  <View style={styles.cardContainer}>
+                    <View style={styles.cardTopContent}>
+                      <View style={styles.cardIconContainer}>
+                        <Ionicons name={item.icon} size={32} color={Colors.cardText} />
+                      </View>
+                      <Text style={styles.cardTitle}>{item.title}</Text>
+                    </View>
+                    <Text style={styles.cardDescription}>{item.description}</Text>
+                    {item.featured && (
+                      <View style={styles.featuredBadge}>
+                        <Text style={styles.featuredText}>Popular</Text>
+                      </View>
+                    )}
+                  </View>
+                </ModernCard>
+              ))}
+            </ScrollView>
+          </View>
 
-        <Text style={styles.sectionTitle}>{translations.report || "Report"}</Text>
-        <View style={styles.reportModulesContainer}>
-          {reportModules.map((module) => (
-            <TouchableOpacity
-              key={module.id}
+          {/* AI Assistant Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{translations.aiAssistant || "AI Assistant"}</Text>
+              <View style={styles.sectionIndicator} />
+            </View>
+
+            <ModernCard
+              gradient={['#667eea', '#764ba2']}
+              style={styles.aiCard}
+              onPress={() => router.push('/chatbot')}
+            >
+              <View style={styles.aiCardContent}>
+                <View style={styles.aiIconContainer}>
+                  <Ionicons name="chatbubbles-outline" size={28} color={Colors.cardText} />
+                </View>
+                <View style={styles.aiTextContainer}>
+                  <Text style={styles.aiTitle}>{translations.aiAssistant || 'AI Fraud Assistant'}</Text>
+                  <Text style={styles.aiDescription}>
+                    {translations.aiAssistantDesc || 'Get instant help with banking fraud prevention!'}
+                  </Text>
+                </View>
+                <View style={styles.aiArrow}>
+                  <Ionicons name="arrow-forward" size={24} color={Colors.cardText} />
+                </View>
+              </View>
+            </ModernCard>
+          </View>
+
+          {/* Gamification Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{translations.testYourKnowledge || "Test Your Knowledge"}</Text>
+              <View style={styles.sectionIndicator} />
+            </View>
+
+            <View style={styles.gamificationGrid}>
+              {gamificationModules.map((item) => (
+                <ModernCard
+                  key={item.id}
+                  gradient={item.gradient}
+                  style={styles.gamificationCard}
+                  onPress={() => router.push(item.route)}
+                >
+                  <Ionicons name={item.icon} size={40} color={Colors.cardText} />
+                  <Text style={styles.cardTitle}>{item.title}</Text>
+                  <Text style={styles.cardDescription}>{item.description}</Text>
+                </ModernCard>
+              ))}
+            </View>
+          </View>
+
+          {/* Learning Modules */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{translations.learningModules || "Learning Modules"}</Text>
+              <View style={styles.sectionIndicator} />
+            </View>
+
+            <View style={styles.learningContainer}>
+              {learningModules.map((module) => (
+                <ModernCard
+                  key={module.id}
+                  style={styles.learningCard}
+                  onPress={() => router.push(module.route)}
+                >
+                  <View style={styles.learningContent}>
+                    <View style={[styles.learningIconBg, { backgroundColor: module.color + '20' }]}>
+                      <Ionicons name={module.icon} size={24} color={module.color} />
+                    </View>
+                    <View style={styles.learningTextContainer}>
+                      <Text style={styles.learningTitle}>{module.title}</Text>
+                      <Text style={styles.learningDesc}>{module.description}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
+                  </View>
+                </ModernCard>
+              ))}
+            </View>
+          </View>
+
+          {/* Report Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{translations.report || "Report"}</Text>
+              <View style={styles.sectionIndicator} />
+            </View>
+
+            <ModernCard
               style={styles.reportCard}
-              onPress={() => router.push(module.route)}
+              onPress={() => router.push('/report')}
             >
-              <View style={styles.reportIconContainer}>
-                <Text style={styles.reportIcon}>{module.icon}</Text>
+              <View style={styles.reportContent}>
+                <View style={styles.reportIconContainer}>
+                  <Ionicons name="flag-outline" size={24} color="#FF6B6B" />
+                </View>
+                <View style={styles.reportTextContainer}>
+                  <Text style={styles.reportTitle}>
+                    {translations.reportAnIssue || 'Report an Issue'}
+                  </Text>
+                  <Text style={styles.reportDescription}>
+                    {translations.reportAnIssueDesc || 'Quickly report any suspicious activity or security concerns.'}
+                  </Text>
+                </View>
+                <View style={styles.reportArrow}>
+                  <Ionicons name="arrow-forward" size={20} color={Colors.textSecondary} />
+                </View>
               </View>
-              <View style={styles.reportTextContainer}>
-                <Text style={styles.reportTitle}>{module.title}</Text>
-                <Text style={styles.reportDescription}>{module.description}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={24} color="#1A213B" />
-            </TouchableOpacity>
-          ))}
-        </View>
+            </ModernCard>
+          </View>
 
-        {/* Learning Modules Section - Moved to Bottom */}
-        <Text style={styles.sectionTitle}>{translations.learningModules || "Learning Modules"}</Text>
-        <View style={styles.learningModulesContainer}>
-          {learningModules.map((module) => (
-            <TouchableOpacity
-              key={module.id}
-              style={styles.learningCard}
-              onPress={() => router.push(module.route)}
-            >
-              <Text style={styles.learningIcon}>{module.icon}</Text>
-              <View style={styles.learningTextContainer}>
-                <Text style={styles.learningTitle}>{module.title}</Text>
-                <Text style={styles.learningDescription}>{module.description}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={24} color="#A8C3D1" />
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+          {/* Bottom Spacing */}
+          <View style={styles.bottomSpacing} />
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  backgroundGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    height: screenHeight,
+  },
   safeArea: {
     flex: 1,
-    backgroundColor: '#1A213B',
   },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#1A213B',
-  },
-  headerTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  appName: {
-    fontSize: 26,
-    fontWeight: '900',
-    color: 'white',
-    marginRight: 8,
-  },
-  settingsButton: {
-    padding: 5,
-  },
-  welcomeText: {
-    fontSize: 18,
-    color: '#A8C3D1',
-    textAlign: 'center',
-    marginTop: 15,
-    marginBottom: 25,
-    paddingHorizontal: 20,
-    fontWeight: '500',
-  },
-  dailyTipCard: {
-    backgroundColor: '#1C2434',
-    borderRadius: 15,
-    padding: 20,
-    marginHorizontal: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 6,
-  },
-  dailyTipHeading: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#A8C3D1',
-    marginBottom: 8,
-  },
-  dailyTipText: {
-    fontSize: 14,
-    color: 'white',
-    lineHeight: 20,
-  },
-  mainScrollView: {
+  scrollView: {
     flex: 1,
-    width: '100%',
   },
-  mainContentContainer: {
-    alignItems: 'center',
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  
+  // Header Styles
+  header: {
+    paddingHorizontal: 24,
     paddingBottom: 20,
   },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 20,
-    marginTop: 30,
-    alignSelf: 'flex-start',
-    marginLeft: 20,
-  },
-  featuredCardsContainer: {
+  headerContent: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    width: '100%',
-    paddingHorizontal: 10,
-    marginBottom: 20,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
-  featuredCard: {
-    borderRadius: 20,
-    padding: 20,
-    width: screenWidth * 0.45,
-    aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
-    marginBottom: 15,
-    position: 'relative',
+  appName: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: Colors.headerText,
+    letterSpacing: -0.5,
+  },
+  tagline: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    marginTop: 4,
+    fontWeight: '400',
+  },
+  settingsButton: {
+    marginTop: 4,
+  },
+  settingsBlur: {
+    borderRadius: 12,
+    padding: 12,
     overflow: 'hidden',
   },
-  featuredCardBorder: {
-    borderWidth: 2,
-    borderColor: '#A8C3D1',
+
+  // Daily Tip Styles
+  tipContainer: {
+    paddingHorizontal: 24,
+    marginBottom: 32,
   },
-  featuredIcon: {
-    fontSize: 40,
-    marginBottom: 10,
+  tipCard: {
+    borderRadius: 20,
+    padding: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
-  featuredTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 5,
-  },
-  featuredDescription: {
-    fontSize: 12,
-    textAlign: 'center',
-  },
-  learningModulesContainer: {
-    width: '100%',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  learningCard: {
+  tipHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#333A4B',
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
+    marginBottom: 12,
   },
-  learningIcon: {
-    fontSize: 30,
-    marginRight: 15,
-    color: '#A8C3D1',
+  tipHeading: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.cardText,
+    marginLeft: 12,
+  },
+  tipText: {
+    fontSize: 15,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+    fontWeight: '400',
+  },
+
+  // Section Styles
+  section: {
+    marginBottom: 40,
+  },
+  sectionHeader: {
+    paddingHorizontal: 24,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginBottom: 8,
+  },
+  sectionIndicator: {
+    width: 40,
+    height: 4,
+    backgroundColor: Colors.indicator,
+    borderRadius: 2,
+  },
+
+  // Modern Card Base
+  modernCard: {
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+
+  // Quick Access Styles
+  horizontalScroll: {
+    paddingLeft: 24,
+    paddingRight: 16,
+    alignItems: 'stretch', // Align items to stretch to the same height
+  },
+  quickAccessCard: {
+    width: screenWidth * 0.8,
+    padding: 24,
+    marginRight: 16,
+    minHeight: 180,
+    justifyContent: 'flex-start',
+    position: 'relative',
+  },
+  cardContainer: {
+    // flex: 1,
+    // justifyContent: 'space-between',
+  },
+  
+  firstCard: {
+    marginLeft: 0,
+  },
+  featuredBadge: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: Colors.secondary,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  featuredText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.cardBackground,
+  },
+  cardIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.cardText,
+    marginBottom: 8,
+  },
+  cardDescription: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    lineHeight: 20,
+  },
+
+  // AI Assistant Styles
+  aiCard: {
+    marginHorizontal: 24,
+    padding: 0,
+    overflow: 'hidden',
+  },
+  aiCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 24,
+  },
+  aiIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 20,
+  },
+  aiTextContainer: {
+    flex: 1,
+  },
+  aiTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.cardText,
+    marginBottom: 6,
+  },
+  aiDescription: {
+    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.9)',
+    lineHeight: 20,
+  },
+  aiArrow: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Gamification Styles
+  gamificationGrid: {
+    flexDirection: 'row',
+    paddingHorizontal: 24,
+    justifyContent: 'space-between',
+  },
+  gamificationCard: {
+    width: (screenWidth - 64) / 2,
+    padding: 24, // Match Quick Access padding for consistency
+    alignItems: 'flex-start',
+    minHeight: 180, // Align height with Quick Access cards
+    justifyContent: 'flex-start',
+  },
+
+  // Learning Modules Styles
+  learningContainer: {
+    paddingHorizontal: 24,
+  },
+  learningCard: {
+    backgroundColor: Colors.cardBackground,
+    marginBottom: 12,
+    padding: 0,
+    overflow: 'hidden',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  learningContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
   },
   learningTextContainer: {
     flex: 1,
   },
+  learningIconBg: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
   learningTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'white',
+    fontSize: 17,
+    fontWeight: '600',
+    color: Colors.cardText,
+    marginBottom: 4,
   },
-  learningDescription: {
-    fontSize: 12,
-    color: 'rgba(168, 195, 209, 0.8)',
-    marginTop: 2,
+  learningDesc: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    lineHeight: 18,
   },
-  gamificationCardsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    width: '100%',
-    paddingHorizontal: 10,
-    marginBottom: 20,
-  },
-  reportModulesContainer: {
-    width: '100%',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
+
+  // Report Styles
   reportCard: {
+    backgroundColor: Colors.cardBackground,
+    marginHorizontal: 24,
+    padding: 0,
+    overflow: 'hidden',
+  },
+  reportContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#A8C3D1',
-    borderRadius: 15,
-    padding: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
+    padding: 20,
   },
   reportIconContainer: {
-    backgroundColor: '#1A213B',
-    borderRadius: 12,
-    padding: 10,
-    marginRight: 15,
-  },
-  reportIcon: {
-    fontSize: 30,
-    color: '#A8C3D1',
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 107, 107, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
   },
   reportTextContainer: {
     flex: 1,
   },
   reportTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1A213B',
-  },
-  reportDescription: {
-    fontSize: 12,
-    color: '#1A213B',
-    marginTop: 2,
-  },
-  // AI Assistant Section Styles
-  aiAssistantContainer: {
-    width: '100%',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  aiAssistantCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 20,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
-  },
-  aiAssistantIcon: {
-    fontSize: 40,
-    marginRight: 20,
-  },
-  aiAssistantTextContainer: {
-    flex: 1,
-  },
-  aiAssistantTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 17,
+    fontWeight: '600',
+    color: Colors.cardText,
     marginBottom: 4,
   },
-  aiAssistantDescription: {
+  reportDescription: {
     fontSize: 14,
-    opacity: 0.9,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+  },
+  reportArrow: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+
+  // Utility Styles
+  bottomSpacing: {
+    height: 40,
   },
 });

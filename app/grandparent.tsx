@@ -1,9 +1,11 @@
-// GrandparentScamScreen.js
+// GrandparentScamScreen
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useLanguage } from '../contexts/LanguageContext';
+import { LinearGradient } from 'expo-linear-gradient';
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 
 export default function GrandparentScamScreen() {
   const navigation = useNavigation();
@@ -26,28 +28,63 @@ export default function GrandparentScamScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#1A213B" />
+      <StatusBar barStyle="light-content" backgroundColor="#0F1419" />
 
       {/* Header */}
-      <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
+      <LinearGradient
+        colors={['#0F1419', '#1A213B']}
+        style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}
+      >
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>←</Text>
+          <View style={styles.backButtonContainer}>
+            <AntDesign name="arrowleft" size={24} color="#FFFFFF" />
+          </View>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{title}</Text>
-        <View style={{ width: 40 }} /> {/* Spacer to balance header title */}
-      </View>
+        <View style={{ width: 40 }} />
+      </LinearGradient>
 
-      <ScrollView style={styles.scrollView}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.contentContainer}>
-          <Text style={styles.descriptionText}>{description}</Text>
+          {/* Description Card */}
+          <View style={styles.descriptionCard}>
+            <LinearGradient
+              colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.04)']}
+              style={styles.cardGradient}
+            >
+              <Text style={styles.descriptionText}>{description}</Text>
+            </LinearGradient>
+          </View>
 
-          <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
-          {tips.map((tip, index) => (
-            <View key={index} style={styles.tipItem}>
-              <Text style={styles.tipBullet}>•</Text>
-              <Text style={styles.tipText}>{tip}</Text>
+          {/* Tips Section */}
+          <View style={styles.tipsSection}>
+            <View style={styles.tipsSectionHeader}>
+              <View style={styles.tipsIconContainer}>
+                <MaterialIcons name="security" size={24} color="#4ECDC4" />
+              </View>
+              <Text style={styles.whatToDoTitle}>{whatToDoTitle}</Text>
             </View>
-          ))}
+
+            {tips.map((tip, index) => (
+              <View key={index} style={styles.tipCard}>
+                <LinearGradient
+                  colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']}
+                  style={styles.tipGradient}
+                >
+                  <View style={styles.tipContent}>
+                    <View style={styles.tipIconWrapper}>
+                      <View style={[styles.tipIconContainer, { backgroundColor: 'rgba(78, 205, 196, 0.15)' }] }>
+                        <MaterialIcons name="check-circle" size={18} color="#4ECDC4" />
+                      </View>
+                    </View>
+                    <View style={styles.tipTextContainer}>
+                      <Text style={styles.tipText}>{tip}</Text>
+                    </View>
+                  </View>
+                </LinearGradient>
+              </View>
+            ))}
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -55,70 +92,34 @@ export default function GrandparentScamScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#1A213B', // Dark background
-  },
+  safeArea: { flex: 1, backgroundColor: '#0F1419' },
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#1A213B',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)', // Subtle separator
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
-  backButton: {
-    padding: 5,
-  },
-  backButtonText: {
-    fontSize: 28,
-    color: '#A8C3D1', // Light accent color
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: 'white',
-    flexShrink: 1, // Allows text to wrap if long
-    textAlign: 'center',
-  },
-  scrollView: {
-    flex: 1,
-    width: '100%',
-  },
-  contentContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
-  },
-  descriptionText: {
-    fontSize: 16,
-    color: 'white',
-    lineHeight: 24,
-    marginBottom: 20,
-  },
-  whatToDoTitle: { // Renamed from tipsTitle for clarity
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#A8C3D1',
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  tipItem: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
-  tipBullet: {
-    fontSize: 16,
-    color: '#A8C3D1',
-    marginRight: 10,
-  },
-  tipText: {
-    fontSize: 16,
-    color: 'white',
-    flex: 1, // Allows text to wrap
-    lineHeight: 22,
-  },
+  backButton: { padding: 8 },
+  backButtonContainer: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center' },
+  headerTitle: { fontSize: 20, fontWeight: '800', color: '#FFFFFF', textAlign: 'center' },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingBottom: 24 },
+  contentContainer: { paddingHorizontal: 16, paddingTop: 16 },
+  descriptionCard: { marginBottom: 24, borderRadius: 16, overflow: 'hidden' },
+  cardGradient: { padding: 20, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  descriptionText: { fontSize: 16, color: '#CBD5E1', lineHeight: 26 },
+  tipsSection: { marginBottom: 24 },
+  tipsSectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, paddingHorizontal: 4 },
+  tipsIconContainer: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(78,205,196,0.2)', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  whatToDoTitle: { fontSize: 20, fontWeight: '800', color: '#F1F5F9' },
+  tipCard: { marginBottom: 12, borderRadius: 12, overflow: 'hidden' },
+  tipGradient: { borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
+  tipContent: { flexDirection: 'row', padding: 16, alignItems: 'flex-start' },
+  tipIconWrapper: { marginRight: 12, marginTop: 2 },
+  tipIconContainer: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  tipTextContainer: { flex: 1 },
+  tipText: { fontSize: 15, color: '#E2E8F0', lineHeight: 24, letterSpacing: 0.3, fontWeight: '500', textAlign: 'left' },
 });

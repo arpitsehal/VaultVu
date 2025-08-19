@@ -5,6 +5,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../contexts/LanguageContext';
+import { apiConfig } from '../services/apiConfig';
 
 // Enhanced URL analysis patterns and test examples
 const URL_PATTERNS = {
@@ -103,6 +104,14 @@ export default function URLTheftCheckerScreen() {
     setModalVisible(true);
   };
 
+  // Normalize user input into a valid absolute URL string (adds https:// if missing)
+  const normalizeUrl = (raw: string): string => {
+    const trimmed = raw.trim();
+    if (!trimmed) return '';
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+    return `https://${trimmed}`;
+  };
+
   // Enhanced pattern analysis function
   const analyzeUrlPatterns = (url: string): AnalysisDetails => {
     const analysis: AnalysisDetails = {
@@ -185,8 +194,10 @@ export default function URLTheftCheckerScreen() {
       return;
     }
 
-    const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
-    if (!urlRegex.test(url)) {
+    const normalized = normalizeUrl(url);
+    // Allow longer TLDs and punycode hostnames
+    const urlRegex = /^(https?:\/\/)([\da-z\.-]+)\.([a-z\.]{2,24})([\/\w\.-]*)*\/?$/i;
+    if (!urlRegex.test(normalized)) {
       showModal(translations.invalidUrl || 'Invalid URL', (translations as any)['invalidUrlMessage'] || 'Please enter a valid website URL.', 'error');
       return;
     }
@@ -195,26 +206,34 @@ export default function URLTheftCheckerScreen() {
     setResult(null);
 
     // Perform local pattern analysis
-    const patternAnalysis = analyzeUrlPatterns(url);
+    const patternAnalysis = analyzeUrlPatterns(normalized);
     setAnalysisDetails(patternAnalysis);
 
     try {
       // Call existing backend URL check and Gemini URL analysis in parallel
-      const classicUrl = 'https://vaultvu.onrender.com/api/url-check';
-      const geminiUrl = 'https://vaultvu.onrender.com/api/gemini/url-analyze';
+      const classicUrl = `${apiConfig.baseURL}/api/url-check`;
+      const geminiUrl = `${apiConfig.baseURL}/api/gemini/url-analyze`;
+
+      // Apply a timeout to avoid hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
       const [classicRes, geminiRes] = await Promise.allSettled([
         fetch(classicUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url, patternAnalysis }),
+          body: JSON.stringify({ url: normalized, patternAnalysis }),
+          signal: controller.signal,
         }),
         fetch(geminiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ urlToCheck: url, patternAnalysis }),
+          body: JSON.stringify({ urlToCheck: normalized, patternAnalysis }),
+          signal: controller.signal,
         }),
       ]);
+
+      clearTimeout(timeoutId);
 
       // Parse results if fulfilled
       const classicData =
@@ -508,7 +527,7 @@ export default function URLTheftCheckerScreen() {
         }
       ]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <AntDesign name="arrowleft" size={24} color="#A8C3D1" />
+          <AntDesign name="arrowleft" size={24} color="#A0AEC0" />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1} adjustsFontSizeToFit>
           {translations.urlSafetyChecker || 'URL Safety Checker'}
@@ -610,8 +629,9 @@ export default function URLTheftCheckerScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#1A213B',
+    backgroundColor: '#0f0f23',
   },
+
   scrollContent: {
     flexGrow: 1,
   },
@@ -828,7 +848,7 @@ const styles = StyleSheet.create({
     width: 100,
   },
   modalButtonText: {
-    color: '#FFFFFF',
+    color: '#1A213B',
     fontWeight: 'bold',
     textAlign: 'center',
   },

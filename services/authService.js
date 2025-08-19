@@ -81,4 +81,28 @@ export const authService = {
     return response.json();
   },
   // ...existing code...
+  requestPasswordReset: async (email) => {
+    const response = await fetch(`${baseURL}/auth/request-password-reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    return response.json();
+  },
+  verifyResetOtp: async (email, otp) => {
+    const response = await fetch(`${baseURL}/auth/verify-reset-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, otp }),
+    });
+    return response.json();
+  },
+  resetPassword: async (email, otp, newPassword) => {
+    const response = await fetch(`${baseURL}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, otp, newPassword }),
+    });
+    return response.json();
+  },
 };

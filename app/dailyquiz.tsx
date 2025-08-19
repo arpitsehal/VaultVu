@@ -13,6 +13,7 @@ import {
     View,
     Modal,
     Pressable,
+    BackHandler,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
@@ -449,6 +450,37 @@ export default function DailyQuizScreen() {
             };
         }, [fetchQuestions, checkQuizAvailability, canPlayQuiz])
     );
+
+    // Handle Android hardware back press for better UX
+    useEffect(() => {
+        const onBackPress = () => {
+            // If result modal is open, close it first
+            if (showResultModal) {
+                setShowResultModal(false);
+                return true;
+            }
+
+            // During an active quiz, confirm before quitting
+            if (!quizCompleted) {
+                Alert.alert(
+                    'Quit Quiz?',
+                    'Your current progress will be lost.',
+                    [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Quit', style: 'destructive', onPress: () => router.back() },
+                    ]
+                );
+                return true; // prevent default back behavior
+            }
+
+            // After completion with no modal, go back to previous screen
+            router.back();
+            return true;
+        };
+
+        const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+        return () => subscription.remove();
+    }, [showResultModal, quizCompleted, router]);
     
     useEffect(() => {
         if (loading || error || quizQuestions.length === 0 || !canPlayQuiz) return;
@@ -654,7 +686,7 @@ export default function DailyQuizScreen() {
                 coinsEarned={coinsEarned}
                 onLeaderboardPress={() => {
                     setShowResultModal(false);
-                    router.push('/Leaderboard');
+                    router.push('/leaderboard');
                 }}
                 onDashboardPress={() => {
                     setShowResultModal(false);
@@ -664,7 +696,7 @@ export default function DailyQuizScreen() {
         );
     }
 
-    if (countdown > 0) {
+    if (typeof countdown === 'number' && countdown > 0) {
         return (
             <SafeAreaView style={styles.loadingContainer}>
                 <Text style={styles.countdownText}>{countdown}</Text>

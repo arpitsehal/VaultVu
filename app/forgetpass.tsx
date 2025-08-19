@@ -7,14 +7,17 @@ import {
   StatusBar,
   Image,
   TextInput,
-  ScrollView,         // <--- ADDED for responsiveness
-  KeyboardAvoidingView, // <--- ADDED for responsiveness
-  Platform,             // <--- ADDED for OS specific logic
-  Dimensions,           // <--- ADDED for responsive sizing
-  Alert                 // <--- ADDED for user feedback
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Dimensions,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; // <--- ADDED useSafeAreaInsets
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authService } from '@/services/authService';
 
 const { width: screenWidth } = Dimensions.get('window'); // Get screen width for responsive image sizing
 
@@ -24,6 +27,7 @@ export default function ForgotPasswordPage() {
 
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState(''); // State for email validation error
+  const [isLoading, setIsLoading] = useState(false);
 
   // Basic email validation
   const validateEmail = (email: string) => {
@@ -31,8 +35,8 @@ export default function ForgotPasswordPage() {
     return emailRegex.test(email);
   };
 
-  // Placeholder for handling continue button press
-  const handleContinue = () => {
+  // Handle continue button press -> request OTP and navigate
+  const handleContinue = async () => {
     setEmailError(''); // Clear previous error
 
     if (!email.trim()) {
@@ -46,11 +50,22 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    console.log('Requesting OTP for email:', email);
-    // Implement logic to send OTP (e.g., API call), then navigate
-    Alert.alert('Success', 'OTP sent to your email!', [
-      { text: 'OK', onPress: () => router.push('/otpvarification') } // Navigate to otp-verification.tsx
-    ]);
+    try {
+      setIsLoading(true);
+      const res = await authService.requestPasswordReset(email);
+      if (res?.success) {
+        await AsyncStorage.setItem('resetEmail', email);
+        Alert.alert('Success', 'OTP sent to your email!', [
+          { text: 'OK', onPress: () => router.push({ pathname: '/otpvarification', params: { email } }) }
+        ]);
+      } else {
+        Alert.alert('Error', res?.message || 'Failed to request OTP. Please try again.');
+      }
+    } catch (e) {
+      Alert.alert('Error', 'Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -107,8 +122,12 @@ export default function ForgotPasswordPage() {
           </View>
 
           {/* CONTINUE Button */}
-          <TouchableOpacity style={styles.continueButton} onPress={() => router.push('/otpvarification')}>
-            <Text style={styles.continueButtonText}>CONTINUE</Text>
+          <TouchableOpacity style={[styles.continueButton, isLoading && styles.continueButtonDisabled]} onPress={handleContinue} disabled={isLoading}>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text style={styles.continueButtonText}>CONTINUE</Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -210,6 +229,9 @@ const styles = StyleSheet.create({
     marginBottom: 20, // Adjusted for responsiveness with ScrollView
     width: '80%',
     alignItems: 'center',
+  },
+  continueButtonDisabled: {
+    opacity: 0.7,
   },
   continueButtonText: {
     color: '#FFFFFF',

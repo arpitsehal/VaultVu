@@ -1,12 +1,42 @@
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Image, StatusBar, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLanguage } from '../contexts/LanguageContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LandingPage() {
   const router = useRouter();
   const { translations } = useLanguage();
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // If user already logged in, skip landing and go to home
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (token) {
+          router.replace('/home');
+          return;
+        }
+      } catch (e) {
+        // ignore and show landing
+      } finally {
+        if (isMounted) setCheckingAuth(false);
+      }
+    })();
+    return () => { isMounted = false; };
+  }, [router]);
+
+  if (checkingAuth) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#1A213B" />
+        <ActivityIndicator size="large" color="#A8C3D1" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>

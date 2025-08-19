@@ -1,5 +1,6 @@
 import React from 'react';
-import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Linking, Alert } from 'react-native';
+import type { ComponentProps } from 'react';
+import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Linking, Alert, BackHandler } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router'; // Changed from useNavigation to useRouter for consistency with QuizScreen
@@ -10,7 +11,18 @@ export default function ReportIssueScreen() {
   const insets = useSafeAreaInsets();
   const { translations } = useLanguage();
 
-  const reportLinks = [
+  const Colors = {
+    background: '#0f0f23',
+    cardBackground: '#1A213B',
+    textPrimary: '#F7FAFC',
+    textSecondary: '#A0AEC0',
+    accent: '#4ECDC4',
+    chipBg: 'rgba(255,255,255,0.1)'
+  } as const;
+
+  type MaterialIconName = ComponentProps<typeof MaterialIcons>['name'];
+
+  const reportLinks: Array<{ id: string; title: string; description: string; url: string; icon: MaterialIconName }> = [
     {
       id: 'rbi',
       title: translations.rbiReportingTitle || 'RBI Fraud Reporting',
@@ -22,21 +34,21 @@ export default function ReportIssueScreen() {
       id: 'punjabBank',
       title: translations.punjabBankReportingTitle || 'Punjab and Sindh Bank Fraud Reporting',
       description: translations.punjabBankReportingDesc || 'Report suspicious activities related to Punjab and Sindh Bank accounts',
-      url: 'https://punjabandsindbank.co.in/content/fraud-reporting',
+      url: 'https://punjabandsindbank.co.in//content/security-advisory',
       icon: 'security'
     },
     {
       id: 'cybercrime',
       title: translations.cybercrimeReportingTitle || 'National Cybercrime Reporting Portal',
       description: translations.cybercrimeReportingDesc || 'Report all types of cybercrimes including financial frauds',
-      url: 'https://cybercrime.gov.in/',
+      url: 'https://cybercrime.gov.in/Webform/Index.aspx',
       icon: 'computer'
     },
     {
       id: 'upifraud',
       title: translations.upiFraudReportingTitle || 'UPI Fraud Reporting',
       description: translations.upiFraudReportingDesc || 'Report UPI-related frauds and unauthorized transactions',
-      url: 'https://www.npci.org.in/what-we-do/upi/upi-ecosystem-protection-framework',
+      url: 'https://www.npci.org.in/what-we-do/upi/dispute-redressal-mechanism',
       icon: 'smartphone'
     },
     {
@@ -48,7 +60,7 @@ export default function ReportIssueScreen() {
     }
   ];
 
-  const handleLinkPress = (url) => {
+  const handleLinkPress = (url: string) => {
     Linking.canOpenURL(url).then(supported => {
       if (supported) {
         Linking.openURL(url);
@@ -63,13 +75,23 @@ export default function ReportIssueScreen() {
     });
   };
 
+  // Handle Android hardware back to navigate within app
+  React.useEffect(() => {
+    const onBack = () => {
+      router.back();
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBack);
+    return () => sub.remove();
+  }, [router]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#1A213B" />
+      <StatusBar barStyle="light-content" backgroundColor={Colors.cardBackground} />
       {/* Header */}
       <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <AntDesign name="arrowleft" size={24} color="#A8C3D1" />
+          <AntDesign name="arrowleft" size={24} color={Colors.textSecondary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{translations.reportAnIssue || 'Report an Issue'}</Text>
         <View style={{ width: 40 }} />
@@ -88,13 +110,13 @@ export default function ReportIssueScreen() {
               onPress={() => handleLinkPress(link.url)}
             >
               <View style={styles.linkIconContainer}>
-                <MaterialIcons name={link.icon} size={28} color="#1A213B" />
+                <MaterialIcons name={link.icon} size={28} color={Colors.textPrimary} />
               </View>
               <View style={styles.linkTextContainer}>
                 <Text style={styles.linkTitle}>{link.title}</Text>
                 <Text style={styles.linkDescription}>{link.description}</Text>
               </View>
-              <MaterialIcons name="open-in-new" size={24} color="#1A213B" />
+              <MaterialIcons name="open-in-new" size={24} color={Colors.textSecondary} />
             </TouchableOpacity>
           ))}
 
@@ -110,7 +132,7 @@ export default function ReportIssueScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#1A213B',
+    backgroundColor: '#0f0f23',
   },
   headerContainer: {
     flexDirection: 'row',
@@ -129,7 +151,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#F7FAFC',
     flexShrink: 1,
     textAlign: 'center',
   },
@@ -144,28 +166,30 @@ const styles = StyleSheet.create({
   },
   introText: {
     fontSize: 16,
-    color: '#A8C3D1',
+    color: '#A0AEC0',
     marginBottom: 20,
     lineHeight: 22,
   },
   linkCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#A8C3D1',
-    borderRadius: 12,
+    backgroundColor: '#1A213B',
+    borderRadius: 16,
     padding: 16,
     marginBottom: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.08)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
   },
   linkIconContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    width: 50,
-    height: 50,
+    backgroundColor: 'rgba(78, 205, 196, 0.25)',
+    borderRadius: 14,
+    width: 48,
+    height: 48,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
@@ -177,17 +201,17 @@ const styles = StyleSheet.create({
   linkTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1A213B',
+    color: '#F7FAFC',
     marginBottom: 4,
   },
   linkDescription: {
     fontSize: 12,
-    color: '#1A213B',
-    opacity: 0.8,
+    color: '#A0AEC0',
+    opacity: 0.9,
   },
   disclaimerText: {
     fontSize: 12,
-    color: '#A8C3D1',
+    color: '#A0AEC0',
     opacity: 0.7,
     marginTop: 20,
     textAlign: 'center',

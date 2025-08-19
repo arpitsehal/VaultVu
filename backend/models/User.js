@@ -131,7 +131,21 @@ const userSchema = new mongoose.Schema({
   leaderboardRank: {
     type: Number
   },
-  budgetCategories: [BudgetCategorySchema]
+  budgetCategories: [BudgetCategorySchema],
+  // Password reset via email OTP
+  resetOtp: {
+    type: String,
+  },
+  resetOtpExpires: {
+    type: Date,
+  },
+  // Optional token-based reset support
+  resetPasswordToken: {
+    type: String,
+  },
+  resetPasswordExpires: {
+    type: Date,
+  }
 });
 
 module.exports = mongoose.model('User', userSchema);

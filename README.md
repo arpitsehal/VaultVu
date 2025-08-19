@@ -2,25 +2,42 @@
 
 ## Overview
 
-VaultVu is a comprehensive mobile application designed to protect users from digital fraud and scams. It provides proactive scam detection, fraud message analysis, URL safety checks, spam filtering, secure password management, and robust profile controls.
+VaultVu is a comprehensive Expo-powered mobile application to protect users from digital fraud and scams. It combines on-device heuristics with backend verification and AI assistance to help users stay safe online.
+
+Highlights include proactive scam detection, rich URL analysis with pattern learning, fraud message and phone checks, voice call risk analysis, gamified security quizzes with leaderboard, and personal finance tools (budget, SIP & EMI trackers).
 
 ## 🚀 Key Features
 
-- **Scam Protection**: Detects and alerts you to potential scams
-- **Fraud Protection**: Flags fraudulent messages and suspicious activities
-- **URL Fraud Checker**: Screens URLs for phishing or malicious intent
-- **Spam Message Checker**: Automatically filters unwanted spam messages
-- **Password Management**: Secure storage and management of credentials
-- **Multi-Language Support**: Available in English, Hindi, and Punjabi
-- **User Profile Management**: Customize and manage user settings and preferences
+- **URL Fraud Checker** (`app/URLTheftCheckerScreen.tsx`):
+  - Local pattern analysis (brand spoofing, suspicious TLDs, URL shorteners, IPs, malware extensions) with weighted risk scoring
+  - Parallel checks via Google Safe Browsing proxy (`backend/routes/urlCheck.js`) and Gemini verdicts (`/api/gemini/url-analyze`)
+  - Interactive test examples (Safe/Phishing/Suspicious) and detailed analysis breakdown
+- **Fraud Message Checker** (`app/FraudMessageCheckerScreen.tsx`):
+  - Local regex indicators + APILayer Spam Checker fallback (`backend/routes/messageCheck.js`)
+  - Risk scoring with clear reasons
+- **Phone/Spam Number Checker** (`app/CheckSpamScreen.tsx`):
+  - Numverify lookup with carrier/location + local spam indicators (`backend/routes/phoneCheck.js`)
+- **Voice Fraud Checker** (`app/VoiceTheftCheckerScreen.tsx`):
+  - Simulated voice transcription and deepfake/emotional manipulation scoring (`backend/routes/voiceCheck.js`)
+- **AI Chatbot (Gemini)** (`app/chatbot.tsx`):
+  - Server-side Gemini proxy endpoints (`backend/routes/gemini.js`) for chat and URL analysis
+- **Gamified Learning**:
+  - Daily quizzes, level progression, battle mode (`app/dailyquiz.tsx`, `app/quizLevel.tsx`, `app/quizBattle.tsx`)
+  - Coins and points, unlockable levels, badges, and leaderboard (`backend/routes/userRoutes.js`, `backend/routes/leaderboardRoutes.js`)
+- **Budget Manager & Trackers**:
+  - Budget categories, transactions, and progress (`app/BudgetManagerScreen.tsx`, `app/BudgetTrackerScreen.tsx`, `backend/routes/budgetRoutes.js`)
+  - SIP and EMI trackers (`app/SIPTrackerScreen.tsx`, `app/EMIManagerScreen.tsx`)
+- **Multi-language support** (`contexts/LanguageContext.js`): English, Hindi, Punjabi (comprehensive fraud-type translations)
+- **Auth & Profile** (`app/signin.tsx`, `app/signup.tsx`, `backend/routes/auth.js`): email/username login, complete profile, JWT-based auth
+- **General Fraud Education**: Multiple screens covering common fraud types under `app/*.tsx` (e.g., phishing, KYC, loans, investments)
 
 ## Prerequisites
 
 Before you begin, ensure you have the following installed:
 
-- **Node.js** (v14 or higher)
+- **Node.js** 18+ (works well with Expo SDK 53 / RN 0.79)
 - **npm** or **Yarn**
-- **MongoDB** account (Atlas or self-hosted)
+- **MongoDB** (Atlas or self-hosted)
 - **Expo CLI** (`npm install -g expo-cli`)
 - **Expo Go** app installed on your mobile device (for live testing)
 
@@ -33,7 +50,7 @@ git clone <repository-url>
 cd VaultVu
 ```
 
-### 2. Install Frontend Dependencies
+### 2. Install Frontend (Expo) Dependencies
 
 ```bash
 npm install
@@ -59,50 +76,46 @@ NUMVERIFY_API_KEY=your_numverify_api_key
 SPAM_CHECK_API_KEY=your_spam_check_api_key
 GOOGLE_SAFE_BROWSING_API_KEY=your_google_safe_browsing_api_key
 VOICE_ANALYSIS_API_KEY=your_voice_analysis_api_key
+GEMINI_API_KEY=your_gemini_api_key
+# Optional: restrict CORS for production (comma-separated list)
+CORS_ORIGIN=https://your-app-domain.com,https://another-domain.com
 ```
 
 > **Note**: Replace the placeholder values with your actual API keys and MongoDB connection string.
 
-### 5. Update API URL for Mobile Testing
+### 5. Configure Frontend API Base URL
 
-To run the app on your mobile device, update the API URL to match your computer's local IP address in the following files:
+Frontend reads the base API URL from `EXPO_PUBLIC_API_URL` via `services/apiConfig.js`.
 
-- `app/signin.tsx`
-- `app/signup.tsx`
-- `app/FraudMessageCheckerScreen.tsx`
-- `app/URLTheftCheckerScreen.tsx`
-- `app/CheckSpamScreen.tsx`
-- `app/VoiceTheftCheckerScreen.tsx`
-- `app/userProfile.tsx`
+- For local development, create/update `./.env.development` in the project root:
 
+```env
+EXPO_PUBLIC_API_URL=http://YOUR_LOCAL_IP:5000
+```
 
+- For production, set it to your deployed backend (default baked in repo: `https://vaultvu.onrender.com`).
 
-Replace `YOUR_IP_ADDRESS` with your computer's local IP address (e.g., `192.168.1.7`).
-
-**Finding your IP address:**
-- Windows: Run `ipconfig` in Command Prompt
-- Mac/Linux: Run `ifconfig` in Terminal
+Finding your IP address:
+- Windows: `ipconfig`
+- macOS/Linux: `ifconfig` or `ip addr`
 
 ## Running the Application
 
 ### 1. Start the Backend Server
 
-Open a terminal window and run:
-```bash
-cd backend
-npm install uuid
-```
+Open a terminal and run:
 
 ```bash
 cd backend
-npm start
+npm install
+npm run dev   # or: npm start
 ```
 
 
 
 The server will start on port 5000 (or the port specified in your `.env` file).
 
-### 2. Start the Frontend
+### 2. Start the Frontend (Expo)
 
 In a new terminal window, run:
 
@@ -118,24 +131,55 @@ This will start the Expo development server and display a QR code.
 2. Ensure your mobile device is connected to the same Wi-Fi network as your computer
 3. Scan the QR code with your camera (iOS) or the Expo Go app (Android)
 
-## Date Picker Setup
+## Notable Modules & Behavior
 
-The app uses `@react-native-community/datetimepicker` for date selection during the signup process.
+- **Date/Document Picker**: `@react-native-community/datetimepicker`, `expo-document-picker`, `expo-file-system` are used by signup and voice checker flows.
+- **Android UI adjustments**: URL checker improves StatusBar handling, safe area, and ScrollView behavior for better Android visibility.
+- **TypeScript**: Strong typing across URL checker (interfaces like `AnalysisDetails`, `URLResult`) and quiz components.
 
-## Document Picker Setup
+## Backend API Endpoints
 
-The app uses `npx expo install expo-document-picker` & `npm install expo-file-system` for document selection during the Voice Fraud Checker Module process.
+Base path defaults to `http://localhost:5000` (or your `EXPO_PUBLIC_API_URL`). See `backend/server.js`.
 
-### Installation
+- **Auth** (`/api/auth`):
+  - POST `/register` – create account
+  - POST `/login` – login with email or username
+  - POST `/complete-profile` – finalize profile
+  - GET `/profile` – get profile (Bearer)
+  - PUT `/profile` – update profile (Bearer)
+- **Users / Quiz** (`/api/users`):
+  - POST `/` – register user (alt path)
+  - POST `/login` – login (alt path)
+  - GET `/quiz-levels` (Bearer)
+  - POST `/quiz-levels/unlock` (Bearer)
+  - POST `/quiz-levels/complete` (Bearer)
+  - POST `/quiz/battle` (Bearer)
+  - POST `/quiz-rewards` (Bearer)
+- **Leaderboard** (`/api/leaderboard`):
+  - GET `/scores` – top users
+  - POST `/scores` (Bearer) – submit score
+- **Budget** (`/api/budget` – Bearer):
+  - GET `/categories` – list/init categories
+  - POST `/categories` – add category
+  - PUT `/categories/:id` – update category
+  - DELETE `/categories/:id` – remove category
+  - POST `/categories/:id/transactions` – add transaction
+- **Safety Checks**:
+  - POST `/api/url-check` – URL risk analysis (Google Safe Browsing + heuristics)
+  - POST `/api/message-check` – spam/fraud message analysis
+  - POST `/api/phone-check` – phone number validation & risk
+  - POST `/api/voice-check` – voice fraud analysis (simulated)
+- **Gemini** (`/api/gemini`):
+  - POST `/chat` – chat proxy
+  - POST `/url-analyze` – URL verdict JSON { isSafe, riskScore, category, reasons }
 
-```bash
-npm install @react-native-community/datetimepicker --save
-```
+Environment variables used by backend: see “Configure Backend Environment”.
 
-### Platform Behavior
+## Tech Stack
 
-- **Android**: Date picker appears when you tap the date field and disappears after selection
-- **iOS**: Date picker remains visible, and you must press "Done" to confirm selection
+- Frontend: Expo SDK 53, React 19, React Native 0.79, Expo Router, React Navigation, React Native Paper
+- Backend: Node/Express, MongoDB (Mongoose), JWT Auth, CORS, Axios
+- Services/APIs: Google Safe Browsing, APILayer Spam Check, Numverify, Gemini (Generative Language API)
 
 ## Troubleshooting
 
@@ -148,17 +192,19 @@ If your mobile device cannot connect to the backend server:
 - Verify that you've updated all API URLs with your correct IP address
 - Try restarting both the backend and Expo development servers
 
-### Date Picker Issues
+### Date/Build Issues
 
-If the date picker doesn't appear or work correctly:
-
-- Make sure you've installed all required dependencies
-- For Android, verify you're using the correct implementation as shown in `signup2.tsx`
-- Try clearing the Expo cache:
+- Ensure required packages are installed (see `package.json` dependencies)
+- Clear Expo cache if needed:
 
 ```bash
 expo r -c
 ```
+
+### API Base URL
+
+- Verify `EXPO_PUBLIC_API_URL` in `./.env.development`
+- Check CORS settings via `CORS_ORIGIN` if calling from web/preview
 
 ## Team
 

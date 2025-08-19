@@ -1,29 +1,300 @@
-// EMIManagerScreen.tsx
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Platform, TextInput, KeyboardAvoidingView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  TouchableOpacity, 
+  StatusBar, 
+  ScrollView, 
+  Platform, 
+  TextInput, 
+  KeyboardAvoidingView,
+  Animated,
+  Dimensions,
+  Vibration,
+  Alert
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { AntDesign } from '@expo/vector-icons';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { Feather, MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { useLanguage } from '../contexts/LanguageContext';
+
+const { width, height } = Dimensions.get('window');
+
+// Enhanced Input component with floating label and animation
+const EnhancedInput = React.memo(({ 
+  label, 
+  value, 
+  onChangeText, 
+  placeholder, 
+  keyboardType, 
+  icon, 
+  suffix,
+  inputKey 
+}) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const borderAnim = useRef(new Animated.Value(0)).current;
+  const labelAnim = useRef(new Animated.Value(value ? 1 : 0)).current;
+  
+  useEffect(() => {
+    Animated.timing(labelAnim, {
+      toValue: (isFocused || value) ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  }, [isFocused, value]);
+  
+  const handleFocus = () => {
+    setIsFocused(true);
+    Animated.timing(borderAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  };
+  
+  const handleBlur = () => {
+    setIsFocused(false);
+    Animated.timing(borderAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  };
+  
+  return (
+    <View style={styles.inputWrapper}>
+      <Animated.View style={[
+        styles.inputContainer,
+        {
+          borderColor: borderAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['rgba(255,255,255,0.2)', '#60A5FA'],
+          }),
+          shadowOpacity: borderAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 0.3],
+          }),
+          transform: [{
+            scale: borderAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [1, 1.02],
+            })
+          }]
+        }
+      ]}>
+        <LinearGradient
+          colors={isFocused ? ['rgba(96,165,250,0.1)', 'rgba(96,165,250,0.05)'] : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']}
+          style={styles.inputGradient}
+        >
+          <View style={styles.inputContent}>
+            <View style={styles.inputIconContainer}>
+              <Feather 
+                name={icon} 
+                size={20} 
+                color={isFocused ? '#60A5FA' : 'rgba(255,255,255,0.6)'} 
+              />
+            </View>
+            
+            <View style={styles.inputFieldContainer}>
+              <Animated.Text style={[
+                styles.floatingLabel,
+                {
+                  opacity: labelAnim,
+                  transform: [{
+                    translateY: labelAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, -8],
+                    })
+                  }],
+                  color: isFocused ? '#60A5FA' : 'rgba(255,255,255,0.7)',
+                }
+              ]}>
+                {label}
+              </Animated.Text>
+              
+              <TextInput
+                style={[
+                  styles.enhancedInput,
+                  { marginTop: (isFocused || value) ? 8 : 0 }
+                ]}
+                value={value}
+                onChangeText={onChangeText}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                keyboardType={keyboardType}
+                placeholder={!isFocused && !value ? placeholder : ''}
+                placeholderTextColor="rgba(255,255,255,0.4)"
+              />
+            </View>
+            
+            {suffix && (
+              <View style={styles.inputSuffix}>
+                <Text style={styles.suffixText}>{suffix}</Text>
+              </View>
+            )}
+          </View>
+        </LinearGradient>
+      </Animated.View>
+    </View>
+  );
+});
+
+// Result card component
+const ResultCard = ({ title, value, subtitle, icon, color }) => {
+  const cardScale = useRef(new Animated.Value(0)).current;
+  
+  useEffect(() => {
+    Animated.spring(cardScale, {
+      toValue: 1,
+      tension: 50,
+      friction: 7,
+      delay: Math.random() * 200,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+  
+  return (
+    <Animated.View style={[
+      styles.resultCard,
+      { transform: [{ scale: cardScale }] }
+    ]}>
+      <LinearGradient
+        colors={['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)']}
+        style={styles.resultCardGradient}
+      >
+        <View style={styles.resultCardHeader}>
+          <View style={[styles.resultIconContainer, { backgroundColor: color + '20' }]}>
+            <MaterialCommunityIcons name={icon} size={24} color={color} />
+          </View>
+          <Text style={styles.resultCardTitle}>{title}</Text>
+        </View>
+        
+        <Text style={[styles.resultCardValue, { color }]}>₹{value}</Text>
+        
+        {subtitle && (
+          <Text style={styles.resultCardSubtitle}>{subtitle}</Text>
+        )}
+      </LinearGradient>
+    </Animated.View>
+  );
+};
 
 export default function EMIManagerScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { translations } = useLanguage();
   
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const resultScaleAnim = useRef(new Animated.Value(0)).current;
+  
+  // Types
+  type EMIResult = {
+    monthlyEMI: string;
+    totalAmount: string;
+    totalInterest: string;
+    principal: string;
+  };
+
   // State for EMI calculator
   const [loanAmount, setLoanAmount] = useState('');
   const [interestRate, setInterestRate] = useState('');
   const [loanTenure, setLoanTenure] = useState('');
-  const [emiResult, setEmiResult] = useState(null);
+  const [emiResult, setEmiResult] = useState<EMIResult | null>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
   
-  // Calculate EMI
-  const calculateEMI = () => {
+  // Haptic feedback helper
+  const triggerHaptic = (type = 'light') => {
+    if (Platform.OS === 'ios') {
+      switch (type) {
+        case 'light':
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          break;
+        case 'medium':
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          break;
+        case 'success':
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          break;
+        case 'error':
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          break;
+      }
+    } else {
+      Vibration.vibrate(50);
+    }
+  };
+  
+  // Entrance animations
+  useFocusEffect(
+    React.useCallback(() => {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      
+      return () => {
+        fadeAnim.setValue(0);
+        slideAnim.setValue(50);
+        scaleAnim.setValue(0.95);
+        resultScaleAnim.setValue(0);
+        progressAnim.setValue(0);
+      };
+    }, [])
+  );
+  
+  // Calculate EMI with animation
+  const calculateEMI = async () => {
     const principal = parseFloat(loanAmount);
-    const ratePerMonth = parseFloat(interestRate) / (12 * 100);
-    const time = parseFloat(loanTenure) * 12;
+    const rate = parseFloat(interestRate);
+    const tenure = parseFloat(loanTenure);
     
-    if (principal && ratePerMonth && time) {
+    if (!principal || !rate || !tenure) {
+      triggerHaptic('error');
+      Alert.alert('Error', translations.emiEnterDetails || 'Please enter all loan details.');
+      return;
+    }
+    
+    if (principal <= 0 || rate <= 0 || tenure <= 0) {
+      triggerHaptic('error');
+      Alert.alert('Error', translations.emiPositiveDetails || 'Loan details must be positive numbers.');
+      return;
+    }
+    
+    setIsCalculating(true);
+    triggerHaptic('medium');
+    
+    // Animate progress bar
+    Animated.timing(progressAnim, {
+      toValue: 1,
+      duration: 1500,
+      useNativeDriver: false,
+    }).start();
+    
+    // Simulate calculation delay for better UX
+    setTimeout(() => {
+      const ratePerMonth = rate / (12 * 100);
+      const time = tenure * 12;
+      
       const emi = principal * ratePerMonth * Math.pow(1 + ratePerMonth, time) / (Math.pow(1 + ratePerMonth, time) - 1);
       const totalAmount = emi * time;
       const totalInterest = totalAmount - principal;
@@ -31,112 +302,296 @@ export default function EMIManagerScreen() {
       setEmiResult({
         monthlyEMI: emi.toFixed(2),
         totalAmount: totalAmount.toFixed(2),
-        totalInterest: totalInterest.toFixed(2)
+        totalInterest: totalInterest.toFixed(2),
+        principal: principal.toFixed(2)
       });
-    }
+      
+      setIsCalculating(false);
+      triggerHaptic('success');
+      
+      // Animate result appearance
+      Animated.spring(resultScaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }).start();
+    }, 1500);
   };
   
-  // Reset calculator
+  // Reset calculator with animation
   const resetCalculator = () => {
+    triggerHaptic('light');
+    
+    // Reset animations
+    progressAnim.setValue(0);
+    resultScaleAnim.setValue(0);
+    
     setLoanAmount('');
     setInterestRate('');
     setLoanTenure('');
     setEmiResult(null);
+    setIsCalculating(false);
   };
-
+  
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#1A213B" />
-
-      {/* Header */}
-      <View style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top : 0 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <AntDesign name="arrowleft" size={24} color="#A8C3D1" />
+      <StatusBar barStyle="light-content" backgroundColor="#0F172A" translucent />
+      
+      {/* Enhanced Header */}
+      <LinearGradient
+        colors={['#0F172A', '#1E293B']}
+        style={[styles.headerContainer, { paddingTop: Platform.OS === 'android' ? insets.top + 10 : 10 }]}
+      >
+        <TouchableOpacity 
+          onPress={() => {
+            triggerHaptic('light');
+            navigation.goBack();
+          }} 
+          style={styles.backButton}
+          activeOpacity={0.7}
+        >
+          <View style={styles.backButtonBackground}>
+            <AntDesign name="arrowleft" size={24} color="#A8C3D1" />
+          </View>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{translations.emiCalculator || 'EMI Calculator & Manager'}</Text>
-        <View style={{ width: 40 }} /> {/* Spacer to balance header title */}
-      </View>
+        
+        <Animated.View style={[styles.headerContent, { opacity: fadeAnim }]}>
+          <Text style={styles.headerTitle}>{translations.emiCalculator || 'EMI Calculator & Manager'}</Text>
+          <Text style={styles.headerSubtitle}>{translations.emiManagerSubtitle || ''}</Text>
+        </Animated.View>
+        
+        <View style={styles.rightSpacer} />
+      </LinearGradient>
 
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView style={styles.scrollView}>
-          <View style={styles.contentContainer}>
-            <Text style={styles.sectionTitle}>{translations.calculateEMI || 'Calculate EMI'}</Text>
-            
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>{translations.loanAmount || 'Loan Amount (₹)'}</Text>
-              <TextInput
-                style={styles.input}
-                value={loanAmount}
-                onChangeText={setLoanAmount}
-                keyboardType="numeric"
-                placeholder="e.g. 100000"
-                placeholderTextColor="rgba(255,255,255,0.4)"
-              />
-            </View>
-            
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>{translations.interestRate || 'Interest Rate (% per annum)'}</Text>
-              <TextInput
-                style={styles.input}
-                value={interestRate}
-                onChangeText={setInterestRate}
-                keyboardType="numeric"
-                placeholder="e.g. 10.5"
-                placeholderTextColor="rgba(255,255,255,0.4)"
-              />
-            </View>
-            
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>{translations.loanTenure || 'Loan Tenure (years)'}</Text>
-              <TextInput
-                style={styles.input}
-                value={loanTenure}
-                onChangeText={setLoanTenure}
-                keyboardType="numeric"
-                placeholder="e.g. 5"
-                placeholderTextColor="rgba(255,255,255,0.4)"
-              />
-            </View>
-            
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.calculateButton} onPress={calculateEMI}>
-                <Text style={styles.calculateButtonText}>{translations.calculate || 'Calculate'}</Text>
-              </TouchableOpacity>
+        <Animated.View style={[
+          { flex: 1 },
+          { 
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }]
+          }
+        ]}>
+          <ScrollView 
+            style={styles.scrollView}
+            showsVerticalScrollIndicator={false}
+            bounces={true}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.contentContainer}>
+              {/* Calculator Card */}
+              <Animated.View style={[
+                styles.calculatorCard,
+                { transform: [{ scale: scaleAnim }] }
+              ]}>
+                <LinearGradient
+                  colors={['rgba(168,195,209,0.15)', 'rgba(168,195,209,0.05)']}
+                  style={styles.calculatorGradient}
+                >
+                  <View style={styles.calculatorHeader}>
+                    <MaterialCommunityIcons name="calculator" size={28} color="#60A5FA" />
+                    <Text style={styles.calculatorTitle}>{translations.calculateEMI || 'Calculate EMI'}</Text>
+                  </View>
+                  
+                  <View style={styles.inputSection}>
+                    <EnhancedInput
+                      label={translations.loanAmount || 'Loan Amount (₹)'}
+                      value={loanAmount}
+                      onChangeText={setLoanAmount}
+                      placeholder="e.g. 100000"
+                      keyboardType="numeric"
+                      icon="dollar-sign"
+                      suffix="₹"
+                      inputKey="amount"
+                    />
+                    
+                    <EnhancedInput
+                      label={translations.interestRate || 'Interest Rate (% per annum)'}
+                      value={interestRate}
+                      onChangeText={setInterestRate}
+                      placeholder="e.g. 10.5"
+                      keyboardType="numeric"
+                      icon="percent"
+                      suffix="% p.a."
+                      inputKey="rate"
+                    />
+                    
+                    <EnhancedInput
+                      label={translations.loanTenure || 'Loan Tenure (years)'}
+                      value={loanTenure}
+                      onChangeText={setLoanTenure}
+                      placeholder="e.g. 5"
+                      keyboardType="numeric"
+                      icon="calendar"
+                      suffix="years"
+                      inputKey="tenure"
+                    />
+                  </View>
+                  
+                  {/* Progress Bar for Calculation */}
+                  {isCalculating && (
+                    <View style={styles.progressContainer}>
+                      <Text style={styles.progressText}>
+                        {translations.calculating || 'Calculating...'}
+                      </Text>
+                      <View style={styles.progressBarBackground}>
+                        <Animated.View style={[
+                          styles.progressBarFill,
+                          {
+                            width: progressAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: ['0%', '100%'],
+                            })
+                          }
+                        ]}>
+                          <LinearGradient
+                            colors={['#60A5FA', '#3B82F6']}
+                            style={styles.progressGradient}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                          />
+                        </Animated.View>
+                      </View>
+                    </View>
+                  )}
+                  
+                  {/* Action Buttons */}
+                  <View style={styles.buttonContainer}>
+                    <TouchableOpacity 
+                      style={[styles.actionButton, styles.calculateButton]}
+                      onPress={calculateEMI}
+                      disabled={isCalculating || !loanAmount || !interestRate || !loanTenure}
+                      activeOpacity={0.8}
+                    >
+                      <LinearGradient
+                        colors={isCalculating || !loanAmount || !interestRate || !loanTenure 
+                          ? ['rgba(96,165,250,0.3)', 'rgba(59,130,246,0.3)'] 
+                          : ['#60A5FA', '#3B82F6']}
+                        style={styles.buttonGradient}
+                      >
+                        <MaterialCommunityIcons 
+                          name={isCalculating ? "loading" : "calculator-variant"} 
+                          size={20} 
+                          color="white" 
+                        />
+                        <Text style={styles.calculateButtonText}>
+                          {isCalculating ? translations.calculating || 'Calculating...' : (translations.calculate || 'Calculate')}
+                        </Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={[styles.actionButton, styles.resetButton]}
+                      onPress={resetCalculator}
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.resetButtonContent}>
+                        <Feather name="refresh-cw" size={18} color="#94A3B8" />
+                        <Text style={styles.resetButtonText}>{translations.reset || 'Reset'}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                </LinearGradient>
+              </Animated.View>
               
-              <TouchableOpacity style={styles.resetButton} onPress={resetCalculator}>
-                <Text style={styles.resetButtonText}>{translations.reset || 'Reset'}</Text>
-              </TouchableOpacity>
-            </View>
-            
-            {emiResult && (
-              <View style={styles.resultContainer}>
-                <Text style={styles.resultTitle}>{translations.emiResults || 'EMI Results'}</Text>
-                
-                <View style={styles.resultRow}>
-                  <Text style={styles.resultLabel}>{translations.monthlyEMI || 'Monthly EMI:'}</Text>
-                  <Text style={styles.resultValue}>₹ {emiResult.monthlyEMI}</Text>
-                </View>
-                
-                <View style={styles.resultRow}>
-                  <Text style={styles.resultLabel}>{translations.totalAmount || 'Total Amount:'}</Text>
-                  <Text style={styles.resultValue}>₹ {emiResult.totalAmount}</Text>
-                </View>
-                
-                <View style={styles.resultRow}>
-                  <Text style={styles.resultLabel}>{translations.totalInterest || 'Total Interest:'}</Text>
-                  <Text style={styles.resultValue}>₹ {emiResult.totalInterest}</Text>
-                </View>
+              {/* Results Section */}
+              {emiResult && (
+                <Animated.View style={[
+                  styles.resultsSection,
+                  { 
+                    opacity: fadeAnim,
+                    transform: [{ scale: resultScaleAnim }]
+                  }
+                ]}>
+                  <View style={styles.resultsSectionHeader}>
+                    <MaterialCommunityIcons name="chart-line" size={24} color="#4ADE80" />
+                    <Text style={styles.resultsSectionTitle}>{translations.emiResults || 'EMI Results'}</Text>
+                  </View>
+                  
+                  <View style={styles.resultsGrid}>
+                    <ResultCard
+                      title={translations.monthlyEMI || "Monthly EMI"}
+                      value={parseFloat(emiResult.monthlyEMI).toLocaleString()}
+                      icon="calendar-month"
+                      color="#60A5FA"
+                    />
+                    
+                    <ResultCard
+                      title={translations.totalAmount || "Total Amount"}
+                      value={parseFloat(emiResult.totalAmount).toLocaleString()}
+                      icon="cash"
+                      color="#F59E0B"
+                    />
+                    
+                    <ResultCard
+                      title={translations.totalInterest || "Total Interest"}
+                      value={parseFloat(emiResult.totalInterest).toLocaleString()}
+                      icon="trending-up"
+                      color="#EF4444"
+                    />
+                    
+                    <ResultCard
+                      title={translations.principal || "Principal"}
+                      value={parseFloat(emiResult.principal).toLocaleString()}
+                      icon="bank"
+                      color="#4ADE80"
+                    />
+                  </View>
+                  
+                  {/* EMI Breakdown Chart Placeholder */}
+                  <View style={styles.chartContainer}>
+                    <LinearGradient
+                      colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']}
+                      style={styles.chartGradient}
+                    >
+                      <View style={styles.chartHeader}>
+                        <MaterialCommunityIcons name="chart-donut" size={20} color="#A8C3D1" />
+                        <Text style={styles.chartTitle}>{translations.emiResults || 'EMI Results'}</Text>
+                      </View>
+                      
+                      <View style={styles.chartContent}>
+                        <View style={styles.chartLegend}>
+                          <View style={styles.legendItem}>
+                            <View style={[styles.legendColor, { backgroundColor: '#4ADE80' }]} />
+                            <Text style={styles.legendText}>
+                              Principal: {((parseFloat(emiResult.principal) / parseFloat(emiResult.totalAmount)) * 100).toFixed(1)}%
+                            </Text>
+                          </View>
+                          <View style={styles.legendItem}>
+                            <View style={[styles.legendColor, { backgroundColor: '#EF4444' }]} />
+                            <Text style={styles.legendText}>
+                              Interest: {((parseFloat(emiResult.totalInterest) / parseFloat(emiResult.totalAmount)) * 100).toFixed(1)}%
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    </LinearGradient>
+                  </View>
+                </Animated.View>
+              )}
+              
+              {/* Disclaimer */}
+              <View style={styles.disclaimerContainer}>
+                <LinearGradient
+                  colors={['rgba(251,146,60,0.1)', 'rgba(251,146,60,0.05)']}
+                  style={styles.disclaimerGradient}
+                >
+                  <View style={styles.disclaimerHeader}>
+                    <Feather name="alert-triangle" size={16} color="#FB923C" />
+                    <Text style={styles.disclaimerTitle}>{translations.importantNote || 'Important Note'}</Text>
+                  </View>
+                  <Text style={styles.disclaimerText}>
+                    {translations.emiDisclaimer || 
+                    'Note: This calculator provides an estimate. Actual EMI may vary based on bank policies and loan terms.'}
+                  </Text>
+                </LinearGradient>
               </View>
-            )}
-            
-            <Text style={styles.disclaimer}>
-              {translations.emiDisclaimer || 'Note: This calculator provides an estimate. Actual EMI may vary based on bank policies and loan terms.'}
-            </Text>
-          </View>
-        </ScrollView>
+            </View>
+          </ScrollView>
+        </Animated.View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -145,122 +600,314 @@ export default function EMIManagerScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#1A213B',
+    backgroundColor: '#0F172A',
   },
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#1A213B',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   backButton: {
-    padding: 5,
+    padding: 8,
+  },
+  backButtonBackground: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(168,195,209,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerContent: {
+    flex: 1,
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: 'bold',
     color: 'white',
-    textAlign: 'center',
-    flexShrink: 1,
+    letterSpacing: 0.5,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: 2,
+  },
+  rightSpacer: {
+    width: 40,
+    height: 40,
   },
   scrollView: {
     flex: 1,
-    width: '100%',
   },
   contentContainer: {
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 40,
   },
-  sectionTitle: {
+  calculatorCard: {
+    marginBottom: 30,
+  },
+  calculatorGradient: {
+    borderRadius: 20,
+    padding: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+  },
+  calculatorHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  calculatorTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#A8C3D1',
+    color: 'white',
+    marginLeft: 12,
+  },
+  inputSection: {
+    marginBottom: 24,
+  },
+  inputWrapper: {
     marginBottom: 20,
   },
   inputContainer: {
-    marginBottom: 15,
+    borderRadius: 16,
+    borderWidth: 2,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    elevation: 8,
   },
-  inputLabel: {
-    fontSize: 16,
+  inputGradient: {
+    padding: 16,
+  },
+  inputContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  inputIconContainer: {
+    width: 24,
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  inputFieldContainer: {
+    flex: 1,
+    position: 'relative',
+  },
+  floatingLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
+  enhancedInput: {
+    fontSize: 18,
     color: 'white',
+    fontWeight: '600',
+    padding: 0,
+    minHeight: 24,
+  },
+  inputSuffix: {
+    marginLeft: 8,
+  },
+  suffixText: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.6)',
+    fontWeight: '500',
+  },
+  progressContainer: {
+    marginBottom: 20,
+  },
+  progressText: {
+    fontSize: 14,
+    color: '#60A5FA',
+    textAlign: 'center',
     marginBottom: 8,
+    fontWeight: '500',
   },
-  input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 8,
-    padding: 12,
-    color: 'white',
-    fontSize: 16,
+  progressBarBackground: {
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  progressGradient: {
+    flex: 1,
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-    marginBottom: 20,
+    gap: 12,
+  },
+  actionButton: {
+    flex: 1,
+    borderRadius: 14,
+    overflow: 'hidden',
   },
   calculateButton: {
-    backgroundColor: '#A8C3D1',
-    borderRadius: 8,
-    padding: 15,
-    flex: 1,
-    marginRight: 10,
+    elevation: 4,
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  buttonGradient: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    gap: 8,
   },
   calculateButtonText: {
-    color: '#1A213B',
+    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
   resetButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 8,
-    padding: 15,
-    flex: 1,
-    marginLeft: 10,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  resetButtonContent: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    gap: 8,
   },
   resetButtonText: {
-    color: 'white',
+    color: '#94A3B8',
     fontSize: 16,
+    fontWeight: '600',
   },
-  resultContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 10,
-    padding: 20,
+  resultsSection: {
+    marginBottom: 30,
+  },
+  resultsSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 20,
   },
-  resultTitle: {
-    fontSize: 18,
+  resultsSectionTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#A8C3D1',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  resultRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  resultLabel: {
-    fontSize: 16,
     color: 'white',
+    marginLeft: 12,
   },
-  resultValue: {
+  resultsGrid: {
+    gap: 16,
+    marginBottom: 24,
+  },
+  resultCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  resultCardGradient: {
+    padding: 20,
+  },
+  resultCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  resultIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  resultCardTitle: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.8)',
+    fontWeight: '500',
+  },
+  resultCardValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  resultCardSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.6)',
+  },
+  chartContainer: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  chartGradient: {
+    padding: 20,
+  },
+  chartHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  chartTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+    marginLeft: 8,
+  },
+  chartContent: {
+    alignItems: 'center',
+  },
+  chartLegend: {
+    gap: 12,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  legendColor: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  legendText: {
+    color: 'white',
+    fontSize: 14,
+  },
+  disclaimerContainer: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginTop: 20,
+  },
+  disclaimerGradient: {
+    padding: 20,
+  },
+  disclaimerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  disclaimerTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#A8C3D1',
+    color: '#FB923C',
+    marginLeft: 8,
   },
-  disclaimer: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontStyle: 'italic',
-    textAlign: 'center',
-    marginTop: 10,
+  disclaimerText: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+    lineHeight: 20,
   },
 });
