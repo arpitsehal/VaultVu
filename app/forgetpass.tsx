@@ -55,9 +55,14 @@ export default function ForgotPasswordPage() {
       const res = await authService.requestPasswordReset(email);
       if (res?.success) {
         await AsyncStorage.setItem('resetEmail', email);
-        Alert.alert('Success', 'OTP sent to your email!', [
-          { text: 'OK', onPress: () => router.push({ pathname: '/otpvarification', params: { email } }) }
-        ]);
+        if (Platform.OS === 'web') {
+          // Alert callbacks are unreliable on web; navigate immediately
+          router.push({ pathname: '/otpvarification', params: { email } });
+        } else {
+          Alert.alert('Success', 'OTP sent to your email!', [
+            { text: 'OK', onPress: () => router.push({ pathname: '/otpvarification', params: { email } }) }
+          ]);
+        }
       } else {
         Alert.alert('Error', res?.message || 'Failed to request OTP. Please try again.');
       }

@@ -110,9 +110,14 @@ export default function CreateNewPasswordPage() {
         // Clear reset data
         await AsyncStorage.removeItem('resetEmail');
 
-        Alert.alert('Success', 'Password reset successfully!', [
-          { text: 'OK', onPress: () => router.push('/signin') }
-        ]);
+        if (Platform.OS === 'web') {
+          // Navigate immediately on web; Alert callbacks can be unreliable there
+          router.replace('/signin');
+        } else {
+          Alert.alert('Success', 'Password reset successfully!', [
+            { text: 'OK', onPress: () => router.push('/signin') }
+          ]);
+        }
       } else {
         Alert.alert('Error', data?.message || 'Failed to reset password. Please try again.');
       }
