@@ -2,7 +2,7 @@
   "expo": {
     "name": "vaultvu",
     "slug": "vaultVu",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/vaultvu-logo.png",
     "scheme": "vaultvu",
@@ -18,7 +18,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.arpitsehal.vaultvu"
+      "package": "com.arpitsehal.vaultvu",
+      "allowBackup": false
     },
     "web": {
       "bundler": "metro",
@@ -34,6 +35,19 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "manifestApplicationAttributes": {
+              "android:usesCleartextTraffic": "false",
+              "android:allowBackup": "false"
+            }
+          }
         }
       ]
     ],

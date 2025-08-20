@@ -181,6 +181,39 @@ Environment variables used by backend: see “Configure Backend Environment”.
 - Backend: Node/Express, MongoDB (Mongoose), JWT Auth, CORS, Axios
 - Services/APIs: Google Safe Browsing, APILayer Spam Check, Numverify, Gemini (Generative Language API)
 
+## Security
+
+This app follows OWASP Mobile Top 10 and CERT-In-aligned practices. Key measures in this codebase:
+
+- __HTTPS only (Cleartext blocked)__
+  - Android manifest attribute `android:usesCleartextTraffic=false` applied via `expo-build-properties`.
+  - All API calls use `https://` (see `services/apiConfig.js`, `services/authService.js`).
+
+- __No app data backup__
+  - `android:allowBackup=false` set in `app.json` and manifest attributes via `expo-build-properties`.
+
+- __Code minification/obfuscation__
+  - Release builds enable Proguard and resource shrinking via `expo-build-properties`.
+
+- __Compromised-device and dev-mode blocking__
+  - `app/(tabs)/_layout.tsx` checks for rooted/jailbroken devices using `expo-device` and blocks in production variant.
+  - Also blocks if a dev build is detected for production variant.
+
+- __Sensitive input hardening__
+  - Password fields (`app/signin.tsx`, `app/newpass.tsx`) disable context menu and autofill to reduce data leakage.
+
+### Backend security
+
+- __Password hashing__: `bcryptjs` with salt rounds (see `backend/routes/auth.js` `register` and `reset-password`). Passwords are never stored in plain text.
+- __JWT authentication__: `jsonwebtoken` issues tokens with 7d expiry at login (see `backend/routes/auth.js`). Protected endpoints verify JWT via `Authorization: Bearer <token>`.
+- __OTP-based password reset__: OTP hashed with bcrypt and expires in 15 minutes; on success, password is re-hashed and tokens cleared.
+
+### Future/optional hardening
+
+- SSL Pinning (requires custom dev client or bare workflow with a pinning lib).
+- Encrypt local secrets at rest using `expo-secure-store` instead of `AsyncStorage` for tokens.
+- Explicitly minimize Android permissions after auditing feature usage.
+
 ## Troubleshooting
 
 ### Connection Issues

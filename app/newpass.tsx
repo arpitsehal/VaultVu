@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  TouchableOpacity, 
-  StatusBar, 
-  Image, 
-  TextInput, 
-  ScrollView, 
-  KeyboardAvoidingView, 
-  Platform, 
-  Alert,
-  ActivityIndicator 
-} from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { authService } from '@/services/authService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function CreateNewPasswordPage() {
   const router = useRouter();
@@ -110,14 +110,9 @@ export default function CreateNewPasswordPage() {
         // Clear reset data
         await AsyncStorage.removeItem('resetEmail');
 
-        if (Platform.OS === 'web') {
-          // Navigate immediately on web; Alert callbacks can be unreliable there
-          router.replace('/signin');
-        } else {
-          Alert.alert('Success', 'Password reset successfully!', [
-            { text: 'OK', onPress: () => router.push('/signin') }
-          ]);
-        }
+        Alert.alert('Success', 'Password reset successfully!', [
+          { text: 'OK', onPress: () => router.push('/signin') }
+        ]);
       } else {
         Alert.alert('Error', data?.message || 'Failed to reset password. Please try again.');
       }
@@ -176,6 +171,10 @@ export default function CreateNewPasswordPage() {
               secureTextEntry={!showNewPassword}
               value={newPassword}
               onChangeText={setNewPassword}
+              contextMenuHidden
+              textContentType={Platform.OS === 'ios' ? 'newPassword' : 'none'}
+              autoComplete="off"
+              importantForAutofill="no"
             />
             {newPasswordError ? <Text style={styles.errorText}>{newPasswordError}</Text> : null}
             <TouchableOpacity
@@ -196,6 +195,10 @@ export default function CreateNewPasswordPage() {
               secureTextEntry={!showConfirmPassword}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
+              contextMenuHidden
+              textContentType={Platform.OS === 'ios' ? 'newPassword' : 'none'}
+              autoComplete="off"
+              importantForAutofill="no"
             />
             {confirmPasswordError ? <Text style={styles.errorText}>{confirmPasswordError}</Text> : null}
             <TouchableOpacity

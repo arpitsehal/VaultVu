@@ -134,6 +134,10 @@ export default function SignInPage() {
               secureTextEntry
               value={password}
               onChangeText={setPassword}
+              contextMenuHidden
+              textContentType={Platform.OS === 'ios' ? 'password' : 'none'}
+              autoComplete="off"
+              importantForAutofill="no"
             />
             {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
           </View>
